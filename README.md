@@ -198,6 +198,32 @@ Checks for:
 
 ---
 
+## Diagnostics
+
+Analyze chunk quality before RAG ingestion:
+
+```bash
+# Level 1: Identify problems
+python3 scripts/diagnose_chunks.py doc.md --level diagnose
+
+# Level 2: Get modification suggestions
+python3 scripts/diagnose_chunks.py doc.md --level suggest
+
+# Level 3: Auto-generate fixes for review
+python3 scripts/diagnose_chunks.py doc.md --level fix
+
+# JSON output for LLM processing
+python3 scripts/diagnose_chunks.py doc.md --level suggest --json
+```
+
+**Checks for:**
+- 🔄 Semantic similarity between chunk pairs
+- 📝 Context quality (length, specificity, distinctiveness)
+- 🏷️ Tag overlap and consistency
+- 🆔 ID naming conventions
+
+---
+
 ## Part of CtxFST
 
 This skill is part of the [CtxFST](https://github.com/ctxfst) ecosystem.

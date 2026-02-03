@@ -281,8 +281,90 @@ After chunking, verify:
 python3 scripts/validate_chunks.py path/to/document.md
 ```
 
+## Chunk Diagnostics
+
+Before exporting to RAG systems, diagnose chunk quality to catch retrieval issues.
+
+### Diagnostic Levels
+
+| Level | Command | What You Get |
+|-------|---------|--------------|
+| **diagnose** | `--level diagnose` | List problems with explanations |
+| **suggest** | `--level suggest` | Problems + concrete modification suggestions |
+| **fix** | `--level fix` | Problems + suggestions + patched frontmatter |
+
+```bash
+python3 scripts/diagnose_chunks.py document.md --level suggest
+```
+
+### Check Categories
+
+When the user asks to "diagnose", "check quality", or "review chunks", evaluate:
+
+#### 1. Semantic Similarity
+Compare each pair of chunks for keyword overlap. If two chunks share >60% of their vocabulary:
+- **Problem**: Retrieval may return both when only one is relevant
+- **Fix**: Emphasize differences in context — different use cases, examples, or scope
+
+#### 2. Context Quality
+Check each context field:
+- **Length**: Should be 12-30 words (too short = vague, too long = verbose)
+- **Specificity**: Should not just repeat the content's opening
+- **Distinctiveness**: Should explain what makes this chunk different
+
+#### 3. Tag Overlap
+Analyze tag distribution:
+- **Ubiquitous tags**: Tags in >80% of chunks reduce filtering effectiveness
+- **Identical tag sets**: Multiple chunks with same tags cannot be distinguished
+- **Fix**: Add specific sub-tags (e.g., `level:beginner`, `use:api`)
+
+#### 4. ID Naming
+Verify ID consistency:
+- **Format**: Must be `category:topic-name` (lowercase, kebab-case)
+- **Categories**: Same-type chunks should share category prefix
+- **Fix**: Rename to use consistent, meaningful prefixes
+
+### Diagnostic Prompts
+
+When the user requests diagnostics, respond according to the level:
+
+**Level 1 (diagnose):**
+```
+> Check this document's chunk quality
+
+Found 3 issues:
+
+⚠️ [skill:python, skill:go] - High semantic similarity (65%)
+   Shared keywords: programming, apis, services
+   
+⚠️ [about:background] - Context too short (5 words)
+
+ℹ️ [all chunks] - Tag "Backend" appears in 80% of chunks
+```
+
+**Level 2 (suggest):**
+```
+> Diagnose and suggest fixes
+
+⚠️ [skill:python, skill:go] - High semantic similarity (65%)
+   💡 Differentiate: skill:python context should emphasize data/ETL,
+      skill:go context should emphasize performance/concurrency
+```
+
+**Level 3 (fix):**
+```
+> Auto-fix chunk issues
+
+⚠️ [about:background] - Context too short (5 words)
+   💡 Expand with job focus and years of experience
+   🔧 Suggested fix:
+   context: "Author's professional background as an 8-year backend engineer
+             specializing in distributed systems and performance optimization"
+```
+
 ## Resources
 
 - **Chunk syntax details**: See [references/chunk-syntax.md](references/chunk-syntax.md)
 - **Semantic chunking theory**: See [references/semantic-chunking.md](references/semantic-chunking.md)
 - **Examples**: See [assets/examples/](assets/examples/) for before/after samples
+
