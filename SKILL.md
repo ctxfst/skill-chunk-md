@@ -81,9 +81,17 @@ chunks:
   - id: skill:python
     tags: [Python, Backend, API]
     context: "Author's Python skills for REST APIs and data pipelines using FastAPI"
+    created_at: "2026-02-03"
+    version: 1
+    type: text
+    priority: high
+    dependencies: []
   - id: skill:go
     tags: [Go, Microservices]
     context: "Go programming experience for high-performance microservices"
+    created_at: "2026-02-01"
+    version: 1
+    type: text
 ---
 ```
 
@@ -91,6 +99,16 @@ chunks:
 - 50-100 tokens describing the chunk's role in the document
 - Include key entities and relationships
 - Help disambiguate similar content across documents
+
+**New Temporal & Agentic Fields (2026 RAG Support):**
+
+| Field | Required | Format | Purpose |
+|-------|----------|--------|---------|
+| `created_at` | No | ISO date (YYYY-MM-DD) | Document creation for temporal RAG |
+| `version` | No | Integer | Content versioning for updates |
+| `type` | No | text, image, video, audio | Multi-modal support (default: text) |
+| `priority` | No | high, medium, low | Agent-directed retrieval hints |
+| `dependencies` | No | Array of IDs | List prerequisite chunks for context |
 
 ### Step 5: Wrap Content with Chunk Tags
 
@@ -181,9 +199,17 @@ chunks:
   - id: about:background
     tags: [About, Experience]
     context: "Author's professional background as a backend engineer"
+    created_at: "2026-01-15"
+    version: 1
+    priority: medium
   - id: skill:python
     tags: [Python, Backend]
     context: "Python programming skills for APIs and data processing"
+    created_at: "2026-01-15"
+    version: 2
+    type: text
+    priority: high
+    dependencies: [about:background]
 ---
 
 <Chunk id="about:background">
@@ -204,6 +230,37 @@ I use Python for data pipelines and APIs...
 - Pandas for data processing
 </Chunk>
 ```
+
+## 2026 RAG Extensions
+
+The following optional fields enable advanced RAG use cases:
+
+### Temporal RAG (`created_at`, `version`)
+```yaml
+chunks:
+  - id: skill:llm-prompt
+    created_at: "2026-02-03"  # ISO date for temporal indexing
+    version: 3                 # Track content updates over time
+```
+Use in workflows that need **point-in-time retrieval** (e.g., retrieving docs from a specific date) or **version control** of knowledge bases.
+
+### Agentic RAG (`priority`, `dependencies`)
+```yaml
+chunks:
+  - id: api:auth
+    priority: high             # Hints for agent retrieval ordering
+    dependencies: [api:setup]  # Prerequisite knowledge for agents
+```
+Helps AI agents understand **which chunks to retrieve first** and **what context is needed before answering**.
+
+### Multi-Modal RAG (`type`)
+```yaml
+chunks:
+  - id: diagram:architecture
+    type: image                # text, image, video, audio
+    content_path: "./arch.png" # Path to media file (relative to doc)
+```
+Enables structured retrieval of **non-text content** alongside text (prepare for LightRAG, Milvus integrations).
 
 ## When NOT to Chunk
 

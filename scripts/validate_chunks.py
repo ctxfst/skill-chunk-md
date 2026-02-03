@@ -19,6 +19,7 @@ import sys
 import re
 from pathlib import Path
 from typing import NamedTuple
+from datetime import datetime
 
 try:
     import yaml
@@ -31,6 +32,102 @@ class ValidationError(NamedTuple):
     line: int
     message: str
     severity: str  # 'error' or 'warning'
+
+
+def validate_temporal_fields(chunk_def: dict, chunk_id: str, line_num: int) -> list[ValidationError]:
+    """Validate temporal fields (created_at, version)."""
+    errors = []
+
+    if 'created_at' in chunk_def:
+        try:
+            datetime.fromisoformat(chunk_def['created_at'])
+        except (ValueError, TypeError):
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': Invalid 'created_at' format (use YYYY-MM-DD)",
+                'error'
+            ))
+
+    if 'version' in chunk_def:
+        if not isinstance(chunk_def['version'], int) or chunk_def['version'] < 1:
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': 'version' must be a positive integer",
+                'error'
+            ))
+
+    return errors
+
+
+def validate_agentic_fields(chunk_def: dict, chunk_id: str, line_num: int, all_chunk_ids: set) -> list[ValidationError]:
+    """Validate agentic fields (priority, dependencies)."""
+    errors = []
+
+    if 'priority' in chunk_def:
+        valid_priorities = ['high', 'medium', 'low']
+        if chunk_def['priority'] not in valid_priorities:
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': 'priority' must be one of {valid_priorities}",
+                'error'
+            ))
+
+    if 'dependencies' in chunk_def:
+        if not isinstance(chunk_def['dependencies'], list):
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': 'dependencies' must be a list of chunk IDs",
+                'error'
+            ))
+        else:
+            for dep in chunk_def['dependencies']:
+                if not isinstance(dep, str):
+                    errors.append(ValidationError(
+                        line_num,
+                        f"Chunk '{chunk_id}': dependency must be string ID, got {type(dep).__name__}",
+                        'error'
+                    ))
+                elif dep not in all_chunk_ids and dep != chunk_id:
+                    errors.append(ValidationError(
+                        line_num,
+                        f"Chunk '{chunk_id}': dependency '{dep}' not found in chunks",
+                        'warning'
+                    ))
+
+    return errors
+
+
+def validate_multimodal_fields(chunk_def: dict, chunk_id: str, line_num: int, doc_dir: Path) -> list[ValidationError]:
+    """Validate multi-modal fields (type, content_path)."""
+    errors = []
+
+    if 'type' in chunk_def:
+        valid_types = ['text', 'image', 'video', 'audio']
+        if chunk_def['type'] not in valid_types:
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': 'type' must be one of {valid_types}",
+                'error'
+            ))
+
+    if 'content_path' in chunk_def:
+        path_str = chunk_def['content_path']
+        if chunk_def.get('type') in ['image', 'video', 'audio']:
+            full_path = doc_dir / path_str
+            if not full_path.exists():
+                errors.append(ValidationError(
+                    line_num,
+                    f"Chunk '{chunk_id}': content_path '{path_str}' does not exist",
+                    'warning'
+                ))
+        else:
+            errors.append(ValidationError(
+                line_num,
+                f"Chunk '{chunk_id}': content_path should only be used with type=[image,video,audio]",
+                'warning'
+            ))
+
+    return errors
 
 
 def parse_frontmatter(content: str) -> tuple[dict | None, str, int]:
@@ -66,12 +163,15 @@ def validate_file(filepath: Path) -> list[ValidationError]:
     """Validate chunk tags in a single file."""
     errors = []
     content = filepath.read_text(encoding='utf-8')
-    
+    doc_dir = filepath.parent
+
     # Parse frontmatter
     frontmatter, body_content, fm_end_line = parse_frontmatter(content)
-    
+
     # Get chunk definitions from frontmatter
     fm_chunks = {}
+    all_chunk_ids = set()
+
     if frontmatter and 'chunks' in frontmatter:
         for i, chunk_def in enumerate(frontmatter['chunks']):
             if 'id' not in chunk_def:
@@ -81,25 +181,32 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                     'error'
                 ))
                 continue
-            
+
             chunk_id = chunk_def['id']
-            
+            all_chunk_ids.add(chunk_id)
+            line_num = i + 2
+
             if chunk_id in fm_chunks:
                 errors.append(ValidationError(
-                    i + 2,
+                    line_num,
                     f"Duplicate chunk ID '{chunk_id}' in frontmatter",
                     'error'
                 ))
             else:
                 fm_chunks[chunk_id] = chunk_def
-            
+
             # Warn if no context
             if 'context' not in chunk_def:
                 errors.append(ValidationError(
-                    i + 2,
+                    line_num,
                     f"Chunk '{chunk_id}' missing 'context' field",
                     'warning'
                 ))
+
+            # Validate 2026 RAG extension fields
+            errors.extend(validate_temporal_fields(chunk_def, chunk_id, line_num))
+            errors.extend(validate_agentic_fields(chunk_def, chunk_id, line_num, all_chunk_ids))
+            errors.extend(validate_multimodal_fields(chunk_def, chunk_id, line_num, doc_dir))
     elif frontmatter is None:
         errors.append(ValidationError(
             1,

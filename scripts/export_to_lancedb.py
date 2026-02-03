@@ -16,6 +16,11 @@ Output format:
     "context": "Author's Python skills...",
     "content": "## Python\n...",
     "tags": ["Python", "Backend"],
+    "created_at": "2026-02-03",
+    "version": 1,
+    "type": "text",
+    "priority": "high",
+    "dependencies": [],
     "source": "path/to/file.md"
   }
 ]
@@ -98,12 +103,12 @@ def process_file(filepath: Path) -> list[dict[str, Any]]:
         chunk_id = chunk_def.get('id')
         if not chunk_id:
             continue
-        
+
         content = body_chunks.get(chunk_id, '')
         if not content:
             print(f"Warning: No content found for chunk '{chunk_id}' in {filepath}")
             continue
-        
+
         record = {
             'id': chunk_id,
             'context': chunk_def.get('context', ''),
@@ -111,6 +116,19 @@ def process_file(filepath: Path) -> list[dict[str, Any]]:
             'tags': chunk_def.get('tags', []),
             'source': str(filepath)
         }
+
+        # Add optional 2026 RAG extension fields
+        if 'created_at' in chunk_def:
+            record['created_at'] = chunk_def['created_at']
+        if 'version' in chunk_def:
+            record['version'] = chunk_def['version']
+        if 'type' in chunk_def:
+            record['type'] = chunk_def['type']
+        if 'priority' in chunk_def:
+            record['priority'] = chunk_def['priority']
+        if 'dependencies' in chunk_def:
+            record['dependencies'] = chunk_def['dependencies']
+
         records.append(record)
     
     return records
