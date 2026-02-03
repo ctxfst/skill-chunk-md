@@ -2,6 +2,8 @@
 
 > **Transform Markdown into semantically chunked documents for better LLM retrieval.**
 
+**Frontmatter format for LanceDB / LightRAG / HippoRAG compatibility** 🚀
+
 A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter.
 
 ### Why chunk your Markdown?
