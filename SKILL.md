@@ -1,15 +1,37 @@
 ---
 name: skill-chunk-md
-description: "Convert Markdown documents into CtxFST format using Semantic Chunking, Chunk tags, and Anthropic Contextual Retrieval. Use this skill when (1) transforming plain Markdown into semantically chunked documents, (2) adding Chunk tags to improve LLM retrieval accuracy, (3) generating LLM-powered contextual descriptions for each chunk, (4) preparing documents for Contextual BM25/Embeddings pipelines, or (5) creating skill documents with proper chunk boundaries."
+description: "Convert Markdown documents into CtxFST format using Semantic Chunking, Chunk tags, and YAML Frontmatter. Use this skill when (1) transforming plain Markdown into semantically chunked documents, (2) adding Chunk tags to improve LLM retrieval accuracy, (3) preparing documents for LanceDB/LightRAG/HippoRAG pipelines, or (4) creating skill documents with proper chunk boundaries."
 ---
 
 # Skill Chunk MD
 
-Transform Markdown documents into CtxFST format with semantic `<Chunk>` tags for improved LLM retrieval.
+Transform Markdown documents into CtxFST format with semantic `<Chunk>` tags and structured frontmatter for improved LLM retrieval.
 
 ## Overview
 
-This skill guides Claude to convert plain Markdown documents into semantically chunked documents using the CtxFST standard. The `<Chunk>` tags act as **LLM anchors** that enable precise retrieval in RAG (Retrieval Augmented Generation) pipelines.
+This skill guides Claude to convert plain Markdown documents into semantically chunked documents using the CtxFST standard. The combination of **YAML frontmatter** and `<Chunk>` tags enables precise retrieval in RAG pipelines, including vector databases (LanceDB) and graph-based systems (LightRAG, HippoRAG).
+
+## Document Format
+
+CtxFST documents have two parts:
+
+1. **YAML Frontmatter** — Structured metadata with chunk IDs, tags, and context
+2. **Content Body** — `<Chunk>` tags wrapping the actual content
+
+```markdown
+---
+title: "Document Title"
+chunks:
+  - id: skill:python
+    tags: [Python, Backend]
+    context: "Author's Python programming skills for APIs and data pipelines"
+---
+
+<Chunk id="skill:python">
+## Python
+I use Python for building REST APIs and data pipelines...
+</Chunk>
+```
 
 ## Core Workflow
 
@@ -48,92 +70,90 @@ Use the format: `{category}:{topic}[-{subtopic}]`
 | `workflow:` | Processes | `workflow:deployment`, `workflow:review` |
 | `reference:` | Reference material | `reference:api-auth`, `reference:schema` |
 
-### Step 4: Wrap Content
+### Step 4: Create YAML Frontmatter
 
-Apply `<Chunk>` tags:
+Define all chunks in the frontmatter with context and tags:
+
+```yaml
+---
+title: "My Skills Document"
+chunks:
+  - id: skill:python
+    tags: [Python, Backend, API]
+    context: "Author's Python skills for REST APIs and data pipelines using FastAPI"
+  - id: skill:go
+    tags: [Go, Microservices]
+    context: "Go programming experience for high-performance microservices"
+---
+```
+
+**Context generation guidelines:**
+- 50-100 tokens describing the chunk's role in the document
+- Include key entities and relationships
+- Help disambiguate similar content across documents
+
+### Step 5: Wrap Content with Chunk Tags
+
+Apply `<Chunk>` tags matching the frontmatter IDs:
 
 ```markdown
-<Chunk id="skill:python-async">
-## Python Async Programming
+<Chunk id="skill:python">
+## Python
 
 **Proficiency**: Advanced
-**Context**: Used for high-concurrency web services and data pipelines.
+
+I use Python daily for building data pipelines and REST APIs.
 
 ### Key Patterns
 - async/await for I/O-bound operations
 - asyncio.gather for parallel execution
-- Proper exception handling in async contexts
 </Chunk>
 ```
 
-### Step 5: Generate Contextual Descriptions (Anthropic Method)
+### Step 6: Validate and Export
 
-Use Claude to generate a **50-100 token context** for each chunk that situates it within the full document. This is the key step from [Anthropic's Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval).
+Use the included scripts:
 
-**Official Prompt Template:**
+```bash
+# Validate chunk structure
+python scripts/validate_chunks.py document.md
 
-```
-<document>
-{{WHOLE_DOCUMENT}}
-</document>
-Here is the chunk we want to situate within the whole document
-<chunk>
-{{CHUNK_CONTENT}}
-</chunk>
-Please give a short succinct context to situate this chunk within 
-the overall document for the purposes of improving search retrieval 
-of the chunk. Answer only with the succinct context and nothing else.
+# Export for LanceDB
+python scripts/export_to_lancedb.py document.md --output chunks.json
 ```
 
-**Example transformation:**
+## Why Frontmatter?
 
-| Before | After |
-|--------|-------|
-| `"The company's revenue grew by 3% over the previous quarter."` | `"This chunk is from an SEC filing on ACME corp's performance in Q2 2023; the previous quarter's revenue was $314 million. The company's revenue grew by 3% over the previous quarter."` |
+| Approach | Storage | Flexibility | Best For |
+|----------|---------|-------------|----------|
+| **Anthropic Original** | Context merged into content | Low | Simple RAG |
+| **Frontmatter** | Context separated as metadata | High | LanceDB, LightRAG |
 
-Use `scripts/contextualize_chunks.py` for automated context generation with prompt caching.
+### Benefits for Vector DBs (LanceDB)
 
-### Step 6: Prepend Context to Chunks
-
-Combine the generated context with the original chunk content:
-
-```markdown
-<Chunk id="skill:python-async">
-<!-- Context: This section describes the author's Python async programming 
-skills, focusing on patterns used in their high-concurrency web services 
-and data pipeline projects at Company X. -->
-
-## Python Async Programming
-...
-</Chunk>
+```python
+# Frontmatter enables structured columns
+table.add({
+    "id": chunk.id,
+    "context": chunk.context,    # Separate column
+    "content": chunk.content,    # Separate column
+    "tags": chunk.tags,          # Filterable
+    "vector": embed(chunk.context + chunk.content)
+})
 ```
 
-The contextualized content is then used for:
-- **Contextual Embeddings** - Embedding the chunk + context together
-- **Contextual BM25** - Indexing with improved keyword coverage
+### Benefits for Graph RAG (LightRAG/HippoRAG)
 
-## Chunk Syntax Reference
+- **Tags** become graph nodes and edges
+- **Context** helps entity extraction
+- **Structured IDs** enable cross-document linking
 
-### Basic Syntax
+## Chunk Syntax Rules
 
-```markdown
-<Chunk id="unique-identifier">
-Content goes here...
-</Chunk>
-```
-
-### Rules
-
-1. **ID is required** - Must be unique within the document
-2. **IDs use kebab-case** - `skill:my-topic` not `skill:myTopic`
-3. **No nested chunks** - Chunks cannot contain other chunks
-4. **Preserve Markdown** - All Markdown formatting works inside chunks
-
-### ID Naming Best Practices
-
-- Be descriptive: `skill:python-data-analysis` > `skill:python-1`
-- Use hierarchy: `project:api-authentication` > `project:auth`
-- Stay consistent: Pick a pattern and stick to it
+1. **ID is required** — Must match a frontmatter entry
+2. **IDs use kebab-case** — `skill:my-topic` not `skill:myTopic`
+3. **No nested chunks** — Chunks cannot contain other chunks
+4. **Preserve Markdown** — All formatting works inside chunks
 
 ## Example Transformation
 
@@ -156,6 +176,16 @@ I use Python for data pipelines and APIs...
 ### After (CtxFST Format)
 
 ```markdown
+---
+chunks:
+  - id: about:background
+    tags: [About, Experience]
+    context: "Author's professional background as a backend engineer"
+  - id: skill:python
+    tags: [Python, Backend]
+    context: "Python programming skills for APIs and data processing"
+---
+
 <Chunk id="about:background">
 ## About Me
 
@@ -177,20 +207,18 @@ I use Python for data pipelines and APIs...
 
 ## When NOT to Chunk
 
-- **Very short documents** (<500 tokens total) - chunking adds overhead
-- **Highly interconnected content** - if every paragraph references others
-- **Code-only files** - use code comments instead
+- **Very short documents** (<500 tokens total) — chunking adds overhead
+- **Highly interconnected content** — if every paragraph references others
+- **Code-only files** — use code comments instead
 
 ## Validation
 
 After chunking, verify:
 
-1. All `<Chunk>` tags are properly closed
+1. All `<Chunk>` tags have matching frontmatter entries
 2. All IDs are unique
-3. No chunks are nested inside other chunks
+3. No chunks are nested
 4. Each chunk is self-contained
-
-Use `scripts/validate_chunks.py` for automated validation:
 
 ```bash
 python scripts/validate_chunks.py path/to/document.md

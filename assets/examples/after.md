@@ -1,3 +1,23 @@
+---
+title: "My Professional Profile"
+chunks:
+  - id: about:background
+    tags: [About, Experience]
+    context: "Author's professional background as a backend engineer with 8 years in distributed systems"
+  - id: skill:python
+    tags: [Python, Backend, API]
+    context: "Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas"
+  - id: skill:go
+    tags: [Go, Microservices, Concurrency]
+    context: "Go programming skills for high-performance microservices and CLI tools"
+  - id: project:payment-gateway
+    tags: [Project, Python, Go, FinTech]
+    context: "Payment processing system handling 10k TPS using Python business logic and Go gateway"
+  - id: project:data-pipeline
+    tags: [Project, Python, ETL, Airflow]
+    context: "ETL pipeline processing 50GB daily with Apache Airflow orchestration"
+---
+
 # My Professional Profile
 
 <Chunk id="about:background">

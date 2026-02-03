@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-Validate Chunk Tags in Markdown Documents
+Validate Chunk Tags in Markdown Documents with Frontmatter Support
 
 Checks for:
+- Valid YAML frontmatter with chunk definitions
 - Proper <Chunk> tag syntax
+- All <Chunk> IDs match frontmatter entries
 - Unique chunk IDs
 - Balanced opening/closing tags
 - No nested chunks
@@ -18,6 +20,12 @@ import re
 from pathlib import Path
 from typing import NamedTuple
 
+try:
+    import yaml
+except ImportError:
+    print("Error: PyYAML required. Install with: pip install pyyaml")
+    sys.exit(1)
+
 
 class ValidationError(NamedTuple):
     line: int
@@ -25,34 +33,116 @@ class ValidationError(NamedTuple):
     severity: str  # 'error' or 'warning'
 
 
+def parse_frontmatter(content: str) -> tuple[dict | None, str, int]:
+    """
+    Parse YAML frontmatter from content.
+    Returns (frontmatter_dict, remaining_content, frontmatter_end_line).
+    """
+    if not content.startswith('---'):
+        return None, content, 0
+    
+    lines = content.split('\n')
+    end_idx = None
+    
+    for i, line in enumerate(lines[1:], 1):
+        if line.strip() == '---':
+            end_idx = i
+            break
+    
+    if end_idx is None:
+        return None, content, 0
+    
+    frontmatter_text = '\n'.join(lines[1:end_idx])
+    remaining = '\n'.join(lines[end_idx + 1:])
+    
+    try:
+        frontmatter = yaml.safe_load(frontmatter_text)
+        return frontmatter, remaining, end_idx + 1
+    except yaml.YAMLError:
+        return None, content, 0
+
+
 def validate_file(filepath: Path) -> list[ValidationError]:
     """Validate chunk tags in a single file."""
     errors = []
     content = filepath.read_text(encoding='utf-8')
-    lines = content.split('\n')
     
-    # Track state
-    chunk_ids = {}  # id -> line number
+    # Parse frontmatter
+    frontmatter, body_content, fm_end_line = parse_frontmatter(content)
+    
+    # Get chunk definitions from frontmatter
+    fm_chunks = {}
+    if frontmatter and 'chunks' in frontmatter:
+        for i, chunk_def in enumerate(frontmatter['chunks']):
+            if 'id' not in chunk_def:
+                errors.append(ValidationError(
+                    i + 2,  # Approximate line in frontmatter
+                    f"Chunk definition {i+1} missing 'id' field",
+                    'error'
+                ))
+                continue
+            
+            chunk_id = chunk_def['id']
+            
+            if chunk_id in fm_chunks:
+                errors.append(ValidationError(
+                    i + 2,
+                    f"Duplicate chunk ID '{chunk_id}' in frontmatter",
+                    'error'
+                ))
+            else:
+                fm_chunks[chunk_id] = chunk_def
+            
+            # Warn if no context
+            if 'context' not in chunk_def:
+                errors.append(ValidationError(
+                    i + 2,
+                    f"Chunk '{chunk_id}' missing 'context' field",
+                    'warning'
+                ))
+    elif frontmatter is None:
+        errors.append(ValidationError(
+            1,
+            "No YAML frontmatter found",
+            'warning'
+        ))
+    elif 'chunks' not in frontmatter:
+        errors.append(ValidationError(
+            1,
+            "Frontmatter missing 'chunks' array",
+            'warning'
+        ))
+    
+    # Validate <Chunk> tags in body
+    lines = body_content.split('\n')
+    body_chunk_ids = {}  # id -> line number
     open_chunks = []  # stack of (id, line_number)
     
-    # Patterns
     open_pattern = re.compile(r'<Chunk\s+id=["\']([^"\']+)["\']>', re.IGNORECASE)
     close_pattern = re.compile(r'</Chunk>', re.IGNORECASE)
     
-    for i, line in enumerate(lines, 1):
+    for i, line in enumerate(lines, fm_end_line + 1):
         # Check for opening tags
         for match in open_pattern.finditer(line):
             chunk_id = match.group(1)
             
-            # Check for duplicate IDs
-            if chunk_id in chunk_ids:
+            # Check if ID exists in frontmatter
+            if fm_chunks and chunk_id not in fm_chunks:
+                errors.append(ValidationError(
+                    i,
+                    f"Chunk ID '{chunk_id}' not found in frontmatter",
+                    'error'
+                ))
+            
+            # Check for duplicate IDs in body
+            if chunk_id in body_chunk_ids:
                 errors.append(ValidationError(
                     i, 
-                    f"Duplicate chunk ID '{chunk_id}' (first seen at line {chunk_ids[chunk_id]})",
+                    f"Duplicate chunk ID '{chunk_id}' (first seen at line {body_chunk_ids[chunk_id]})",
                     'error'
                 ))
             else:
-                chunk_ids[chunk_id] = i
+                body_chunk_ids[chunk_id] = i
             
             # Check for nesting
             if open_chunks:
@@ -90,6 +180,16 @@ def validate_file(filepath: Path) -> list[ValidationError]:
             f"Unclosed chunk '{chunk_id}'",
             'error'
         ))
+    
+    # Check for frontmatter chunks not used in body
+    if fm_chunks:
+        for chunk_id in fm_chunks:
+            if chunk_id not in body_chunk_ids:
+                errors.append(ValidationError(
+                    1,
+                    f"Frontmatter chunk '{chunk_id}' not found in document body",
+                    'warning'
+                ))
     
     return errors
 

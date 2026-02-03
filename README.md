@@ -2,18 +2,25 @@
 
 > **Transform Markdown into semantically chunked documents for better LLM retrieval.**
 
-A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags.
+A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter.
 
 ### Why chunk your Markdown?
 
 When you feed a long document to an LLM, retrieval can be imprecise.  
-`<Chunk>` tags act as **semantic anchors** — they help Claude locate and reference specific sections precisely.
+`<Chunk>` tags + structured frontmatter act as **semantic anchors** — they help Claude locate and reference specific sections precisely.
 
 ```markdown
 # Before
 I know Python, React, and Docker.
 
 # After
+---
+chunks:
+  - id: skill:python
+    tags: [Python, Backend]
+    context: "Author's Python skills for data pipelines and APIs"
+---
+
 <Chunk id="skill:python">
 ## Python
 **Proficiency**: Advanced  
@@ -32,12 +39,13 @@ Download [`skill-chunk-md.skill`](https://github.com/ctxfst/skill-chunk-md/relea
 ### 2. Ask Claude to chunk your document
 
 ```
-Convert this document into CtxFST format with proper <Chunk> tags.
+Convert this document into CtxFST format with proper <Chunk> tags and YAML frontmatter.
 ```
 
 Claude will:
 - Analyze semantic boundaries
 - Generate meaningful chunk IDs
+- Create YAML frontmatter with context and tags
 - Wrap content in `<Chunk>` tags
 
 ---
@@ -48,8 +56,9 @@ Claude will:
 skill-chunk-md/
 ├── SKILL.md                    # Main skill instructions
 ├── scripts/
-│   ├── validate_chunks.py      # Validate chunk syntax
-│   └── contextualize_chunks.py # Generate contextual descriptions (Anthropic method)
+│   ├── validate_chunks.py      # Validate chunk syntax & frontmatter
+│   ├── export_to_lancedb.py    # Export chunks to JSON/LanceDB
+│   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
 │   └── semantic-chunking.md    # Chunking methodology
@@ -60,26 +69,30 @@ skill-chunk-md/
 
 ---
 
-## Anthropic Contextual Retrieval
+## Frontmatter Format
 
-This skill implements [Anthropic's Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) method, which improves RAG retrieval accuracy by **up to 49%**.
+CtxFST uses **YAML frontmatter** to store chunk metadata separately from content:
 
-### The Process
-
-1. **Semantic Chunking** — Divide documents at meaning boundaries using `<Chunk>` tags
-2. **Context Generation** — Use Claude to generate 50-100 token context for each chunk
-3. **Context Prepending** — Combine context + original chunk for embedding/BM25
-
-### Generate Contextual Descriptions
-
-```bash
-# Requires: pip install anthropic
-# Requires: export ANTHROPIC_API_KEY="your-key"
-
-python scripts/contextualize_chunks.py your-document.md
+```yaml
+---
+chunks:
+  - id: skill:python
+    tags: [Python, Backend, API]
+    context: "Author's Python skills for REST APIs and data pipelines"
+  - id: skill:go
+    tags: [Go, Microservices]
+    context: "Go programming for high-performance services"
+---
 ```
 
-Uses prompt caching to reduce costs (~$1.02 per million tokens).
+### Why Frontmatter?
+
+| Benefit | Description |
+|---------|-------------|
+| **Structured data** | Easy to parse for vector DBs |
+| **Separated concerns** | Context as metadata, content stays clean |
+| **LanceDB ready** | Store context, content, tags as columns |
+| **LightRAG/HippoRAG** | Tags become graph nodes |
 
 ---
 
@@ -102,6 +115,28 @@ Your content here...
 
 ---
 
+## Export to LanceDB
+
+Use the included script to export chunks for vector database ingestion:
+
+```bash
+python scripts/export_to_lancedb.py your-document.md --output chunks.json
+```
+
+Output format:
+```json
+[
+  {
+    "id": "skill:python",
+    "context": "Author's Python skills...",
+    "content": "## Python\n...",
+    "tags": ["Python", "Backend"]
+  }
+]
+```
+
+---
+
 ## Validation
 
 Use the included script to validate your chunked documents:
@@ -111,10 +146,11 @@ python scripts/validate_chunks.py your-document.md
 ```
 
 Checks for:
+- ✅ Frontmatter chunk definitions exist
+- ✅ All `<Chunk>` IDs match frontmatter
 - ✅ Unique chunk IDs
 - ✅ Properly closed tags
 - ✅ No nested chunks
-- ✅ Valid ID format
 
 ---
 
@@ -125,7 +161,6 @@ This skill is part of the [CtxFST](https://github.com/ctxfst) ecosystem.
 **Related skills:**
 - `skill-chunk-mdx` (coming soon)
 - `skill-chunk-pdf` (coming soon)
-- `skill-chunk-org` (coming soon)
 
 ---
 

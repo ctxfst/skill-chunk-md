@@ -2,7 +2,48 @@
 
 Complete reference for the `<Chunk>` tag syntax used in CtxFST documents.
 
-## Basic Syntax
+## Document Structure
+
+CtxFST documents use **YAML frontmatter** for metadata and `<Chunk>` tags for content:
+
+```markdown
+---
+title: "Document Title"
+chunks:
+  - id: skill:python
+    tags: [Python, Backend]
+    context: "Brief context about this chunk..."
+---
+
+<Chunk id="skill:python">
+Content here...
+</Chunk>
+```
+
+## Frontmatter Schema
+
+```yaml
+---
+title: string              # Optional: Document title
+chunks:                    # Required: Array of chunk definitions
+  - id: string             # Required: Unique chunk identifier
+    tags: [string, ...]    # Optional: Semantic tags for filtering
+    context: string        # Required: 50-100 token context description
+---
+```
+
+### Why Frontmatter?
+
+| Benefit | Description |
+|---------|-------------|
+| **Structured metadata** | Easy to parse with `yaml.safe_load()` |
+| **Separated concerns** | Context is metadata, content stays clean |
+| **LanceDB/LightRAG ready** | Can store context and content as separate columns |
+| **Updateable** | Change context without modifying content |
+
+## Chunk Tag Syntax
+
+### Basic Syntax
 
 ```markdown
 <Chunk id="category:topic">
@@ -10,11 +51,9 @@ Your content here...
 </Chunk>
 ```
 
-## Required Attribute
+### Required Attribute: `id`
 
-### `id`
-
-Every chunk must have a unique identifier.
+Every chunk must have a unique identifier matching one in frontmatter.
 
 **Format**: `{category}:{topic}[-{subtopic}]`
 
@@ -24,8 +63,6 @@ skill:python
 skill:python-async
 about:background
 project:api-v2-auth
-principle:security-first
-workflow:ci-cd-pipeline
 ```
 
 **Invalid examples**:
@@ -33,20 +70,33 @@ workflow:ci-cd-pipeline
 python              # Missing category
 skill:Python        # Use lowercase
 skill:python async  # No spaces allowed
-skill:python_async  # Use hyphens, not underscores
 ```
 
 ## ID Categories
 
 | Category | Purpose | When to Use |
-|----------|---------|------------|
-| `skill:` | Technical skills | Programming languages, frameworks, tools |
-| `about:` | Identity/background | Personal info, team info, mission |
-| `project:` | Projects/products | Work samples, portfolio items |
-| `principle:` | Values/guidelines | Design principles, coding standards |
-| `workflow:` | Processes | Deployment, review, onboarding |
-| `reference:` | Reference material | API docs, schemas, specs |
-| `example:` | Examples/samples | Code samples, use cases |
+|----------|---------|-------------|
+| `skill:` | Technical skills | Languages, frameworks, tools |
+| `about:` | Identity/background | Personal info, team, mission |
+| `project:` | Projects/products | Work samples, portfolio |
+| `principle:` | Values/guidelines | Design principles, standards |
+| `workflow:` | Processes | Deployment, review flows |
+| `reference:` | Reference material | API docs, schemas |
+
+## Tags Best Practices
+
+Tags help with filtering and graph-based retrieval:
+
+```yaml
+chunks:
+  - id: skill:python-async
+    tags: [Python, Async, Concurrency, Backend]
+    context: "..."
+```
+
+- Use **PascalCase** for tags: `FastAPI` not `fastapi`
+- Keep tags **focused**: 3-6 tags per chunk
+- Reuse tags across chunks for **graph connections**
 
 ## Formatting Rules
 
@@ -71,7 +121,11 @@ skill:python_async  # Use hyphens, not underscores
 </Chunk>
 ```
 
-### 2. Markdown Works Inside Chunks
+### 2. IDs Must Match Frontmatter
+
+Every `<Chunk id="...">` must have a corresponding entry in frontmatter.
+
+### 3. Markdown Works Inside Chunks
 
 ```markdown
 <Chunk id="skill:python">
@@ -82,16 +136,14 @@ skill:python_async  # Use hyphens, not underscores
 - List item 1
 - List item 2
 
-```python
+\```python
 def hello():
     print("Hello")
-```
+\```
 </Chunk>
 ```
 
-### 3. Use Horizontal Rules Between Chunks
-
-Recommended for visual separation:
+### 4. Use Horizontal Rules Between Chunks
 
 ```markdown
 <Chunk id="first">
@@ -105,18 +157,12 @@ Recommended for visual separation:
 </Chunk>
 ```
 
-## HTML/XML Compatibility
-
-- Tags are case-sensitive: `<Chunk>` not `<chunk>`
-- Self-closing not allowed: Use `</Chunk>`, not `<Chunk />`
-- Attributes use double quotes: `id="value"` not `id='value'`
-
 ## Common Mistakes
 
 | Mistake | Problem | Fix |
 |---------|---------|-----|
+| Missing frontmatter entry | Chunk won't have context | Add to frontmatter |
+| ID mismatch | Parser error | Sync frontmatter and tags |
 | Missing closing tag | Parser error | Add `</Chunk>` |
 | Duplicate IDs | Ambiguous retrieval | Use unique IDs |
 | Nested chunks | Not supported | Flatten structure |
-| Too many chunks | Over-fragmentation | Merge related content |
-| Too few chunks | Poor retrieval | Split at semantic boundaries |
