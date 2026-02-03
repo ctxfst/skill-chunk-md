@@ -36,7 +36,7 @@ chunks:
 
 ### 1. Install the skill
 
-Download [`skill-chunk-md.skill`](https://github.com/ctxfst/skill-chunk-md/releases) and add it to your Claude project.
+Use [`SKILL.md`](SKILL.md) directly in your Claude project, or download [`skill-chunk-md.skill`](https://github.com/ctxfst/skill-chunk-md/releases/latest/download/skill-chunk-md.skill).
 
 ### 2. Ask Claude to chunk your document
 
@@ -149,7 +149,7 @@ Your content here...
 Use the included script to export chunks for vector database ingestion:
 
 ```bash
-python scripts/export_to_lancedb.py your-document.md --output chunks.json
+python3 scripts/export_to_lancedb.py your-document.md --output chunks.json
 ```
 
 Output format (with 2026 RAG extensions):
@@ -183,7 +183,7 @@ Use this JSON directly with:
 Use the included script to validate your chunked documents:
 
 ```bash
-python scripts/validate_chunks.py your-document.md
+python3 scripts/validate_chunks.py your-document.md
 ```
 
 Checks for:

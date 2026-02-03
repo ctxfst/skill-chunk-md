@@ -134,10 +134,10 @@ Use the included scripts:
 
 ```bash
 # Validate chunk structure
-python scripts/validate_chunks.py document.md
+python3 scripts/validate_chunks.py document.md
 
 # Export for LanceDB
-python scripts/export_to_lancedb.py document.md --output chunks.json
+python3 scripts/export_to_lancedb.py document.md --output chunks.json
 ```
 
 ## Why Frontmatter?
@@ -151,13 +151,13 @@ python scripts/export_to_lancedb.py document.md --output chunks.json
 
 ```python
 # Frontmatter enables structured columns
-table.add({
+table.add([{
     "id": chunk.id,
     "context": chunk.context,    # Separate column
     "content": chunk.content,    # Separate column
     "tags": chunk.tags,          # Filterable
     "vector": embed(chunk.context + chunk.content)
-})
+}])
 ```
 
 ### Benefits for Graph RAG (LightRAG/HippoRAG)
@@ -278,7 +278,7 @@ After chunking, verify:
 4. Each chunk is self-contained
 
 ```bash
-python scripts/validate_chunks.py path/to/document.md
+python3 scripts/validate_chunks.py path/to/document.md
 ```
 
 ## Resources
