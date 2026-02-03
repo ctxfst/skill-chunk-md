@@ -39,15 +39,41 @@ The semantic chunk is **self-contained** and **useful**.
 
 ## The Contextual Retrieval Connection
 
-CtxFST works with **Contextual BM25/Embeddings**:
+CtxFST implements **Anthropic's Contextual Retrieval** method:
 
 ```
-Document → Semantic Chunks → Add Context → Index
-                  ↓
-            <Chunk> tags mark boundaries
+Document → Semantic Chunks → LLM Context Generation → Prepend Context → Index
+                  ↓                    ↓
+            <Chunk> tags       Claude generates 50-100 token
+            mark boundaries    contextual descriptions
 ```
 
-Each chunk gets **prepended context** explaining where it fits in the document, improving retrieval accuracy by ~49% (per Anthropic research).
+### How It Works (Anthropic Method)
+
+1. **Chunk the document** semantically (this is what `<Chunk>` tags provide)
+2. **For each chunk**, use Claude to generate a brief context explaining where it fits in the full document
+3. **Prepend the context** to the chunk content before embedding/indexing
+
+### Example Transformation
+
+**Original chunk:**
+> "The company's revenue grew by 3% over the previous quarter."
+
+**With context prepended:**
+> "This chunk is from an SEC filing on ACME corp's performance in Q2 2023; the previous quarter's revenue was $314 million. The company's revenue grew by 3% over the previous quarter."
+
+### Performance Improvements (Anthropic Research)
+
+| Method | Top-20 Retrieval Failure Rate |
+|--------|------------------------------|
+| Baseline embeddings | 5.7% |
+| Contextual Embeddings | 3.7% (**-35%**) |
+| Contextual Embeddings + BM25 | 2.9% (**-49%**) |
+
+### Official Sources
+
+- [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) - Anthropic (Sept 2024)
+- [Contextual Embeddings Cookbook](https://platform.claude.com/cookbook/capabilities-contextual-embeddings-guide) - Claude Developer
 
 ## Chunk Size Guidelines
 

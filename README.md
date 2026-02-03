@@ -48,7 +48,8 @@ Claude will:
 skill-chunk-md/
 ├── SKILL.md                    # Main skill instructions
 ├── scripts/
-│   └── validate_chunks.py      # Validate chunk syntax
+│   ├── validate_chunks.py      # Validate chunk syntax
+│   └── contextualize_chunks.py # Generate contextual descriptions (Anthropic method)
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
 │   └── semantic-chunking.md    # Chunking methodology
@@ -56,6 +57,29 @@ skill-chunk-md/
     ├── before.md               # Sample: plain Markdown
     └── after.md                # Sample: CtxFST format
 ```
+
+---
+
+## Anthropic Contextual Retrieval
+
+This skill implements [Anthropic's Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) method, which improves RAG retrieval accuracy by **up to 49%**.
+
+### The Process
+
+1. **Semantic Chunking** — Divide documents at meaning boundaries using `<Chunk>` tags
+2. **Context Generation** — Use Claude to generate 50-100 token context for each chunk
+3. **Context Prepending** — Combine context + original chunk for embedding/BM25
+
+### Generate Contextual Descriptions
+
+```bash
+# Requires: pip install anthropic
+# Requires: export ANTHROPIC_API_KEY="your-key"
+
+python scripts/contextualize_chunks.py your-document.md
+```
+
+Uses prompt caching to reduce costs (~$1.02 per million tokens).
 
 ---
 

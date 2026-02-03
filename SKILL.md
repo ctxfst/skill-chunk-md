@@ -1,6 +1,6 @@
 ---
 name: skill-chunk-md
-description: "Convert Markdown documents into CtxFST format using Semantic Chunking and Chunk tags. Use this skill when (1) transforming plain Markdown into semantically chunked documents, (2) adding Chunk tags to improve LLM retrieval accuracy, (3) preparing documents for Contextual BM25/Embeddings pipelines, or (4) creating skill documents with proper chunk boundaries."
+description: "Convert Markdown documents into CtxFST format using Semantic Chunking, Chunk tags, and Anthropic Contextual Retrieval. Use this skill when (1) transforming plain Markdown into semantically chunked documents, (2) adding Chunk tags to improve LLM retrieval accuracy, (3) generating LLM-powered contextual descriptions for each chunk, (4) preparing documents for Contextual BM25/Embeddings pipelines, or (5) creating skill documents with proper chunk boundaries."
 ---
 
 # Skill Chunk MD
@@ -65,6 +65,52 @@ Apply `<Chunk>` tags:
 - Proper exception handling in async contexts
 </Chunk>
 ```
+
+### Step 5: Generate Contextual Descriptions (Anthropic Method)
+
+Use Claude to generate a **50-100 token context** for each chunk that situates it within the full document. This is the key step from [Anthropic's Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval).
+
+**Official Prompt Template:**
+
+```
+<document>
+{{WHOLE_DOCUMENT}}
+</document>
+Here is the chunk we want to situate within the whole document
+<chunk>
+{{CHUNK_CONTENT}}
+</chunk>
+Please give a short succinct context to situate this chunk within 
+the overall document for the purposes of improving search retrieval 
+of the chunk. Answer only with the succinct context and nothing else.
+```
+
+**Example transformation:**
+
+| Before | After |
+|--------|-------|
+| `"The company's revenue grew by 3% over the previous quarter."` | `"This chunk is from an SEC filing on ACME corp's performance in Q2 2023; the previous quarter's revenue was $314 million. The company's revenue grew by 3% over the previous quarter."` |
+
+Use `scripts/contextualize_chunks.py` for automated context generation with prompt caching.
+
+### Step 6: Prepend Context to Chunks
+
+Combine the generated context with the original chunk content:
+
+```markdown
+<Chunk id="skill:python-async">
+<!-- Context: This section describes the author's Python async programming 
+skills, focusing on patterns used in their high-concurrency web services 
+and data pipeline projects at Company X. -->
+
+## Python Async Programming
+...
+</Chunk>
+```
+
+The contextualized content is then used for:
+- **Contextual Embeddings** - Embedding the chunk + context together
+- **Contextual BM25** - Indexing with improved keyword coverage
 
 ## Chunk Syntax Reference
 
