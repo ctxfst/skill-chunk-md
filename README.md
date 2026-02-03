@@ -200,7 +200,26 @@ Checks for:
 
 ## Diagnostics
 
-Analyze chunk quality before RAG ingestion:
+Analyze chunk quality before RAG ingestion. You can use **conversation** or **CLI**.
+
+### Method 1: Ask Claude (Recommended)
+
+Just paste your document and ask:
+
+```
+Diagnose this document's chunk quality and give me suggestions
+```
+
+Claude will analyze according to the skill and respond with issues + suggestions. No API key needed — Claude does the analysis directly.
+
+**Intervention levels:**
+- **Level 1 (diagnose)**: "Check chunk quality and mark problems"
+- **Level 2 (suggest)**: "Diagnose and give me modification suggestions"
+- **Level 3 (fix)**: "Auto-fix chunk issues and let me review"
+
+### Method 2: CLI Script (Batch Processing)
+
+For automation or processing multiple files:
 
 ```bash
 # Level 1: Identify problems
@@ -216,11 +235,16 @@ python3 scripts/diagnose_chunks.py doc.md --level fix
 python3 scripts/diagnose_chunks.py doc.md --level suggest --json
 ```
 
-**Checks for:**
-- 🔄 Semantic similarity between chunk pairs
-- 📝 Context quality (length, specificity, distinctiveness)
-- 🏷️ Tag overlap and consistency
-- 🆔 ID naming conventions
+> **Note**: The CLI script uses static analysis only. No API key required.
+
+### What Gets Checked
+
+| Check | What It Detects |
+|-------|-----------------|
+| 🔄 Semantic similarity | Chunk pairs that may confuse retrieval |
+| 📝 Context quality | Too short, too vague, or just repeating content |
+| 🏷️ Tag overlap | Identical tags across chunks, reducing filter effectiveness |
+| 🆔 ID naming | Inconsistent category prefixes, invalid format |
 
 ---
 
