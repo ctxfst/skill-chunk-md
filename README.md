@@ -4,7 +4,7 @@
 
 **Frontmatter format for LanceDB / LightRAG / HippoRAG compatibility** 🚀
 
-A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter.
+A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter. CtxFST is **entity + chunk**: entities are the semantic index (the map); chunks are the content carrier (the passages you retrieve). Both layers are part of the format.
 
 ### Why chunk your Markdown?
 
@@ -17,9 +17,14 @@ I know Python, React, and Docker.
 
 # After
 ---
+entities:
+  - id: entity:python
+    name: Python
+    type: skill
 chunks:
   - id: skill:python
     tags: [Python, Backend]
+    entities: [entity:python]
     context: "Author's Python skills for data pipelines and APIs"
 ---
 
@@ -46,8 +51,9 @@ Convert this document into CtxFST format with proper <Chunk> tags and YAML front
 
 Claude will:
 - Analyze semantic boundaries
+- Extract and normalize canonical entities
 - Generate meaningful chunk IDs
-- Create YAML frontmatter with context and tags
+- Create YAML frontmatter with context, tags, and entity links
 - Wrap content in `<Chunk>` tags
 
 ---
@@ -63,7 +69,8 @@ skill-chunk-md/
 │   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
-│   └── semantic-chunking.md    # Chunking methodology
+│   ├── entity-format.md        # Entity schema and field reference
+│   └── semantic-chunking.md     # Chunking methodology
 └── assets/examples/
     ├── before.md               # Sample: plain Markdown
     └── after.md                # Sample: CtxFST format
@@ -77,9 +84,19 @@ CtxFST uses **YAML frontmatter** to store chunk metadata separately from content
 
 ```yaml
 ---
+entities:
+  - id: entity:python
+    name: Python
+    type: skill
+    aliases: [python3]
+  - id: entity:go
+    name: Go
+    type: skill
+    aliases: [golang]
 chunks:
   - id: skill:python
     tags: [Python, Backend, API]
+    entities: [entity:python]
     context: "Author's Python skills for REST APIs and data pipelines"
     created_at: "2026-02-03"
     version: 1
@@ -88,6 +105,7 @@ chunks:
     dependencies: []
   - id: skill:go
     tags: [Go, Microservices]
+    entities: [entity:go]
     context: "Go programming for high-performance services"
     created_at: "2026-01-15"
     version: 1
@@ -96,10 +114,26 @@ chunks:
 
 ### Core Fields
 
+#### Document Level
+| Field | Type | Required | Purpose |
+|-------|------|----------|---------|
+| `entities` | array | No | Canonical entity catalog for the document |
+| `chunks` | array | ✅ Yes | Catalog of chunks and their metadata |
+
+#### Entity Level (`entities[]`)
+| Field | Type | Required | Purpose |
+|-------|------|----------|---------|
+| `id` | string | ✅ Yes | Unique entity identifier (e.g., `entity:python`) |
+| `name` | string | ✅ Yes | Canonical human-readable name |
+| `type` | string | ✅ Yes | Entity classification (skill, tool, concept, etc.) |
+| `aliases` | array | No | Alternative names or acronyms |
+
+#### Chunk Level (`chunks[]`)
 | Field | Type | Required | Purpose |
 |-------|------|----------|---------|
 | `id` | string | ✅ Yes | Unique chunk identifier (category:topic) |
-| `tags` | array | No | Classification tags for RAG filtering |
+| `tags` | array | No | Broad classification tags for RAG filtering |
+| `entities` | array | No | List of entity IDs discussed in this chunk |
 | `context` | string | No | 50-100 token description of chunk content |
 
 ### 2026 RAG Extension Fields
@@ -152,27 +186,37 @@ Use the included script to export chunks for vector database ingestion:
 python3 scripts/export_to_lancedb.py your-document.md --output chunks.json
 ```
 
-Output format (with 2026 RAG extensions):
+Output format (with 2026 RAG extensions and entities):
 ```json
-[
-  {
-    "id": "skill:python",
-    "context": "Author's Python skills...",
-    "content": "## Python\n...",
-    "tags": ["Python", "Backend"],
-    "created_at": "2026-02-03",
-    "version": 1,
-    "type": "text",
-    "priority": "high",
-    "dependencies": [],
-    "source": "path/to/file.md"
-  }
-]
+{
+  "entities": [
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "skill"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "skill:python",
+      "context": "Author's Python skills...",
+      "content": "## Python\n...",
+      "tags": ["Python", "Backend"],
+      "entities": ["entity:python"],
+      "created_at": "2026-02-03",
+      "version": 1,
+      "type": "text",
+      "priority": "high",
+      "dependencies": [],
+      "source": "path/to/file.md"
+    }
+  ]
+}
 ```
 
 Use this JSON directly with:
 - **LanceDB** — Import as table with structured columns
-- **LightRAG** — Build knowledge graph from tags & dependencies
+- **LightRAG / HippoRAG** — Build entity embedding graphs from `entities` and chunk links
 - **LlamaIndex** — Hybrid retrieval with priority-based reranking
 - **LangGraph** — Agent-directed chunk selection via priority field
 
@@ -187,7 +231,9 @@ python3 scripts/validate_chunks.py your-document.md
 ```
 
 Checks for:
-- ✅ Frontmatter chunk definitions exist
+- ✅ Frontmatter contains `chunks` and optionally `entities` catalogs
+- ✅ Entity definitions are valid (id, name, type) and unique
+- ✅ Chunk `entities` references match document entities
 - ✅ All `<Chunk>` IDs match frontmatter
 - ✅ Unique chunk IDs
 - ✅ Properly closed tags
@@ -245,6 +291,9 @@ python3 scripts/diagnose_chunks.py doc.md --level suggest --json
 | 📝 Context quality | Too short, too vague, or just repeating content |
 | 🏷️ Tag overlap | Identical tags across chunks, reducing filter effectiveness |
 | 🆔 ID naming | Inconsistent category prefixes, invalid format |
+| 👻 Entity noise | Generic or low-value entities |
+| 👯 Entity duplication | Aliases that should be merged into one canonical node |
+| 🔗 Entity linking | Chunks with missing, excessive, or irrelevant entity links |
 
 ---
 

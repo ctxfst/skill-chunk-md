@@ -25,9 +25,14 @@ Content here...
 ```yaml
 ---
 title: string              # Optional: Document title
+entities:                  # Optional: Canonical entity catalog
+  - id: string             # Required: Unique entity identifier
+    name: string           # Required: Human-readable name
+    type: string           # Required: Entity classification
 chunks:                    # Required: Array of chunk definitions
   - id: string             # Required: Unique chunk identifier
     tags: [string, ...]    # Optional: Semantic tags for filtering
+    entities: [string, ...]# Optional: Linked entity IDs
     context: string        # Required: 50-100 token context description
 ---
 ```

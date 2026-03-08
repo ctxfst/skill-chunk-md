@@ -172,6 +172,39 @@ def validate_file(filepath: Path) -> list[ValidationError]:
     fm_chunks = {}
     all_chunk_ids = set()
 
+    doc_entity_ids = set()
+    if frontmatter and 'entities' in frontmatter:
+        if not isinstance(frontmatter['entities'], list):
+            errors.append(ValidationError(
+                2,
+                "'entities' must be a list",
+                'error'
+            ))
+        else:
+            for i, entity_def in enumerate(frontmatter['entities']):
+                line_idx = i + 2  # Approximate
+                if not isinstance(entity_def, dict):
+                    errors.append(ValidationError(line_idx, f"Entity {i+1} must be an object", 'error'))
+                    continue
+                
+                if 'id' not in entity_def or 'name' not in entity_def or 'type' not in entity_def:
+                    errors.append(ValidationError(
+                        line_idx,
+                        f"Entity definition {i+1} missing required field ('id', 'name', 'type')",
+                        'error'
+                    ))
+                    continue
+                
+                ent_id = entity_def['id']
+                if ent_id in doc_entity_ids:
+                    errors.append(ValidationError(
+                        line_idx,
+                        f"Duplicate entity ID '{ent_id}' in frontmatter",
+                        'error'
+                    ))
+                else:
+                    doc_entity_ids.add(ent_id)
+
     if frontmatter and 'chunks' in frontmatter:
         for i, chunk_def in enumerate(frontmatter['chunks']):
             if 'id' not in chunk_def:
@@ -202,6 +235,29 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                     f"Chunk '{chunk_id}' missing 'context' field",
                     'warning'
                 ))
+
+            # Validate chunk entities
+            if 'entities' in chunk_def:
+                if not isinstance(chunk_def['entities'], list):
+                    errors.append(ValidationError(
+                        line_num,
+                        f"Chunk '{chunk_id}': 'entities' must be a list of entity IDs",
+                        'error'
+                    ))
+                else:
+                    for ent_ref in chunk_def['entities']:
+                        if not isinstance(ent_ref, str):
+                            errors.append(ValidationError(
+                                line_num,
+                                f"Chunk '{chunk_id}': entity reference must be a string ID, got {type(ent_ref).__name__}",
+                                'error'
+                            ))
+                        elif ent_ref not in doc_entity_ids:
+                            errors.append(ValidationError(
+                                line_num,
+                                f"Chunk '{chunk_id}': entity reference '{ent_ref}' not found in document entities",
+                                'error'
+                            ))
 
             # Validate 2026 RAG extension fields
             errors.extend(validate_temporal_fields(chunk_def, chunk_id, line_num))

@@ -1,37 +1,63 @@
 ---
 name: skill-chunk-md
-description: "Convert Markdown documents into CtxFST format using Semantic Chunking, Chunk tags, and YAML Frontmatter. Use this skill when (1) transforming plain Markdown into semantically chunked documents, (2) adding Chunk tags to improve LLM retrieval accuracy, (3) preparing documents for LanceDB/LightRAG/HippoRAG pipelines, or (4) creating skill documents with proper chunk boundaries."
+description: "Transform Markdown into CtxFST documents with semantic chunks, extracted entities, and chunk-to-entity links. Use when converting notes into GraphRAG-ready Markdown, adding `<Chunk>` tags and YAML frontmatter, extracting canonical skills/tools/architectures from text, or preparing documents for LanceDB, LightRAG, and HippoRAG pipelines."
 ---
 
 # Skill Chunk MD
 
-Transform Markdown documents into CtxFST format with semantic `<Chunk>` tags and structured frontmatter for improved LLM retrieval.
+Transform Markdown into CtxFST documents with semantic `<Chunk>` tags, structured frontmatter, and an explicit entity layer.
 
-## Overview
+## Goal
 
-This skill guides Claude to convert plain Markdown documents into semantically chunked documents using the CtxFST standard. The combination of **YAML frontmatter** and `<Chunk>` tags enables precise retrieval in RAG pipelines, including vector databases (LanceDB) and graph-based systems (LightRAG, HippoRAG).
+Use this skill to produce documents that support both:
 
-## Document Format
+1. **Chunk retrieval** for detailed context
+2. **Entity retrieval** for navigation, graph expansion, and related-concept discovery
 
-CtxFST documents have two parts:
+Do not only split text. Also extract the important domain entities, normalize them, and link each chunk to the entities it actually discusses.
 
-1. **YAML Frontmatter** — Structured metadata with chunk IDs, tags, and context
-2. **Content Body** — `<Chunk>` tags wrapping the actual content
+## Target Format
+
+CtxFST documents should contain:
+
+1. **YAML frontmatter**
+2. **Document-level `entities` catalog**
+3. **Document-level `chunks` catalog**
+4. **Body content wrapped in `<Chunk>` tags**
 
 ```markdown
 ---
 title: "Document Title"
+entities:
+  - id: entity:python
+    name: Python
+    type: skill
+    aliases: [python3]
+  - id: entity:fastapi
+    name: FastAPI
+    type: framework
+    aliases: []
 chunks:
-  - id: skill:python
-    tags: [Python, Backend]
-    context: "Author's Python programming skills for APIs and data pipelines"
+  - id: skill:python-api
+    tags: [Python, Backend, API]
+    entities: [entity:python, entity:fastapi]
+    context: "Python backend work focused on APIs built with FastAPI"
 ---
 
-<Chunk id="skill:python">
-## Python
-I use Python for building REST APIs and data pipelines...
+<Chunk id="skill:python-api">
+## Python API Work
+I use Python and FastAPI to build REST APIs...
 </Chunk>
 ```
+
+## Core Principle
+
+Use **chunks** as the content carrier and **entities** as the semantic index.
+
+- **Chunks** answer: "What exact passage should be retrieved?"
+- **Entities** answer: "What concept does this passage belong to?"
+
+Tags are useful for broad filtering. Entities are the canonical graph nodes.
 
 ## Core Workflow
 
@@ -39,174 +65,356 @@ I use Python for building REST APIs and data pipelines...
 
 Identify semantic boundaries in the source Markdown:
 
-- **Headers** (H2, H3) typically mark topic boundaries
-- **Thematic shifts** within sections
-- **Lists of related items** that form logical units
-- **Code blocks with explanations**
+- Headers (`##`, `###`) that introduce a new topic
+- Thematic shifts within long sections
+- Lists that describe one coherent concept
+- Code blocks plus their explanation when they should stay together
 
-### Step 2: Determine Chunk Granularity
+### Step 2: Determine Chunk Boundaries
 
 Each chunk should be:
 
-- **Self-contained**: Understandable without surrounding context
-- **Focused**: One main concept or topic per chunk
-- **Retrievable**: Useful when found via search
+- **Self-contained**: understandable when retrieved alone
+- **Focused**: centered on one main topic or closely related subtopic
+- **Retrievable**: useful as a standalone answer fragment
 
-**Size guidelines:**
-- Minimum: ~100 tokens (avoid over-fragmentation)
-- Optimal: 300-800 tokens
-- Maximum: ~1500 tokens (split if larger)
+Size guidelines:
 
-### Step 3: Generate Chunk IDs
+- Minimum: ~100 tokens
+- Target: 300-800 tokens
+- Maximum: ~1500 tokens
+
+Split oversized chunks when the topic changes. Merge undersized chunks when they cannot stand on their own.
+
+### Step 3: Extract Candidate Entities
+
+Before writing frontmatter, extract the domain-specific entities from the document.
+
+Look for:
+
+- Hard skills
+- Tools and libraries
+- Frameworks
+- Platforms
+- Databases
+- Protocols and standards
+- Architectures and design patterns
+- Named products or systems
+
+Do not promote every noun into an entity. Prefer terms that would make sense as nodes in a knowledge graph.
+
+### Step 4: Normalize and Deduplicate Entities
+
+Convert raw mentions into canonical entities.
+
+Normalization rules:
+
+- Use the most recognizable canonical name: `PostgreSQL`, not `postgres`
+- Merge aliases into one entity: `JS` -> `JavaScript`, `K8s` -> `Kubernetes`
+- Keep acronym + full name only when both are genuinely used as aliases
+- Remove generic terms like `system`, `project`, `tool`, `computer`, `work`
+- Remove incidental mentions that are not semantically important to retrieval
+
+If unsure whether something is an entity, ask:
+
+1. Would this help navigate related knowledge?
+2. Would this deserve its own node in a skills graph?
+3. Would retrieving chunks by this term produce meaningful results?
+
+If the answer is no, keep it out of the entity list.
+
+### Step 5: Generate Entity IDs
+
+Use the format: `entity:{canonical-name}`
+
+Examples:
+
+- `entity:python`
+- `entity:fastapi`
+- `entity:postgresql`
+- `entity:event-driven-architecture`
+
+IDs must be lowercase kebab-case after the prefix.
+
+### Step 6: Generate Chunk IDs
 
 Use the format: `{category}:{topic}[-{subtopic}]`
 
 | Category | Use Case | Examples |
 |----------|----------|----------|
 | `skill:` | Technical skills | `skill:python`, `skill:react-hooks` |
-| `about:` | Personal/org info | `about:background`, `about:mission` |
+| `about:` | Personal or org info | `about:background`, `about:mission` |
 | `project:` | Project descriptions | `project:graphrag`, `project:api-v2` |
-| `principle:` | Guidelines/values | `principle:security-first` |
+| `principle:` | Guidelines and values | `principle:security-first` |
 | `workflow:` | Processes | `workflow:deployment`, `workflow:review` |
 | `reference:` | Reference material | `reference:api-auth`, `reference:schema` |
 
-### Step 4: Create YAML Frontmatter
+### Step 7: Create YAML Frontmatter
 
-Define all chunks in the frontmatter with context and tags:
+Define both `entities` and `chunks`.
 
 ```yaml
 ---
 title: "My Skills Document"
+entities:
+  - id: entity:python
+    name: Python
+    type: skill
+    aliases: [python3]
+  - id: entity:fastapi
+    name: FastAPI
+    type: framework
+    aliases: []
+  - id: entity:pandas
+    name: Pandas
+    type: library
+    aliases: []
 chunks:
-  - id: skill:python
+  - id: skill:python-api
     tags: [Python, Backend, API]
-    context: "Author's Python skills for REST APIs and data pipelines using FastAPI"
-    created_at: "2026-02-03"
+    entities: [entity:python, entity:fastapi]
+    context: "Python backend skills focused on REST APIs and service implementation"
+    created_at: "2026-03-08"
     version: 1
     type: text
     priority: high
     dependencies: []
-  - id: skill:go
-    tags: [Go, Microservices]
-    context: "Go programming experience for high-performance microservices"
-    created_at: "2026-02-01"
+  - id: skill:python-data
+    tags: [Python, Data]
+    entities: [entity:python, entity:pandas]
+    context: "Python data-processing skills focused on tabular analysis and ETL work"
+    created_at: "2026-03-08"
     version: 1
     type: text
+    priority: medium
+    dependencies: []
 ---
 ```
 
-**Context generation guidelines:**
-- 50-100 tokens describing the chunk's role in the document
-- Include key entities and relationships
-- Help disambiguate similar content across documents
+### Step 8: Link Chunks to Entities
 
-**New Temporal & Agentic Fields (2026 RAG Support):**
+Every chunk should list the canonical entities it actually discusses.
 
-| Field | Required | Format | Purpose |
-|-------|----------|--------|---------|
-| `created_at` | No | ISO date (YYYY-MM-DD) | Document creation for temporal RAG |
-| `version` | No | Integer | Content versioning for updates |
-| `type` | No | text, image, video, audio | Multi-modal support (default: text) |
-| `priority` | No | high, medium, low | Agent-directed retrieval hints |
-| `dependencies` | No | Array of IDs | List prerequisite chunks for context |
+Linking rules:
 
-### Step 5: Wrap Content with Chunk Tags
+- Include entities that are central to the chunk
+- Skip entities that appear only in passing
+- Prefer 1-6 entities per chunk
+- Do not copy all document entities into every chunk
+- If two chunks mention the same entity for different reasons, differentiate that in `context`
 
-Apply `<Chunk>` tags matching the frontmatter IDs:
+### Step 9: Wrap Content with `<Chunk>` Tags
+
+Apply `<Chunk>` tags that match the frontmatter chunk IDs.
 
 ```markdown
-<Chunk id="skill:python">
-## Python
+<Chunk id="skill:python-api">
+## Python API Work
 
-**Proficiency**: Advanced
-
-I use Python daily for building data pipelines and REST APIs.
-
-### Key Patterns
-- async/await for I/O-bound operations
-- asyncio.gather for parallel execution
+I use Python and FastAPI to build REST APIs and internal services.
 </Chunk>
 ```
 
-### Step 6: Validate and Export
+### Step 10: Validate and Export
 
 Use the included scripts:
 
 ```bash
-# Validate chunk structure
 python3 scripts/validate_chunks.py document.md
-
-# Export for LanceDB
 python3 scripts/export_to_lancedb.py document.md --output chunks.json
+python3 scripts/diagnose_chunks.py document.md --level suggest
 ```
 
-## Why Frontmatter?
+## Entity Rules
 
-| Approach | Storage | Flexibility | Best For |
-|----------|---------|-------------|----------|
-| **Anthropic Original** | Context merged into content | Low | Simple RAG |
-| **Frontmatter** | Context separated as metadata | High | LanceDB, LightRAG |
+### What counts as an entity
 
-### Benefits for Vector DBs (LanceDB)
+Prefer entities that are:
 
-```python
-# Frontmatter enables structured columns
-table.add([{
-    "id": chunk.id,
-    "context": chunk.context,    # Separate column
-    "content": chunk.content,    # Separate column
-    "tags": chunk.tags,          # Filterable
-    "vector": embed(chunk.context + chunk.content)
-}])
+- Specific
+- reusable across documents
+- meaningful as graph nodes
+- useful for retrieval or expansion
+
+Good examples:
+
+- `Python`
+- `FastAPI`
+- `Docker`
+- `Kubernetes`
+- `CI/CD`
+- `Event-Driven Architecture`
+- `JWT`
+
+Usually not entities:
+
+- `experience`
+- `technology`
+- `feature`
+- `application`
+- `computer`
+- `problem`
+- `task`
+
+### Entity types
+
+Use one of these default types:
+
+- `skill`
+- `tool`
+- `library`
+- `framework`
+- `platform`
+- `database`
+- `architecture`
+- `protocol`
+- `concept`
+- `domain`
+- `product`
+
+If none fit well, use `concept` instead of inventing many custom types.
+
+### Tags vs entities
+
+Use **tags** for:
+
+- broad classification
+- filtering
+- document organization
+
+Use **entities** for:
+
+- canonical concept identity
+- chunk-to-graph linking
+- similarity and traversal workflows
+- cross-document concept reuse
+
+Example:
+
+- Tag: `Backend`
+- Entity: `entity:fastapi`
+
+## Frontmatter Schema
+
+### Entity schema
+
+```yaml
+entities:
+  - id: entity:fastapi
+    name: FastAPI
+    type: framework
+    aliases: []
 ```
 
-### Benefits for Graph RAG (LightRAG/HippoRAG)
+Required fields:
 
-- **Tags** become graph nodes and edges
-- **Context** helps entity extraction
-- **Structured IDs** enable cross-document linking
+- `id`
+- `name`
+- `type`
 
-## Chunk Syntax Rules
+Optional field:
 
-1. **ID is required** — Must match a frontmatter entry
-2. **IDs use kebab-case** — `skill:my-topic` not `skill:myTopic`
-3. **No nested chunks** — Chunks cannot contain other chunks
-4. **Preserve Markdown** — All formatting works inside chunks
+- `aliases`
+
+### Chunk schema
+
+```yaml
+chunks:
+  - id: skill:python-api
+    tags: [Python, Backend, API]
+    entities: [entity:python, entity:fastapi]
+    context: "Python backend skills focused on REST APIs built with FastAPI"
+    created_at: "2026-03-08"
+    version: 1
+    type: text
+    priority: high
+    dependencies: []
+```
+
+Recommended fields:
+
+- `id`
+- `entities`
+- `context`
+
+Optional fields:
+
+- `tags`
+- `created_at`
+- `version`
+- `type`
+- `priority`
+- `dependencies`
+
+## Context Writing Rules
+
+Each chunk `context` should:
+
+- explain the chunk's role in the document
+- mention the distinguishing use case
+- reflect the linked entities naturally
+- avoid copying the first sentence verbatim
+
+Good:
+
+- `"Python backend skills focused on REST APIs, async services, and FastAPI-based implementation"`
+
+Weak:
+
+- `"This chunk talks about Python"`
 
 ## Example Transformation
 
-### Before (Plain Markdown)
+### Before
 
 ```markdown
 ## About Me
 
-I'm a backend engineer with 8 years of experience...
+I'm a backend engineer focused on APIs and distributed systems.
 
 ## Python
 
-I use Python for data pipelines and APIs...
+I use Python for REST APIs and internal tools.
 
 ### Key Libraries
 - FastAPI for web services
 - Pandas for data processing
 ```
 
-### After (CtxFST Format)
+### After
 
 ```markdown
 ---
+title: "Profile"
+entities:
+  - id: entity:python
+    name: Python
+    type: skill
+    aliases: [python3]
+  - id: entity:fastapi
+    name: FastAPI
+    type: framework
+    aliases: []
+  - id: entity:pandas
+    name: Pandas
+    type: library
+    aliases: []
 chunks:
   - id: about:background
     tags: [About, Experience]
-    context: "Author's professional background as a backend engineer"
-    created_at: "2026-01-15"
+    entities: []
+    context: "Professional background as a backend engineer working on APIs and distributed systems"
+    created_at: "2026-03-08"
     version: 1
+    type: text
     priority: medium
+    dependencies: []
   - id: skill:python
     tags: [Python, Backend]
-    context: "Python programming skills for APIs and data processing"
-    created_at: "2026-01-15"
-    version: 2
+    entities: [entity:python, entity:fastapi, entity:pandas]
+    context: "Python skills for API development, service work, and data processing"
+    created_at: "2026-03-08"
+    version: 1
     type: text
     priority: high
     dependencies: [about:background]
@@ -215,15 +423,13 @@ chunks:
 <Chunk id="about:background">
 ## About Me
 
-I'm a backend engineer with 8 years of experience...
+I'm a backend engineer focused on APIs and distributed systems.
 </Chunk>
-
----
 
 <Chunk id="skill:python">
 ## Python
 
-I use Python for data pipelines and APIs...
+I use Python for REST APIs and internal tools.
 
 ### Key Libraries
 - FastAPI for web services
@@ -231,140 +437,87 @@ I use Python for data pipelines and APIs...
 </Chunk>
 ```
 
-## 2026 RAG Extensions
+## GraphRAG Guidance
 
-The following optional fields enable advanced RAG use cases:
+When preparing documents for graph-oriented retrieval:
 
-### Temporal RAG (`created_at`, `version`)
-```yaml
-chunks:
-  - id: skill:llm-prompt
-    created_at: "2026-02-03"  # ISO date for temporal indexing
-    version: 3                 # Track content updates over time
-```
-Use in workflows that need **point-in-time retrieval** (e.g., retrieving docs from a specific date) or **version control** of knowledge bases.
+- Treat `entities` as the canonical node inventory
+- Treat chunk `entities` arrays as chunk-to-entity edges
+- Treat `dependencies` as chunk-to-chunk prerequisite links
+- Keep tags broad and entities precise
 
-### Agentic RAG (`priority`, `dependencies`)
-```yaml
-chunks:
-  - id: api:auth
-    priority: high             # Hints for agent retrieval ordering
-    dependencies: [api:setup]  # Prerequisite knowledge for agents
-```
-Helps AI agents understand **which chunks to retrieve first** and **what context is needed before answering**.
+Do not rely on tags alone when the goal is entity-based navigation.
 
-### Multi-Modal RAG (`type`)
-```yaml
-chunks:
-  - id: diagram:architecture
-    type: image                # text, image, video, audio
-    content_path: "./arch.png" # Path to media file (relative to doc)
-```
-Enables structured retrieval of **non-text content** alongside text (prepare for LightRAG, Milvus integrations).
+## When Not to Extract Many Entities
 
-## When NOT to Chunk
+Be conservative when:
 
-- **Very short documents** (<500 tokens total) — chunking adds overhead
-- **Highly interconnected content** — if every paragraph references others
-- **Code-only files** — use code comments instead
+- the document is very short
+- the document is mostly narrative with few domain terms
+- the same concept is repeated with no useful distinctions
+- the source is noisy and entity extraction would create junk nodes
+
+In these cases, return a smaller, cleaner entity set.
 
 ## Validation
 
-After chunking, verify:
+After conversion, verify:
 
-1. All `<Chunk>` tags have matching frontmatter entries
-2. All IDs are unique
-3. No chunks are nested
-4. Each chunk is self-contained
+1. Every `<Chunk>` ID exists in `chunks`
+2. Every `chunks[].entities` reference exists in `entities`
+3. Entity IDs are unique and canonical
+4. Chunk IDs are unique
+5. No nested chunks exist
+6. Context fields differentiate similar chunks
+7. Generic or noisy entities have been removed
 
 ```bash
 python3 scripts/validate_chunks.py path/to/document.md
 ```
 
-## Chunk Diagnostics
+## Diagnostics
 
-Before exporting to RAG systems, diagnose chunk quality to catch retrieval issues.
+When the user asks to diagnose, review both chunk quality and entity quality.
 
-### Diagnostic Levels
+### Check categories
 
-| Level | Command | What You Get |
-|-------|---------|--------------|
-| **diagnose** | `--level diagnose` | List problems with explanations |
-| **suggest** | `--level suggest` | Problems + concrete modification suggestions |
-| **fix** | `--level fix` | Problems + suggestions + patched frontmatter |
+1. **Chunk similarity**
+   - Flag chunks that are too similar to distinguish during retrieval
+2. **Context quality**
+   - Flag vague, repetitive, or overly short context fields
+3. **Tag overlap**
+   - Flag tags that appear everywhere and no longer help filtering
+4. **Entity noise**
+   - Flag generic or low-value entities
+5. **Entity duplication**
+   - Flag aliases that should be merged into one canonical node
+6. **Chunk-to-entity linking**
+   - Flag chunks with missing, excessive, or irrelevant entity links
 
-```bash
-python3 scripts/diagnose_chunks.py document.md --level suggest
+### Diagnostic prompts
+
+**Diagnose only:**
+
+```text
+Check this document for chunk and entity quality issues
 ```
 
-### Check Categories
+**Diagnose with suggestions:**
 
-When the user asks to "diagnose", "check quality", or "review chunks", evaluate:
-
-#### 1. Semantic Similarity
-Compare each pair of chunks for keyword overlap. If two chunks share >60% of their vocabulary:
-- **Problem**: Retrieval may return both when only one is relevant
-- **Fix**: Emphasize differences in context — different use cases, examples, or scope
-
-#### 2. Context Quality
-Check each context field:
-- **Length**: Should be 12-30 words (too short = vague, too long = verbose)
-- **Specificity**: Should not just repeat the content's opening
-- **Distinctiveness**: Should explain what makes this chunk different
-
-#### 3. Tag Overlap
-Analyze tag distribution:
-- **Ubiquitous tags**: Tags in >80% of chunks reduce filtering effectiveness
-- **Identical tag sets**: Multiple chunks with same tags cannot be distinguished
-- **Fix**: Add specific sub-tags (e.g., `level:beginner`, `use:api`)
-
-#### 4. ID Naming
-Verify ID consistency:
-- **Format**: Must be `category:topic-name` (lowercase, kebab-case)
-- **Categories**: Same-type chunks should share category prefix
-- **Fix**: Rename to use consistent, meaningful prefixes
-
-### Diagnostic Prompts
-
-When the user requests diagnostics, respond according to the level:
-
-**Level 1 (diagnose):**
-```
-> Check this document's chunk quality
-
-Found 3 issues:
-
-⚠️ [skill:python, skill:go] - High semantic similarity (65%)
-   Shared keywords: programming, apis, services
-   
-⚠️ [about:background] - Context too short (5 words)
-
-ℹ️ [all chunks] - Tag "Backend" appears in 80% of chunks
+```text
+Diagnose this document's chunk and entity structure and suggest fixes
 ```
 
-**Level 2 (suggest):**
-```
-> Diagnose and suggest fixes
+**Fix-oriented review:**
 
-⚠️ [skill:python, skill:go] - High semantic similarity (65%)
-   💡 Differentiate: skill:python context should emphasize data/ETL,
-      skill:go context should emphasize performance/concurrency
-```
-
-**Level 3 (fix):**
-```
-> Auto-fix chunk issues
-
-⚠️ [about:background] - Context too short (5 words)
-   💡 Expand with job focus and years of experience
-   🔧 Suggested fix:
-   context: "Author's professional background as an 8-year backend engineer
-             specializing in distributed systems and performance optimization"
+```text
+Rewrite the frontmatter so the entities are canonical and each chunk links only to the right entities
 ```
 
 ## Resources
 
 - **Chunk syntax details**: See [references/chunk-syntax.md](references/chunk-syntax.md)
+- **Entity format reference**: See [references/entity-format.md](references/entity-format.md)
 - **Semantic chunking theory**: See [references/semantic-chunking.md](references/semantic-chunking.md)
 - **Examples**: See [assets/examples/](assets/examples/) for before/after samples
 

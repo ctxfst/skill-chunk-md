@@ -10,20 +10,30 @@ Usage:
     python export_to_lancedb.py <directory> [--output chunks.json]
 
 Output format:
-[
-  {
-    "id": "skill:python",
-    "context": "Author's Python skills...",
-    "content": "## Python\n...",
-    "tags": ["Python", "Backend"],
-    "created_at": "2026-02-03",
-    "version": 1,
-    "type": "text",
-    "priority": "high",
-    "dependencies": [],
-    "source": "path/to/file.md"
-  }
-]
+{
+  "entities": [
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "skill"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "skill:python",
+      "context": "Author's Python skills...",
+      "content": "## Python\n...",
+      "tags": ["Python", "Backend"],
+      "entities": ["entity:python"],
+      "created_at": "2026-02-03",
+      "version": 1,
+      "type": "text",
+      "priority": "high",
+      "dependencies": [],
+      "source": "path/to/file.md"
+    }
+  ]
+}
 """
 
 import sys
@@ -85,20 +95,20 @@ def extract_chunks(content: str) -> dict[str, str]:
     return chunks
 
 
-def process_file(filepath: Path) -> list[dict[str, Any]]:
-    """Process a single file and return list of chunk records."""
+def process_file(filepath: Path) -> dict[str, Any]:
+    """Process a single file and return chunks and entities."""
     content = filepath.read_text(encoding='utf-8')
     frontmatter, body = parse_frontmatter(content)
     
     if not frontmatter or 'chunks' not in frontmatter:
         print(f"Warning: {filepath} has no frontmatter chunks")
-        return []
+        return {}
     
     # Extract chunk contents from body
     body_chunks = extract_chunks(body)
     
     # Build output records
-    records = []
+    chunk_records = []
     for chunk_def in frontmatter['chunks']:
         chunk_id = chunk_def.get('id')
         if not chunk_id:
@@ -117,6 +127,10 @@ def process_file(filepath: Path) -> list[dict[str, Any]]:
             'source': str(filepath)
         }
 
+        # Add entities if present
+        if 'entities' in chunk_def:
+            record['entities'] = chunk_def['entities']
+
         # Add optional 2026 RAG extension fields
         if 'created_at' in chunk_def:
             record['created_at'] = chunk_def['created_at']
@@ -129,9 +143,11 @@ def process_file(filepath: Path) -> list[dict[str, Any]]:
         if 'dependencies' in chunk_def:
             record['dependencies'] = chunk_def['dependencies']
 
-        records.append(record)
+        chunk_records.append(record)
     
-    return records
+    entities = frontmatter.get('entities', [])
+    
+    return {'chunks': chunk_records, 'entities': entities}
 
 
 def main():
@@ -161,28 +177,46 @@ def main():
         print(f"Error: '{target}' not found")
         sys.exit(1)
     
-    all_records = []
+    all_chunks = []
+    all_entities = {}  # Deduplicate entities by ID
+    
     for filepath in files:
-        records = process_file(filepath)
-        all_records.extend(records)
-        print(f"📄 {filepath}: {len(records)} chunks")
+        result = process_file(filepath)
+        if not result:
+            continue
+        
+        chunks = result.get('chunks', [])
+        entities = result.get('entities', [])
+        
+        all_chunks.extend(chunks)
+        for ent in entities:
+            ent_id = ent.get('id')
+            if ent_id and ent_id not in all_entities:
+                all_entities[ent_id] = ent
+                
+        print(f"📄 {filepath}: {len(chunks)} chunks, {len(entities)} entities")
+    
+    output_data = {
+        "entities": list(all_entities.values()),
+        "chunks": all_chunks
+    }
     
     # Write output
     output_path = Path(args.output)
     with output_path.open('w', encoding='utf-8') as f:
         if args.pretty:
-            json.dump(all_records, f, indent=2, ensure_ascii=False)
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
         else:
-            json.dump(all_records, f, ensure_ascii=False)
+            json.dump(output_data, f, ensure_ascii=False)
     
     print(f"\n{'='*50}")
-    print(f"✅ Exported {len(all_records)} chunks to {output_path}")
+    print(f"✅ Exported {len(all_chunks)} chunks and {len(all_entities)} entities to {output_path}")
     
     # Show sample record
-    if all_records:
+    if all_chunks:
         print(f"\nSample record:")
-        sample = all_records[0].copy()
-        if len(sample['content']) > 100:
+        sample = all_chunks[0].copy()
+        if len(sample.get('content', '')) > 100:
             sample['content'] = sample['content'][:100] + '...'
         print(json.dumps(sample, indent=2, ensure_ascii=False))
 

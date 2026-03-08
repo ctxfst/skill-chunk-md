@@ -369,6 +369,101 @@ def check_id_naming(chunks: list[ChunkData]) -> list[Issue]:
     return issues
 
 
+def check_entity_noise(frontmatter: dict) -> list[Issue]:
+    """Flag generic or low-value entities."""
+    issues = []
+    entities = frontmatter.get('entities', [])
+    if not isinstance(entities, list):
+        return issues
+        
+    generic_terms = {'system', 'project', 'tool', 'computer', 'work', 'experience', 'technology', 'feature', 'application', 'problem', 'task'}
+    
+    for entity in entities:
+        if not isinstance(entity, dict):
+            continue
+            
+        ent_id = entity.get('id', '')
+        name = entity.get('name', '').lower()
+        
+        if name in generic_terms:
+            issues.append(Issue(
+                category='entity_noise',
+                severity='warning',
+                chunk_ids=[],
+                message=f"Entity '{ent_id}' uses a generic term ('{name}')",
+                suggestion="Remove generic entities and focus on domain-specific concepts, skills, or tools."
+            ))
+            
+    return issues
+
+
+def check_entity_duplication(frontmatter: dict) -> list[Issue]:
+    """Flag aliases that should be merged or duplicated names."""
+    issues = []
+    entities = frontmatter.get('entities', [])
+    if not isinstance(entities, list):
+        return issues
+        
+    names_seen = {}
+    
+    for entity in entities:
+        if not isinstance(entity, dict):
+            continue
+            
+        ent_id = entity.get('id', '')
+        name = entity.get('name', '').lower().strip()
+        
+        if not name:
+            continue
+            
+        if name in names_seen:
+            issues.append(Issue(
+                category='entity_duplication',
+                severity='warning',
+                chunk_ids=[],
+                message=f"Entity '{ent_id}' has a duplicate name '{name}' already used by '{names_seen[name]}'",
+                suggestion="Merge these entities into a single canonical node and use 'aliases' if needed."
+            ))
+        else:
+            names_seen[name] = ent_id
+            
+    return issues
+
+
+def check_entity_linking(chunks: list[ChunkData], frontmatter: dict) -> list[Issue]:
+    """Flag chunks with missing, excessive, or irrelevant entity links."""
+    issues = []
+    entities = frontmatter.get('entities', [])
+    valid_entity_ids = {e.get('id') for e in entities if isinstance(e, dict)} if isinstance(entities, list) else set()
+    
+    for chunk in chunks:
+        chunk_entities = chunk.raw_def.get('entities', [])
+        
+        if not isinstance(chunk_entities, list):
+            continue
+            
+        if len(chunk_entities) > 6:
+            issues.append(Issue(
+                category='entity_linking',
+                severity='warning',
+                chunk_ids=[chunk.id],
+                message=f"Chunk links to many entities ({len(chunk_entities)}). Recommend 1-6.",
+                suggestion="Only link the most central entities discussed in this chunk."
+            ))
+            
+        invalid_links = [e for e in chunk_entities if e not in valid_entity_ids]
+        if invalid_links:
+            issues.append(Issue(
+                category='entity_linking',
+                severity='error',
+                chunk_ids=[chunk.id],
+                message=f"Chunk links to undefined entities: {', '.join(invalid_links)}",
+                suggestion="Make sure all chunk entities are defined in the document-level entities catalog."
+            ))
+            
+    return issues
+
+
 # ============================================================================
 # Report Generation
 # ============================================================================
@@ -402,6 +497,7 @@ def run_diagnostics(filepath: Path) -> DiagnosticReport:
             )],
             stats={
                 'chunk_count': 0,
+                'entity_count': 0,
                 'avg_context_words': 0,
                 'unique_tags': 0,
                 'categories': [],
@@ -415,10 +511,14 @@ def run_diagnostics(filepath: Path) -> DiagnosticReport:
     issues.extend(check_context_quality(chunks))
     issues.extend(check_tag_overlap(chunks))
     issues.extend(check_id_naming(chunks))
+    issues.extend(check_entity_noise(frontmatter))
+    issues.extend(check_entity_duplication(frontmatter))
+    issues.extend(check_entity_linking(chunks, frontmatter))
 
     # Calculate stats
     stats = {
         'chunk_count': len(chunks),
+        'entity_count': len(frontmatter.get('entities', [])) if isinstance(frontmatter.get('entities'), list) else 0,
         'avg_context_words': sum(len(c.context.split()) for c in chunks) / len(chunks),
         'unique_tags': len(set(t for c in chunks for t in c.tags)),
         'categories': list(set(c.id.split(':')[0] for c in chunks if ':' in c.id)),
@@ -441,6 +541,7 @@ def format_text_report(report: DiagnosticReport, level: str) -> str:
     lines = []
     lines.append(f"\n📄 {report.filepath}")
     lines.append(f"   Chunks: {report.stats['chunk_count']} | "
+                 f"Entities: {report.stats['entity_count']} | "
                  f"Tags: {report.stats['unique_tags']} | "
                  f"Categories: {', '.join(report.stats['categories'])}")
     lines.append("")
@@ -459,6 +560,9 @@ def format_text_report(report: DiagnosticReport, level: str) -> str:
         'context_quality': '📝 Context Quality',
         'tag_overlap': '🏷️  Tag Overlap',
         'id_naming': '🆔 ID Naming',
+        'entity_noise': '👻 Entity Noise',
+        'entity_duplication': '👯 Entity Duplication',
+        'entity_linking': '🔗 Entity Linking',
         'structure': '📦 Structure'
     }
 
