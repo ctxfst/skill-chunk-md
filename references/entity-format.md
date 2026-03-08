@@ -171,7 +171,50 @@ chunks:
 
 ---
 
-## 9. Quick reference
+## 9. How entity similarity is produced
+
+The CtxFST entity schema does **not** store similarity scores directly. It stores the canonical node inventory that downstream systems use to compute an entity embedding graph.
+
+In other words:
+
+- `entities[]` defines **which nodes exist**
+- `chunks[].entities` defines **which chunks link to which nodes**
+- embeddings or graph algorithms define **which nodes are similar**
+
+Typical pipeline:
+
+```text
+entities[] + linked chunks
+  -> build a text representation for each entity
+  -> embed each representation
+  -> compare vectors with cosine similarity
+  -> create Entity -> Entity edges above a threshold
+```
+
+Two common strategies:
+
+1. **Metadata-only embedding**
+   - Embed `name`, `type`, and `aliases`
+2. **Chunk-enriched embedding**
+   - Embed `name`, `type`, and summaries from chunks linked through `chunks[].entities`
+
+Chunk-enriched representations usually produce better graph structure because they reflect how an entity is used in the source documents.
+
+---
+
+## 10. Translating to a Graph Database
+
+When loading CtxFST data into Neo4j, Lance Graph, or HelixDB, the schema maps directly to graph primitives:
+
+1. **`entities[]` items** 👉 become `(Node:Entity)`
+2. **`chunks[]` items** 👉 become `(Node:Chunk)`
+3. **`chunks[].entities`** 👉 become `(Chunk)-[:MENTIONS]->(Entity)` edges
+
+*(Similarity edges between entities are then computed by the graph DB or an external embedding pipeline).*
+
+---
+
+## 11. Quick reference
 
 | Item              | Rule |
 |-------------------|------|

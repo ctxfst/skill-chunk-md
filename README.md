@@ -224,6 +224,90 @@ Use this JSON directly with:
 
 ---
 
+## How Entity Similarity Is Produced
+
+The `entities` catalog does **not** directly store entity similarity. CtxFST first gives downstream systems a clean set of canonical graph nodes, and the similarity graph is computed afterward by embeddings or graph algorithms.
+
+Think of the format as three layers:
+
+1. **Entity catalog** — `entities[]` defines the canonical nodes
+2. **Chunk linkage** — `chunks[].entities` connects passages to those nodes
+3. **Similarity graph** — an embedding pipeline creates `Entity -> Entity` similarity edges
+
+### Minimal workflow
+
+```text
+Read entities[]
+  -> build an entity representation
+  -> embed each representation
+  -> compare vectors with cosine similarity
+  -> create edges for close entities
+```
+
+### Option A: Embed the entity metadata only
+
+```text
+name: FastAPI
+type: framework
+aliases: []
+```
+
+This is simple, but often too shallow for high-quality graph structure.
+
+### Option B: Embed the entity plus linked chunk context
+
+Use the chunks linked through `chunks[].entities` to build a richer representation:
+
+```text
+name: FastAPI
+type: framework
+mentioned in chunks:
+- Python backend skills focused on REST APIs and service implementation
+- Python skills for API development, service work, and data processing
+related entities:
+- Python
+- Pandas
+```
+
+This usually produces better similarity because it reflects how the concept is actually used in your documents, not just its name.
+
+### What CtxFST stores vs what the graph system computes
+
+| Layer | Produced by CtxFST | Produced later |
+|-------|--------------------|----------------|
+| Canonical entities | Yes | |
+| Chunk -> Entity edges | Yes | |
+| Entity vectors | | Yes, by an embedding model |
+| Entity -> Entity similarity | | Yes, by cosine similarity or graph embedding |
+
+So if you want an entity embedding graph:
+
+- CtxFST gives you the clean node inventory and chunk links
+- your embedding pipeline gives you the similarity edges
+
+That is exactly why the `entities` layer matters: it stabilizes the graph inputs before similarity is computed.
+
+### Example: Importing to a Graph Database
+
+Because the schema natively separates nodes and edges, inserting into neo4j, Lance Graph, or HelixDB is a direct mapping:
+
+```python
+# 1. Entities become nodes
+for e in document['entities']:
+    graph.add_node(e['id'], label='Entity', name=e['name'], type=e['type'])
+
+# 2. Chunks become nodes
+for c in document['chunks']:
+    graph.add_node(c['id'], label='Chunk', text=c['content'])
+
+# 3. chunks[].entities become edges
+for c in document['chunks']:
+    for e_id in c.get('entities', []):
+        graph.add_edge(c['id'], e_id, relation='MENTIONS')
+```
+
+---
+
 ## Validation
 
 Use the included script to validate your chunked documents:
