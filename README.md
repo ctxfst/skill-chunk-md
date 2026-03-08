@@ -78,6 +78,23 @@ skill-chunk-md/
 
 ---
 
+## Schema Versioning & Stability
+
+CtxFST is a **stable, versioned specification**. We define exact constraints so downstream parsers and graph importers don't break. 
+
+If you are building an integration, see the definitive specifications:
+1. **[CtxFST Formal Specification](../references/ctxfst-spec.md)** (Markdown)
+2. **[JSON Schema v1.1](../schema.json)** (Machine-readable Draft-07)
+
+### Layer Compatibility (v1.x)
+- **`v1.0` (Core)**: Requires `chunks[]` array with `id`, `context`, `content`. Optional: `tags`.
+- **`v1.1` (Entity Graph)**: Adds the formal `entities[]` top-level array and chunk linkage via `chunks[].entities`.
+- **`v1.2` (Agentic/Temporal)**: Adds `priority`, `dependencies`, `created_at`, `version`, `type`.
+
+A `v1.0` parser will never crash on a `v1.2` document. Unrecognized fields are safely ignored.
+
+---
+
 ## Frontmatter Format
 
 CtxFST uses **YAML frontmatter** to store chunk metadata separately from content:
@@ -305,6 +322,27 @@ for c in document['chunks']:
     for e_id in c.get('entities', []):
         graph.add_edge(c['id'], e_id, relation='MENTIONS')
 ```
+
+---
+
+## Upgrade Path
+
+If you are using this skill as the starting point for GraphRAG, the usual progression is:
+
+1. **Chunk the document** into valid CtxFST
+2. **Extract canonical entities** and link chunks with `chunks[].entities`
+3. **Build entity representations** from entity metadata or linked chunk context
+4. **Compute entity similarity** with embeddings or graph algorithms
+5. **Load nodes and edges** into Lance Graph, HelixDB, Neo4j, or another graph backend
+6. **Use graph traversal + chunk retrieval** at query time
+
+In short:
+
+- this skill produces the structured document layer
+- your embedding pipeline produces the similarity layer
+- your graph database or GraphRAG system produces the runtime retrieval layer
+
+That is the intended upgrade path from **CtxFST document** to **entity graph** to **full GraphRAG workflow**.
 
 ---
 
