@@ -2,7 +2,7 @@
 
 > **Transform Markdown into semantically chunked documents for better LLM retrieval.**
 
-**Frontmatter format for LanceDB / LightRAG / HippoRAG compatibility** 🚀
+**Frontmatter format for LanceDB / Lance Graph / HelixDB / LightRAG / HippoRAG compatibility** 🚀
 
 A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter. CtxFST is **entity + chunk**: entities are the semantic index (the map); chunks are the content carrier (the passages you retrieve). Both layers are part of the format.
 
@@ -153,9 +153,10 @@ chunks:
 | **Structured data** | Easy to parse for vector DBs |
 | **Separated concerns** | Context as metadata, content stays clean |
 | **LanceDB ready** | Store context, content, tags as columns |
-| **LightRAG/HippoRAG** | Tags become graph nodes, dependencies enable GraphRAG |
+| **Graph DB ready** | `entities` array maps directly to nodes for Lance Graph and HelixDB |
+| **GraphRAG enabled** | Tags and chunk links build the semantic graph for LightRAG/HippoRAG |
 | **Agentic RAG** | Priority & dependencies guide agent retrieval strategy |
-| **Temporal RAG** | created_at & version enable historical queries |
+| **Temporal RAG** | `created_at` & `version` enable historical queries |
 
 ---
 
@@ -216,6 +217,7 @@ Output format (with 2026 RAG extensions and entities):
 
 Use this JSON directly with:
 - **LanceDB** — Import as table with structured columns
+- **Graph Databases** — Read `entities` as nodes and chunk linkage as edges for **Lance Graph** and **HelixDB**
 - **LightRAG / HippoRAG** — Build entity embedding graphs from `entities` and chunk links
 - **LlamaIndex** — Hybrid retrieval with priority-based reranking
 - **LangGraph** — Agent-directed chunk selection via priority field

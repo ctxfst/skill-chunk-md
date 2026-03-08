@@ -1,6 +1,6 @@
 ---
 name: skill-chunk-md
-description: "Transform Markdown into CtxFST documents with semantic chunks, extracted entities, and chunk-to-entity links. Use when converting notes into GraphRAG-ready Markdown, adding `<Chunk>` tags and YAML frontmatter, extracting canonical skills/tools/architectures from text, or preparing documents for LanceDB, LightRAG, and HippoRAG pipelines."
+description: "Transform Markdown into CtxFST documents with semantic chunks, extracted entities, and chunk-to-entity links. Use when converting notes into GraphRAG-ready Markdown, adding `<Chunk>` tags and YAML frontmatter, extracting canonical skills/tools/architectures from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
 ---
 
 # Skill Chunk MD
