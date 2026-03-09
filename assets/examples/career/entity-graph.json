@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "input": "/home/iantpe/ctxfst/skill-chunk-md/assets/examples/career/chunks.json",
+    "mode": "contextual",
+    "vectorizer": "tfidf-cosine",
+    "top_k": 3,
+    "min_score": 0.15,
+    "entity_count": 4,
+    "edge_count": 6,
+    "dangling_chunk_entity_refs": []
+  },
+  "nodes": [
+    {
+      "id": "entity:fastapi",
+      "name": "FastAPI",
+      "type": "framework",
+      "aliases": [],
+      "mention_count": 1,
+      "chunk_ids": [
+        "skill:python"
+      ]
+    },
+    {
+      "id": "entity:go",
+      "name": "Go",
+      "type": "skill",
+      "aliases": [],
+      "mention_count": 2,
+      "chunk_ids": [
+        "project:payment-gateway",
+        "skill:go"
+      ]
+    },
+    {
+      "id": "entity:pandas",
+      "name": "Pandas",
+      "type": "library",
+      "aliases": [],
+      "mention_count": 1,
+      "chunk_ids": [
+        "skill:python"
+      ]
+    },
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "skill",
+      "aliases": [],
+      "mention_count": 3,
+      "chunk_ids": [
+        "project:data-pipeline",
+        "project:payment-gateway",
+        "skill:python"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "entity:fastapi",
+      "target": "entity:pandas",
+      "relation": "SIMILAR",
+      "score": 0.9728,
+      "shared_chunk_count": 1
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:python",
+      "relation": "SIMILAR",
+      "score": 0.6269,
+      "shared_chunk_count": 1
+    },
+    {
+      "source": "entity:pandas",
+      "target": "entity:python",
+      "relation": "SIMILAR",
+      "score": 0.6269,
+      "shared_chunk_count": 1
+    },
+    {
+      "source": "entity:go",
+      "target": "entity:python",
+      "relation": "SIMILAR",
+      "score": 0.5318,
+      "shared_chunk_count": 1
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:go",
+      "relation": "SIMILAR",
+      "score": 0.159,
+      "shared_chunk_count": 0
+    },
+    {
+      "source": "entity:go",
+      "target": "entity:pandas",
+      "relation": "SIMILAR",
+      "score": 0.159,
+      "shared_chunk_count": 0
+    }
+  ]
+}

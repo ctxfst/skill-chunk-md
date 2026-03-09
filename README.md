@@ -1,10 +1,62 @@
 # skill-chunk-md
 
-> **Transform Markdown into semantically chunked documents for better LLM retrieval.**
+> **Context-first Markdown for RAG. Convert raw notes into structured CtxFST documents with entities, chunks, validation, export, and entity-graph building.**
 
-**Frontmatter format for LanceDB / Lance Graph / HelixDB / LightRAG / HippoRAG compatibility** 🚀
+`skill-chunk-md` is the reference implementation for the `ctxfst` workflow: a [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) plus validation and export scripts that turn plain Markdown into a graph-ready document format for LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG, and other modern RAG stacks.
 
-A [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) that teaches Claude how to convert plain Markdown documents into **CtxFST format** using `<Chunk>` tags and YAML frontmatter. CtxFST is **entity + chunk**: entities are the semantic index (the map); chunks are the content carrier (the passages you retrieve). Both layers are part of the format.
+CtxFST is **entity + chunk**:
+- `entities[]` are the semantic index
+- `chunks[]` are the retrieval payload
+- downstream tools can derive `Chunk -> Entity` and `Entity -> Entity` graph edges without changing the schema
+
+## Why this exists
+
+Normal chunking pipelines often flatten context into a single embedding string. That is easy to ingest, but hard to inspect, validate, or reuse across vector search, filters, and graph retrieval.
+
+`skill-chunk-md` keeps those concerns separate:
+- `context` stays structured metadata
+- `content` stays clean passage text
+- `entities` stay canonical graph nodes
+
+That makes the resulting documents easier to review, easier to validate, and easier to load into both vector and graph systems.
+
+## 60-second quickstart
+
+Use the included example to see the full pipeline end-to-end:
+
+1. Convert Markdown to CtxFST with [`SKILL.md`](SKILL.md), or inspect the existing example at [`assets/examples/after.md`](assets/examples/after.md).
+2. Validate the structured document:
+
+   ```bash
+   python3 scripts/validate_chunks.py assets/examples/after.md
+   ```
+
+3. Export `chunks.json`:
+
+   ```bash
+   python3 scripts/export_to_lancedb.py assets/examples/after.md --output chunks.json --pretty
+   ```
+
+4. Build `entity-graph.json`:
+
+   ```bash
+   python3 scripts/build_entity_graph.py chunks.json --output entity-graph.json
+   ```
+
+Pipeline overview:
+
+```mermaid
+flowchart LR
+rawMarkdown[RawMarkdown] --> skill[SKILL.md]
+skill --> ctxfstDoc[CtxFSTDocument]
+ctxfstDoc --> validate[validate_chunks.py]
+ctxfstDoc --> export[export_to_lancedb.py]
+export --> chunksJson[chunks.json]
+chunksJson --> graphBuilder[build_entity_graph.py]
+graphBuilder --> entityGraph[entity-graph.json]
+```
+
+For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, and the derived `entity-graph.json`.
 
 ### Why chunk your Markdown?
 
@@ -66,6 +118,7 @@ skill-chunk-md/
 ├── scripts/
 │   ├── validate_chunks.py      # Validate chunk syntax & frontmatter
 │   ├── export_to_lancedb.py    # Export chunks to JSON/LanceDB
+│   ├── build_entity_graph.py   # Build Entity -> Entity similarity edges
 │   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
@@ -73,7 +126,8 @@ skill-chunk-md/
 │   └── semantic-chunking.md     # Chunking methodology
 └── assets/examples/
     ├── before.md               # Sample: plain Markdown
-    └── after.md                # Sample: CtxFST format
+    ├── after.md                # Sample: CtxFST format
+    └── career/                 # End-to-end career demo packet
 ```
 
 ---
@@ -238,6 +292,61 @@ Use this JSON directly with:
 - **LightRAG / HippoRAG** — Build entity embedding graphs from `entities` and chunk links
 - **LlamaIndex** — Hybrid retrieval with priority-based reranking
 - **LangGraph** — Agent-directed chunk selection via priority field
+
+---
+
+## Build an Entity Graph
+
+Once you have exported `chunks.json`, you can build downstream `Entity -> Entity` similarity edges without changing the CtxFST schema:
+
+```bash
+python3 scripts/build_entity_graph.py chunks.json --output entity-graph.json
+```
+
+The builder emits:
+
+- `nodes` — one node per canonical entity
+- `edges` — `SIMILAR` links scored by cosine similarity
+- `meta` — build settings (`mode`, `top_k`, `min_score`, `vectorizer`)
+
+Example:
+
+```json
+{
+  "meta": {
+    "mode": "contextual",
+    "vectorizer": "tfidf-cosine"
+  },
+  "nodes": [
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "skill",
+      "mention_count": 3
+    }
+  ],
+  "edges": [
+    {
+      "source": "entity:python",
+      "target": "entity:fastapi",
+      "relation": "SIMILAR",
+      "score": 0.7421
+    }
+  ]
+}
+```
+
+### Builder modes
+
+- `--mode metadata` — build similarity from entity metadata only (`name`, `type`, `aliases`)
+- `--mode contextual` — enrich entity representations with linked chunk context, content excerpts, tags, and co-mentioned entities
+
+### Common tuning flags
+
+- `--top-k 3` — keep up to 3 neighbors per entity before deduping
+- `--min-score 0.15` — discard weak similarity edges
+
+This script is a **reference graph builder**. It uses TF-IDF cosine similarity, so it works without an external embedding model. If you later switch to a stronger embedding backend, the CtxFST format does not need to change.
 
 ---
 
