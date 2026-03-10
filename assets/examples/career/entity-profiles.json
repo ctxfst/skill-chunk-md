@@ -1,0 +1,174 @@
+{
+  "meta": {
+    "input": "skill-chunk-md/assets/examples/career/chunks.json",
+    "source_type": "ctxfst-export",
+    "profile_type": "entity-profiles",
+    "entity_count": 4,
+    "max_contexts": 3,
+    "top_keywords": 8,
+    "dangling_chunk_entity_refs": []
+  },
+  "entities": [
+    {
+      "id": "entity:fastapi",
+      "name": "FastAPI",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "skill:python"
+      ],
+      "mention_count": 1,
+      "tags": [
+        "API",
+        "Backend",
+        "Python"
+      ],
+      "contexts": [
+        "Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas"
+      ],
+      "content_excerpts": [
+        "### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest"
+      ],
+      "related_entities": [
+        "Pandas",
+        "Python"
+      ],
+      "keywords": [
+        "python",
+        "data",
+        "apis",
+        "pandas",
+        "programming",
+        "pipelines",
+        "rest",
+        "skills"
+      ],
+      "representation": "name: FastAPI\ntype: framework\ntags Python Backend API\ncontext Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas\ncontent ### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest\nrelated Pandas Python"
+    },
+    {
+      "id": "entity:go",
+      "name": "Go",
+      "type": "skill",
+      "aliases": [],
+      "mentioned_chunks": [
+        "skill:go",
+        "project:payment-gateway"
+      ],
+      "mention_count": 2,
+      "tags": [
+        "Concurrency",
+        "FinTech",
+        "Go",
+        "Microservices",
+        "Project",
+        "Python"
+      ],
+      "contexts": [
+        "Go programming skills for high-performance microservices and CLI tools",
+        "Payment processing system handling 10k TPS using Python business logic and Go gateway"
+      ],
+      "content_excerpts": [
+        "### Go\n\nI started using Go 3 years ago for microservices. I appreciate its simplicity and excellent concurrency model.\n\nMain use cases:\n- High-throughput API gateways\n- CLI tools\n- gRPC services",
+        "### Payment Gateway\n\nBuilt a payment processing system handling 10k transactions per second. Used Python for the business logic layer and Go for the high-performance gateway."
+      ],
+      "related_entities": [
+        "Python"
+      ],
+      "keywords": [
+        "python",
+        "microservices",
+        "payment",
+        "gateway",
+        "high-performance",
+        "cli",
+        "tools",
+        "using"
+      ],
+      "representation": "name: Go\ntype: skill\ntags Go Microservices Concurrency\ncontext Go programming skills for high-performance microservices and CLI tools\ncontent ### Go\n\nI started using Go 3 years ago for microservices. I appreciate its simplicity and excellent concurrency model.\n\nMain use cases:\n- High-throughput API gateways\n- CLI tools\n- gRPC services\ntags Project Python Go FinTech\ncontext Payment processing system handling 10k TPS using Python business logic and Go gateway\ncontent ### Payment Gateway\n\nBuilt a payment processing system handling 10k transactions per second. Used Python for the business logic layer and Go for the high-performance gateway.\nrelated Python"
+    },
+    {
+      "id": "entity:pandas",
+      "name": "Pandas",
+      "type": "library",
+      "aliases": [],
+      "mentioned_chunks": [
+        "skill:python"
+      ],
+      "mention_count": 1,
+      "tags": [
+        "API",
+        "Backend",
+        "Python"
+      ],
+      "contexts": [
+        "Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas"
+      ],
+      "content_excerpts": [
+        "### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest"
+      ],
+      "related_entities": [
+        "FastAPI",
+        "Python"
+      ],
+      "keywords": [
+        "python",
+        "data",
+        "apis",
+        "fastapi",
+        "programming",
+        "pipelines",
+        "rest",
+        "skills"
+      ],
+      "representation": "name: Pandas\ntype: library\ntags Python Backend API\ncontext Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas\ncontent ### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest\nrelated FastAPI Python"
+    },
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "skill",
+      "aliases": [],
+      "mentioned_chunks": [
+        "skill:python",
+        "project:payment-gateway",
+        "project:data-pipeline"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Airflow",
+        "Backend",
+        "ETL",
+        "FinTech",
+        "Go",
+        "Project",
+        "Python"
+      ],
+      "contexts": [
+        "Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas",
+        "Payment processing system handling 10k TPS using Python business logic and Go gateway",
+        "ETL pipeline processing 50GB daily with Apache Airflow orchestration"
+      ],
+      "content_excerpts": [
+        "### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest",
+        "### Payment Gateway\n\nBuilt a payment processing system handling 10k transactions per second. Used Python for the business logic layer and Go for the high-performance gateway.",
+        "### Data Pipeline\n\nDesigned an ETL pipeline processing 50GB daily. Used Apache Airflow for orchestration and custom Python operators for transformations."
+      ],
+      "related_entities": [
+        "FastAPI",
+        "Go",
+        "Pandas"
+      ],
+      "keywords": [
+        "processing",
+        "data",
+        "go",
+        "apis",
+        "fastapi",
+        "pandas",
+        "daily",
+        "payment"
+      ],
+      "representation": "name: Python\ntype: skill\ntags Python Backend API\ncontext Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas\ncontent ### Python\n\nI use Python daily for building data pipelines and REST APIs. My preferred frameworks are FastAPI for APIs and Pandas for data processing.\n\nKey areas of expertise:\n- Async programming with asyncio\n- Performance profiling and optimization\n- Testing with pytest\ntags Project Python Go FinTech\ncontext Payment processing system handling 10k TPS using Python business logic and Go gateway\ncontent ### Payment Gateway\n\nBuilt a payment processing system handling 10k transactions per second. Used Python for the business logic layer and Go for the high-performance gateway.\ntags Project Python ETL Airflow\ncontext ETL pipeline processing 50GB daily with Apache Airflow orchestration\ncontent ### Data Pipeline\n\nDesigned an ETL pipeline processing 50GB daily. Used Apache Airflow for orchestration and custom Python operators for transformations.\nrelated FastAPI Go Pandas"
+    }
+  ]
+}

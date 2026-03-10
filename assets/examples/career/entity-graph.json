@@ -1,6 +1,7 @@
 {
   "meta": {
-    "input": "/home/iantpe/ctxfst/skill-chunk-md/assets/examples/career/chunks.json",
+    "input": "/home/iantpe/ctxfst/skill-chunk-md/assets/examples/career/entity-profiles.json",
+    "input_type": "entity-profiles",
     "mode": "contextual",
     "vectorizer": "tfidf-cosine",
     "top_k": 3,

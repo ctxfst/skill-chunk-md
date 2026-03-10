@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Build Entity -> Entity similarity edges from a CtxFST export.
+Build Entity -> Entity similarity edges from a derived entity layer.
 
-This script is a downstream graph builder: it reads the JSON produced by
-`export_to_lancedb.py`, builds one text representation per entity, computes
-TF-IDF cosine similarity, and emits a lightweight entity graph JSON.
+This script can read either:
+- the JSON produced by `export_to_lancedb.py` (`chunks.json`)
+- the JSON produced by `build_entity_profiles.py` (`entity-profiles.json`)
+
+It computes TF-IDF cosine similarity and emits a lightweight entity graph JSON.
 
 Usage:
     python build_entity_graph.py chunks.json
+    python build_entity_graph.py entity-profiles.json
     python build_entity_graph.py chunks.json --output entity-graph.json
-    python build_entity_graph.py chunks.json --mode metadata
+    python build_entity_graph.py entity-profiles.json --mode metadata
     python build_entity_graph.py chunks.json --mode contextual --top-k 3 --min-score 0.2
 """
 
@@ -43,8 +46,8 @@ def truncate_words(text: str, limit: int = 80) -> str:
     return " ".join(words[:limit])
 
 
-def load_export(path: Path) -> dict[str, Any]:
-    """Load the exported JSON document."""
+def load_input(path: Path) -> dict[str, Any]:
+    """Load either a CtxFST export or a derived entity profiles document."""
     try:
         with path.open(encoding="utf-8") as handle:
             data = json.load(handle)
@@ -59,13 +62,17 @@ def load_export(path: Path) -> dict[str, Any]:
         print("Error: export root must be a JSON object", file=sys.stderr)
         sys.exit(1)
 
-    chunks = data.get("chunks", [])
     entities = data.get("entities", [])
-
-    if not isinstance(chunks, list) or not isinstance(entities, list):
-        print("Error: export JSON must contain list fields 'chunks' and 'entities'", file=sys.stderr)
+    if not isinstance(entities, list):
+        print("Error: input JSON must contain a list field 'entities'", file=sys.stderr)
         sys.exit(1)
 
+    chunks = data.get("chunks")
+    if isinstance(chunks, list):
+        data["_input_type"] = "export"
+        return data
+
+    data["_input_type"] = "profiles"
     return data
 
 
@@ -209,7 +216,7 @@ def build_edges(
     norms: dict[str, float],
     top_k: int,
     min_score: float,
-    mentions: dict[str, list[dict[str, Any]]],
+    mention_sets: dict[str, set[str]],
 ) -> list[dict[str, Any]]:
     """Build unique similarity edges using top-k per entity and a minimum score."""
     pair_scores: dict[tuple[str, str], float] = {}
@@ -230,11 +237,6 @@ def build_edges(
             if score >= min_score:
                 selected_pairs.add(tuple(sorted((source, target))))
 
-    mention_sets = {
-        entity_id: {chunk.get("id", "") for chunk in entity_mentions}
-        for entity_id, entity_mentions in mentions.items()
-    }
-
     edges = []
     for source, target in sorted(selected_pairs):
         score = pair_scores[(source, target)]
@@ -251,12 +253,22 @@ def build_edges(
     return edges
 
 
-def build_graph(data: dict[str, Any], mode: str, top_k: int, min_score: float, input_path: Path) -> dict[str, Any]:
-    """Build the entity graph JSON payload."""
+def build_graph_from_export(
+    data: dict[str, Any],
+    mode: str,
+    top_k: int,
+    min_score: float,
+    input_path: Path,
+) -> dict[str, Any]:
+    """Build the entity graph JSON payload from chunks.json."""
     entities = data.get("entities", [])
     chunks = data.get("chunks", [])
     entity_map = build_entity_lookup(entities)
     mentions, dangling_refs = collect_mentions(chunks, entity_map)
+    mention_sets = {
+        entity_id: {chunk.get("id", "") for chunk in entity_mentions if chunk.get("id")}
+        for entity_id, entity_mentions in mentions.items()
+    }
 
     representations = {
         entity_id: build_entity_representation(entity, mentions.get(entity_id, []), entity_map, mode)
@@ -264,7 +276,7 @@ def build_graph(data: dict[str, Any], mode: str, top_k: int, min_score: float, i
     }
     vectors, norms = build_tfidf_vectors(representations)
     entity_ids = sorted(entity_map.keys())
-    edges = build_edges(entity_ids, vectors, norms, top_k, min_score, mentions)
+    edges = build_edges(entity_ids, vectors, norms, top_k, min_score, mention_sets)
 
     nodes = []
     for entity_id in entity_ids:
@@ -282,6 +294,85 @@ def build_graph(data: dict[str, Any], mode: str, top_k: int, min_score: float, i
     return {
         "meta": {
             "input": str(input_path),
+            "input_type": "ctxfst-export",
+            "mode": mode,
+            "vectorizer": "tfidf-cosine",
+            "top_k": top_k,
+            "min_score": min_score,
+            "entity_count": len(nodes),
+            "edge_count": len(edges),
+            "dangling_chunk_entity_refs": dangling_refs,
+        },
+        "nodes": nodes,
+        "edges": edges,
+    }
+
+
+def metadata_representation(entity: dict[str, Any]) -> str:
+    """Build a minimal representation from canonical entity metadata only."""
+    aliases = entity.get("aliases", [])
+    if not isinstance(aliases, list):
+        aliases = []
+
+    parts = [
+        f"name {entity.get('name', '')}",
+        f"type {entity.get('type', '')}",
+    ]
+    if aliases:
+        parts.append("aliases " + " ".join(str(alias) for alias in aliases))
+    return "\n".join(parts)
+
+
+def build_graph_from_profiles(
+    data: dict[str, Any],
+    mode: str,
+    top_k: int,
+    min_score: float,
+    input_path: Path,
+) -> dict[str, Any]:
+    """Build the entity graph JSON payload from entity-profiles.json."""
+    profiles = data.get("entities", [])
+    mention_sets: dict[str, set[str]] = {}
+    representations: dict[str, str] = {}
+    nodes = []
+
+    for profile in profiles:
+        entity_id = profile.get("id")
+        if not isinstance(entity_id, str) or not entity_id:
+            continue
+
+        mentioned_chunks = profile.get("mentioned_chunks", [])
+        if not isinstance(mentioned_chunks, list):
+            mentioned_chunks = []
+        chunk_ids = sorted(chunk_id for chunk_id in mentioned_chunks if isinstance(chunk_id, str) and chunk_id)
+        mention_sets[entity_id] = set(chunk_ids)
+
+        if mode == "metadata":
+            representations[entity_id] = metadata_representation(profile)
+        else:
+            representations[entity_id] = str(profile.get("representation", "")).strip() or metadata_representation(profile)
+
+        nodes.append(
+            {
+                "id": entity_id,
+                "name": profile.get("name", ""),
+                "type": profile.get("type", ""),
+                "aliases": profile.get("aliases", []),
+                "mention_count": profile.get("mention_count", len(chunk_ids)),
+                "chunk_ids": chunk_ids,
+            }
+        )
+
+    entity_ids = sorted(representations.keys())
+    vectors, norms = build_tfidf_vectors(representations)
+    edges = build_edges(entity_ids, vectors, norms, top_k, min_score, mention_sets)
+    dangling_refs = data.get("meta", {}).get("dangling_chunk_entity_refs", [])
+
+    nodes.sort(key=lambda node: node["id"])
+    return {
+        "meta": {
+            "input": str(input_path),
+            "input_type": "entity-profiles",
             "mode": mode,
             "vectorizer": "tfidf-cosine",
             "top_k": top_k,
@@ -297,9 +388,9 @@ def build_graph(data: dict[str, Any], mode: str, top_k: int, min_score: float, i
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build Entity -> Entity similarity edges from a CtxFST export JSON"
+        description="Build Entity -> Entity similarity edges from chunks.json or entity-profiles.json"
     )
-    parser.add_argument("input", help="Input JSON file produced by export_to_lancedb.py")
+    parser.add_argument("input", help="Input JSON file produced by export_to_lancedb.py or build_entity_profiles.py")
     parser.add_argument(
         "--output", "-o",
         default="entity-graph.json",
@@ -333,8 +424,11 @@ def main() -> None:
         sys.exit(1)
 
     input_path = Path(args.input)
-    data = load_export(input_path)
-    graph = build_graph(data, args.mode, args.top_k, args.min_score, input_path)
+    data = load_input(input_path)
+    if data["_input_type"] == "export":
+        graph = build_graph_from_export(data, args.mode, args.top_k, args.min_score, input_path)
+    else:
+        graph = build_graph_from_profiles(data, args.mode, args.top_k, args.min_score, input_path)
 
     output_path = Path(args.output)
     with output_path.open("w", encoding="utf-8") as handle:
@@ -344,6 +438,7 @@ def main() -> None:
     print(
         f"   Nodes: {graph['meta']['entity_count']} | "
         f"Edges: {graph['meta']['edge_count']} | "
+        f"Input: {graph['meta']['input_type']} | "
         f"Mode: {graph['meta']['mode']} | "
         f"Vectorizer: {graph['meta']['vectorizer']}"
     )

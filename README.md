@@ -37,10 +37,16 @@ Use the included example to see the full pipeline end-to-end:
    python3 scripts/export_to_lancedb.py assets/examples/after.md --output chunks.json --pretty
    ```
 
-4. Build `entity-graph.json`:
+4. Build `entity-profiles.json`:
 
    ```bash
-   python3 scripts/build_entity_graph.py chunks.json --output entity-graph.json
+   python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
+   ```
+
+5. Build `entity-graph.json`:
+
+   ```bash
+   python3 scripts/build_entity_graph.py entity-profiles.json --output entity-graph.json
    ```
 
 Pipeline overview:
@@ -52,11 +58,13 @@ skill --> ctxfstDoc[CtxFSTDocument]
 ctxfstDoc --> validate[validate_chunks.py]
 ctxfstDoc --> export[export_to_lancedb.py]
 export --> chunksJson[chunks.json]
-chunksJson --> graphBuilder[build_entity_graph.py]
+chunksJson --> profilesBuilder[build_entity_profiles.py]
+profilesBuilder --> entityProfiles[entity-profiles.json]
+entityProfiles --> graphBuilder[build_entity_graph.py]
 graphBuilder --> entityGraph[entity-graph.json]
 ```
 
-For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, and the derived `entity-graph.json`.
+For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, the derived `entity-profiles.json`, and the final `entity-graph.json`.
 
 ### Why chunk your Markdown?
 
@@ -118,6 +126,7 @@ skill-chunk-md/
 ├── scripts/
 │   ├── validate_chunks.py      # Validate chunk syntax & frontmatter
 │   ├── export_to_lancedb.py    # Export chunks to JSON/LanceDB
+│   ├── build_entity_profiles.py# Build derived entity profiles
 │   ├── build_entity_graph.py   # Build Entity -> Entity similarity edges
 │   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
 ├── references/
@@ -297,13 +306,45 @@ Use this JSON directly with:
 
 ## Build an Entity Graph
 
-Once you have exported `chunks.json`, you can build downstream `Entity -> Entity` similarity edges without changing the CtxFST schema:
+Once you have exported `chunks.json`, you can add a derived entity layer without changing the CtxFST schema:
 
 ```bash
-python3 scripts/build_entity_graph.py chunks.json --output entity-graph.json
+python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
 ```
 
-The builder emits:
+The profiles builder emits one derived record per entity:
+
+- `mentioned_chunks` — reverse links derived from `chunks[].entities`
+- `contexts` — linked chunk contexts aggregated per entity
+- `keywords` — lightweight usage terms extracted from linked chunks
+- `representation` — downstream embedding text built from the entity plus its linked usage context
+
+Example:
+
+```json
+{
+  "entities": [
+    {
+      "id": "entity:fastapi",
+      "mentioned_chunks": ["skill:python"],
+      "keywords": ["apis", "pipelines", "python"],
+      "representation": "name: FastAPI\ntype: framework\nmentioned_in_chunks:\n- Python programming skills focusing on data pipelines and REST APIs using FastAPI and Pandas"
+    }
+  ]
+}
+```
+
+This is a **derived pipeline layer**, not part of the core `ctxfst` schema. It keeps the standard clean while still giving GraphRAG-style systems a ready-to-embed entity representation.
+
+### Build the similarity graph
+
+Then build downstream `Entity -> Entity` similarity edges:
+
+```bash
+python3 scripts/build_entity_graph.py entity-profiles.json --output entity-graph.json
+```
+
+The graph builder emits:
 
 - `nodes` — one node per canonical entity
 - `edges` — `SIMILAR` links scored by cosine similarity
@@ -339,14 +380,14 @@ Example:
 ### Builder modes
 
 - `--mode metadata` — build similarity from entity metadata only (`name`, `type`, `aliases`)
-- `--mode contextual` — enrich entity representations with linked chunk context, content excerpts, tags, and co-mentioned entities
+- `--mode contextual` — use the derived `representation` text or aggregate linked chunk context when reading `chunks.json`
 
 ### Common tuning flags
 
 - `--top-k 3` — keep up to 3 neighbors per entity before deduping
 - `--min-score 0.15` — discard weak similarity edges
 
-This script is a **reference graph builder**. It uses TF-IDF cosine similarity, so it works without an external embedding model. If you later switch to a stronger embedding backend, the CtxFST format does not need to change.
+These scripts are **reference builders**. They use lightweight text aggregation plus TF-IDF cosine similarity, so they work without an external embedding model. If you later switch to a stronger embedding backend, the CtxFST format does not need to change.
 
 ---
 
