@@ -143,11 +143,21 @@ def process_file(filepath: Path) -> dict[str, Any]:
         if 'dependencies' in chunk_def:
             record['dependencies'] = chunk_def['dependencies']
 
+        # v1.3 world model fields
+        if 'state_refs' in chunk_def:
+            record['state_refs'] = chunk_def['state_refs']
+
         chunk_records.append(record)
     
     entities = frontmatter.get('entities', [])
-    
-    return {'chunks': chunk_records, 'entities': entities}
+
+    # v1.3 world model: passthrough optional entity fields
+    enriched_entities = []
+    for ent in entities:
+        enriched = dict(ent)  # shallow copy
+        enriched_entities.append(enriched)
+
+    return {'chunks': chunk_records, 'entities': enriched_entities}
 
 
 def main():

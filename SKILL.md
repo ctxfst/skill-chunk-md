@@ -1,6 +1,6 @@
 ---
 name: skill-chunk-md
-description: "Transform Markdown into CtxFST documents with semantic chunks, extracted entities, and chunk-to-entity links. Use when converting notes into GraphRAG-ready Markdown, adding `<Chunk>` tags and YAML frontmatter, extracting canonical skills/tools/architectures from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
+description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, adding `<Chunk>` tags and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
 ---
 
 # Skill Chunk MD
@@ -273,6 +273,53 @@ Use one of these default types:
 - `product`
 
 If none fit well, use `concept` instead of inventing many custom types.
+
+### World Model entity types
+
+When building documents that participate in a world model or agent loop, these additional types are available:
+
+- `state` — world state node (e.g., `entity:resume-parsed`)
+- `action` — executable action (e.g., `entity:analyze-resume`)
+- `goal` — task objective (e.g., `entity:learn-kubernetes-path`)
+- `agent` — actor or user (e.g., `entity:ian-chou`)
+- `evidence` — observation result (e.g., `entity:docker-3yr-experience`)
+
+### World Model YAML fields
+
+SKILL.md files that participate in a world model may include these optional YAML frontmatter fields:
+
+```yaml
+---
+name: analyze-resume
+description: "Parse raw resume and extract skill evidence"
+# === World Model Fields (all optional) ===
+preconditions:
+  - "state:has-raw-resume"
+  - "NOT state:has-parsed-resume"
+postconditions:
+  - "state:has-parsed-resume"
+  - "state:has-skill-evidence"
+related_nodes:
+  - "entity:resume-parsing"
+  - "entity:skill-extraction"
+related_skills:
+  - "career-mapping"
+  - "skill-gap-analysis"
+cost: low
+idempotent: true
+---
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `preconditions` | `string[]` | State entities that must exist before this skill can execute |
+| `postconditions` | `string[]` | State entities created or updated after execution |
+| `related_nodes` | `string[]` | Anchor points in the semantic graph |
+| `related_skills` | `string[]` | Sequential or complementary skill names |
+| `cost` | `enum` | `low`, `medium`, `high` — estimated execution cost |
+| `idempotent` | `bool` | Whether safe to re-run without side effects |
+
+Preconditions use `NOT` prefix for negation (e.g., `"NOT state:has-parsed-resume"` means that state must **not** exist).
 
 ### Tags vs entities
 

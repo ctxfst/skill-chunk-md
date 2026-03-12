@@ -34,6 +34,18 @@ class ValidationError(NamedTuple):
     severity: str  # 'error' or 'warning'
 
 
+VALID_ENTITY_TYPES = {
+    # v1.1 descriptive types
+    'skill', 'tool', 'library', 'framework', 'platform',
+    'database', 'architecture', 'protocol', 'concept',
+    'domain', 'product',
+    # v1.3 operational types
+    'state', 'action', 'goal', 'agent', 'evidence',
+}
+
+VALID_PRIORITIES = {'low', 'medium', 'high', 'critical'}
+
+
 def validate_temporal_fields(chunk_def: dict, chunk_id: str, line_num: int) -> list[ValidationError]:
     """Validate temporal fields (created_at, version)."""
     errors = []
@@ -64,11 +76,10 @@ def validate_agentic_fields(chunk_def: dict, chunk_id: str, line_num: int, all_c
     errors = []
 
     if 'priority' in chunk_def:
-        valid_priorities = ['high', 'medium', 'low']
-        if chunk_def['priority'] not in valid_priorities:
+        if chunk_def['priority'] not in VALID_PRIORITIES:
             errors.append(ValidationError(
                 line_num,
-                f"Chunk '{chunk_id}': 'priority' must be one of {valid_priorities}",
+                f"Chunk '{chunk_id}': 'priority' must be one of {sorted(VALID_PRIORITIES)}",
                 'error'
             ))
 
@@ -125,6 +136,65 @@ def validate_multimodal_fields(chunk_def: dict, chunk_id: str, line_num: int, do
                 line_num,
                 f"Chunk '{chunk_id}': content_path should only be used with type=[image,video,audio]",
                 'warning'
+            ))
+
+    return errors
+
+
+def validate_world_model_fields(
+    definition: dict,
+    def_id: str,
+    line_num: int,
+    doc_entity_ids: set,
+    context: str = 'Chunk',
+) -> list[ValidationError]:
+    """Validate v1.3 world model fields on entities or chunks."""
+    errors = []
+
+    # Validate string array fields
+    for field in ('preconditions', 'postconditions', 'related_skills', 'state_refs'):
+        if field in definition:
+            if not isinstance(definition[field], list):
+                errors.append(ValidationError(
+                    line_num,
+                    f"{context} '{def_id}': '{field}' must be a list of strings",
+                    'error'
+                ))
+            else:
+                for item in definition[field]:
+                    if not isinstance(item, str):
+                        errors.append(ValidationError(
+                            line_num,
+                            f"{context} '{def_id}': '{field}' items must be strings, got {type(item).__name__}",
+                            'error'
+                        ))
+
+    # state_refs should reference state-type entities
+    if 'state_refs' in definition and isinstance(definition['state_refs'], list):
+        for ref in definition['state_refs']:
+            if isinstance(ref, str) and ref not in doc_entity_ids:
+                errors.append(ValidationError(
+                    line_num,
+                    f"{context} '{def_id}': state_ref '{ref}' not found in document entities",
+                    'warning'
+                ))
+
+    # Validate cost enum
+    if 'cost' in definition:
+        if definition['cost'] not in ('low', 'medium', 'high'):
+            errors.append(ValidationError(
+                line_num,
+                f"{context} '{def_id}': 'cost' must be one of ['low', 'medium', 'high']",
+                'error'
+            ))
+
+    # Validate idempotent bool
+    if 'idempotent' in definition:
+        if not isinstance(definition['idempotent'], bool):
+            errors.append(ValidationError(
+                line_num,
+                f"{context} '{def_id}': 'idempotent' must be a boolean",
+                'error'
             ))
 
     return errors
@@ -205,6 +275,20 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                 else:
                     doc_entity_ids.add(ent_id)
 
+                # Validate entity type against known types
+                ent_type = entity_def.get('type', '')
+                if ent_type and ent_type not in VALID_ENTITY_TYPES:
+                    errors.append(ValidationError(
+                        line_idx,
+                        f"Entity '{ent_id}': unknown type '{ent_type}', expected one of {sorted(VALID_ENTITY_TYPES)}",
+                        'warning'
+                    ))
+
+                # Validate v1.3 world model fields on entities
+                errors.extend(validate_world_model_fields(
+                    entity_def, ent_id, line_idx, doc_entity_ids, context='Entity'
+                ))
+
     if frontmatter and 'chunks' in frontmatter:
         for i, chunk_def in enumerate(frontmatter['chunks']):
             if 'id' not in chunk_def:
@@ -263,6 +347,10 @@ def validate_file(filepath: Path) -> list[ValidationError]:
             errors.extend(validate_temporal_fields(chunk_def, chunk_id, line_num))
             errors.extend(validate_agentic_fields(chunk_def, chunk_id, line_num, all_chunk_ids))
             errors.extend(validate_multimodal_fields(chunk_def, chunk_id, line_num, doc_dir))
+            # Validate v1.3 world model fields on chunks
+            errors.extend(validate_world_model_fields(
+                chunk_def, chunk_id, line_num, doc_entity_ids, context='Chunk'
+            ))
     elif frontmatter is None:
         errors.append(ValidationError(
             1,

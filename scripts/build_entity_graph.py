@@ -7,6 +7,7 @@ This script can read either:
 - the JSON produced by `build_entity_profiles.py` (`entity-profiles.json`)
 
 It computes TF-IDF cosine similarity and emits a lightweight entity graph JSON.
+Optionally merges manually-defined operational edges (v1.3 World Model).
 
 Usage:
     python build_entity_graph.py chunks.json
@@ -14,6 +15,7 @@ Usage:
     python build_entity_graph.py chunks.json --output entity-graph.json
     python build_entity_graph.py entity-profiles.json --mode metadata
     python build_entity_graph.py chunks.json --mode contextual --top-k 3 --min-score 0.2
+    python build_entity_graph.py chunks.json --extra-edges extra-edges.json
 """
 
 import argparse
@@ -247,9 +249,129 @@ def build_edges(
             "relation": "SIMILAR",
             "score": round(score, 4),
             "shared_chunk_count": shared_chunk_count,
+            "properties": {},
         })
 
     edges.sort(key=lambda edge: (-edge["score"], edge["source"], edge["target"]))
+    return edges
+
+
+VALID_EDGE_RELATIONS = {
+    "SIMILAR", "REQUIRES", "LEADS_TO", "EVIDENCE",
+    "IMPLIES", "COMPLETED", "BLOCKED_BY",
+}
+
+
+def load_extra_edges(path: Path) -> list[dict[str, Any]]:
+    """Load manually-defined operational edges from a JSON file.
+
+    Expected format: a JSON array of edge objects, each with at least
+    ``source``, ``target``, and ``relation`` keys.
+    """
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+    except FileNotFoundError:
+        print(f"Error: extra-edges file '{path}' not found", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as exc:
+        print(f"Error: extra-edges file '{path}' is not valid JSON: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    if not isinstance(data, list):
+        print("Error: extra-edges JSON must be an array of edge objects", file=sys.stderr)
+        sys.exit(1)
+
+    validated: list[dict[str, Any]] = []
+    for idx, edge in enumerate(data):
+        if not isinstance(edge, dict):
+            print(f"Warning: extra-edges[{idx}] is not an object, skipping", file=sys.stderr)
+            continue
+        source = edge.get("source")
+        target = edge.get("target")
+        relation = edge.get("relation", "")
+        if not source or not target:
+            print(f"Warning: extra-edges[{idx}] missing source/target, skipping", file=sys.stderr)
+            continue
+        if relation not in VALID_EDGE_RELATIONS:
+            print(
+                f"Warning: extra-edges[{idx}] has unknown relation '{relation}', "
+                f"allowed: {sorted(VALID_EDGE_RELATIONS)}",
+                file=sys.stderr,
+            )
+
+        validated_edge: dict[str, Any] = {
+            "source": source,
+            "target": target,
+            "relation": relation,
+        }
+        if "score" in edge:
+            validated_edge["score"] = edge["score"]
+        if "shared_chunk_count" in edge:
+            validated_edge["shared_chunk_count"] = edge["shared_chunk_count"]
+        validated_edge["properties"] = edge.get("properties", {})
+        validated.append(validated_edge)
+
+    return validated
+
+
+def infer_operational_edges(
+    entity_map: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Auto-infer REQUIRES and LEADS_TO edges from preconditions/postconditions.
+
+    Logic:
+    - If entity A has postcondition S, and entity B has precondition S,
+      then A --LEADS_TO--> B (A enables B)
+      and  B --REQUIRES--> A (B depends on A)
+    """
+    # Build index: state_id -> entities that produce it (have it as postcondition)
+    producers: dict[str, list[str]] = defaultdict(list)
+    # Build index: state_id -> entities that consume it (have it as precondition)
+    consumers: dict[str, list[str]] = defaultdict(list)
+
+    for entity_id, entity in entity_map.items():
+        for post in entity.get("postconditions", []):
+            if isinstance(post, str):
+                producers[post].append(entity_id)
+        for pre in entity.get("preconditions", []):
+            if isinstance(pre, str) and not pre.startswith("NOT "):
+                consumers[pre].append(entity_id)
+
+    # Generate edges
+    edges: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for state_id in producers:
+        if state_id not in consumers:
+            continue
+        for producer_id in producers[state_id]:
+            for consumer_id in consumers[state_id]:
+                if producer_id == consumer_id:
+                    continue
+
+                # LEADS_TO: producer -> consumer
+                key_lt = (producer_id, consumer_id, "LEADS_TO")
+                if key_lt not in seen:
+                    seen.add(key_lt)
+                    edges.append({
+                        "source": producer_id,
+                        "target": consumer_id,
+                        "relation": "LEADS_TO",
+                        "properties": {"inferred_via": state_id},
+                    })
+
+                # REQUIRES: consumer -> producer
+                key_req = (consumer_id, producer_id, "REQUIRES")
+                if key_req not in seen:
+                    seen.add(key_req)
+                    edges.append({
+                        "source": consumer_id,
+                        "target": producer_id,
+                        "relation": "REQUIRES",
+                        "properties": {"inferred_via": state_id},
+                    })
+
     return edges
 
 
@@ -282,14 +404,23 @@ def build_graph_from_export(
     for entity_id in entity_ids:
         entity = entity_map[entity_id]
         chunk_ids = sorted({chunk.get("id", "") for chunk in mentions.get(entity_id, []) if chunk.get("id")})
-        nodes.append({
+        node: dict[str, Any] = {
             "id": entity_id,
             "name": entity.get("name", ""),
             "type": entity.get("type", ""),
             "aliases": entity.get("aliases", []),
             "mention_count": len(chunk_ids),
             "chunk_ids": chunk_ids,
-        })
+        }
+        # World model fields (passthrough)
+        for wm_field in ("preconditions", "postconditions", "related_skills"):
+            if wm_field in entity:
+                node[wm_field] = entity[wm_field]
+        nodes.append(node)
+
+    # Auto-infer operational edges from preconditions/postconditions
+    inferred = infer_operational_edges(entity_map)
+    edges.extend(inferred)
 
     return {
         "meta": {
@@ -301,6 +432,7 @@ def build_graph_from_export(
             "min_score": min_score,
             "entity_count": len(nodes),
             "edge_count": len(edges),
+            "inferred_edge_count": len(inferred),
             "dangling_chunk_entity_refs": dangling_refs,
         },
         "nodes": nodes,
@@ -352,21 +484,29 @@ def build_graph_from_profiles(
         else:
             representations[entity_id] = str(profile.get("representation", "")).strip() or metadata_representation(profile)
 
-        nodes.append(
-            {
-                "id": entity_id,
-                "name": profile.get("name", ""),
-                "type": profile.get("type", ""),
-                "aliases": profile.get("aliases", []),
-                "mention_count": profile.get("mention_count", len(chunk_ids)),
-                "chunk_ids": chunk_ids,
-            }
-        )
+        node: dict[str, Any] = {
+            "id": entity_id,
+            "name": profile.get("name", ""),
+            "type": profile.get("type", ""),
+            "aliases": profile.get("aliases", []),
+            "mention_count": profile.get("mention_count", len(chunk_ids)),
+            "chunk_ids": chunk_ids,
+        }
+        # World model fields (passthrough)
+        for wm_field in ("preconditions", "postconditions", "related_skills"):
+            if wm_field in profile:
+                node[wm_field] = profile[wm_field]
+        nodes.append(node)
 
     entity_ids = sorted(representations.keys())
     vectors, norms = build_tfidf_vectors(representations)
     edges = build_edges(entity_ids, vectors, norms, top_k, min_score, mention_sets)
     dangling_refs = data.get("meta", {}).get("dangling_chunk_entity_refs", [])
+
+    # Build profile lookup for inference
+    profile_map = {p.get("id"): p for p in profiles if isinstance(p.get("id"), str)}
+    inferred = infer_operational_edges(profile_map)
+    edges.extend(inferred)
 
     nodes.sort(key=lambda node: node["id"])
     return {
@@ -379,6 +519,7 @@ def build_graph_from_profiles(
             "min_score": min_score,
             "entity_count": len(nodes),
             "edge_count": len(edges),
+            "inferred_edge_count": len(inferred),
             "dangling_chunk_entity_refs": dangling_refs,
         },
         "nodes": nodes,
@@ -414,6 +555,11 @@ def main() -> None:
         default=0.15,
         help="Minimum cosine similarity score to keep an edge (default: 0.15)",
     )
+    parser.add_argument(
+        "--extra-edges",
+        default=None,
+        help="Optional JSON file with manually-defined operational edges (v1.3 World Model)",
+    )
 
     args = parser.parse_args()
     if args.top_k < 1:
@@ -430,17 +576,28 @@ def main() -> None:
     else:
         graph = build_graph_from_profiles(data, args.mode, args.top_k, args.min_score, input_path)
 
+    # Merge extra edges (v1.3)
+    extra_edge_count = 0
+    if args.extra_edges:
+        extra = load_extra_edges(Path(args.extra_edges))
+        graph["edges"].extend(extra)
+        extra_edge_count = len(extra)
+    graph["meta"]["extra_edge_count"] = extra_edge_count
+    graph["meta"]["edge_count"] = len(graph["edges"])
+
     output_path = Path(args.output)
     with output_path.open("w", encoding="utf-8") as handle:
         json.dump(graph, handle, indent=2, ensure_ascii=False)
 
     print(f"✅ Built entity graph: {output_path}")
+    extra_info = f" | Extra edges: {extra_edge_count}" if extra_edge_count else ""
     print(
         f"   Nodes: {graph['meta']['entity_count']} | "
         f"Edges: {graph['meta']['edge_count']} | "
         f"Input: {graph['meta']['input_type']} | "
         f"Mode: {graph['meta']['mode']} | "
         f"Vectorizer: {graph['meta']['vectorizer']}"
+        f"{extra_info}"
     )
 
     if graph["meta"]["dangling_chunk_entity_refs"]:

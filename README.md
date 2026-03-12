@@ -1,13 +1,13 @@
 # skill-chunk-md
 
-> **Context-first Markdown for RAG. Convert raw notes into structured CtxFST documents with entities, chunks, validation, export, and entity-graph building.**
+> **Context-first Markdown for RAG & Agents. Convert raw notes into structured CtxFST documents — a semantic world model format with chunks, entities, auto-inferred operational edges, and world state tracking.**
 
-`skill-chunk-md` is the reference implementation for the `ctxfst` workflow: a [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) plus validation and export scripts that turn plain Markdown into a graph-ready document format for LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG, and other modern RAG stacks.
+`skill-chunk-md` is the reference implementation for the `ctxfst` workflow: a [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) plus validation and backend scripts that turn plain Markdown into an agent-ready world model for LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG, and other modern RAG/Agent stacks.
 
-CtxFST is **entity + chunk**:
-- `entities[]` are the semantic index
-- `chunks[]` are the retrieval payload
-- downstream tools can derive `Chunk -> Entity` and `Entity -> Entity` graph edges without changing the schema
+CtxFST provides the full semantic backbone for your data:
+- `entities[]` define the world model (skills, states, actions, goals)
+- `chunks[]` provide the context-rich retrieval payload
+- Downstream tools build `<Entity -> Entity>` similarity and causal edges automatically
 
 ## Why this exists
 
@@ -43,10 +43,20 @@ Use the included example to see the full pipeline end-to-end:
    python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
    ```
 
-5. Build `entity-graph.json`:
+   ```bash
+   python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
+   ```
+
+5. Build `entity-graph.json` (auto-infers `REQUIRES`/`LEADS_TO` causal edges):
 
    ```bash
    python3 scripts/build_entity_graph.py entity-profiles.json --output entity-graph.json
+   ```
+
+6. Initialize an agent World State tracking session:
+
+   ```bash
+   python3 scripts/world_state.py init --goal "entity:learn-kubernetes-path" --output state.json
    ```
 
 Pipeline overview:
@@ -62,6 +72,7 @@ chunksJson --> profilesBuilder[build_entity_profiles.py]
 profilesBuilder --> entityProfiles[entity-profiles.json]
 entityProfiles --> graphBuilder[build_entity_graph.py]
 graphBuilder --> entityGraph[entity-graph.json]
+entityGraph --> agentState[world_state.py]
 ```
 
 For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, the derived `entity-profiles.json`, and the final `entity-graph.json`.
@@ -127,7 +138,9 @@ skill-chunk-md/
 │   ├── validate_chunks.py      # Validate chunk syntax & frontmatter
 │   ├── export_to_lancedb.py    # Export chunks to JSON/LanceDB
 │   ├── build_entity_profiles.py# Build derived entity profiles
-│   ├── build_entity_graph.py   # Build Entity -> Entity similarity edges
+│   ├── build_entity_graph.py   # Build Entity->Entity similarity & causal edges
+│   ├── world_state.py          # Manage agent runtime session state
+│   ├── skill_selector.py       # Deterministic rule-based skill selector
 │   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
@@ -146,15 +159,16 @@ skill-chunk-md/
 CtxFST is a **stable, versioned specification**. We define exact constraints so downstream parsers and graph importers don't break. 
 
 If you are building an integration, see the definitive specifications:
-1. **[CtxFST Formal Specification](../references/ctxfst-spec.md)** (Markdown)
-2. **[JSON Schema v1.1](../schema.json)** (Machine-readable Draft-07)
+1. **[CtxFST Formal Specification (v2.0)](../references/ctxfst-spec.md)** (Markdown)
+2. **[JSON Schema](../schema.json)** (Machine-readable Draft-07)
 
-### Layer Compatibility (v1.x)
-- **`v1.0` (Core)**: Requires `chunks[]` array with `id`, `context`, `content`. Optional: `tags`.
-- **`v1.1` (Entity Graph)**: Adds the formal `entities[]` top-level array and chunk linkage via `chunks[].entities`.
-- **`v1.2` (Agentic/Temporal)**: Adds `priority`, `dependencies`, `created_at`, `version`, `type`.
+### Layer Compatibility & Strict Superset Guarantee
+CtxFST v2.0 is a strictly backward-compatible superset of all v1.x formats.
+- **Vector-only RAG**: Ignore entities, just read `chunks[]`
+- **GraphRAG**: Read `entities[]` + `SIMILAR` edges, ignore operational fields
+- **Agentic World Model**: Read the full graph + states + causal edges + tracking logic
 
-A `v1.0` parser will never crash on a `v1.2` document. Unrecognized fields are safely ignored.
+A basic parser will never crash on a full world model document. Unrecognized fields are safely ignored.
 
 ---
 
@@ -346,8 +360,10 @@ python3 scripts/build_entity_graph.py entity-profiles.json --output entity-graph
 
 The graph builder emits:
 
-- `nodes` — one node per canonical entity
-- `edges` — `SIMILAR` links scored by cosine similarity
+- `nodes` — one node per canonical entity, passing through world model fields (`preconditions`, `postconditions`, `related_skills`)
+- `edges` — multiple relation types:
+  - `SIMILAR`: scored by cosine similarity
+  - `REQUIRES` / `LEADS_TO`: auto-inferred causal edges based on state pre/postconditions
 - `meta` — build settings (`mode`, `top_k`, `min_score`, `vectorizer`)
 
 Example:
@@ -356,7 +372,8 @@ Example:
 {
   "meta": {
     "mode": "contextual",
-    "vectorizer": "tfidf-cosine"
+    "vectorizer": "tfidf-cosine",
+    "inferred_edge_count": 2
   },
   "nodes": [
     {
@@ -372,6 +389,12 @@ Example:
       "target": "entity:fastapi",
       "relation": "SIMILAR",
       "score": 0.7421
+    },
+    {
+      "source": "entity:learn-python",
+      "target": "entity:has-python-skill",
+      "relation": "LEADS_TO",
+      "properties": {"inferred_via": "entity:has-python-skill"}
     }
   ]
 }
