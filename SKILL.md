@@ -319,7 +319,7 @@ idempotent: true
 | `cost` | `enum` | `low`, `medium`, `high` — estimated execution cost |
 | `idempotent` | `bool` | Whether safe to re-run without side effects |
 
-Preconditions use `NOT` prefix for negation (e.g., `"NOT state:has-parsed-resume"` means that state must **not** exist).
+Preconditions use `NOT` prefix for negation (e.g., `"NOT entity:has-parsed-resume"` means that state must **not** exist).
 
 ### Tags vs entities
 

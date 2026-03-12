@@ -99,8 +99,8 @@ Kubernetes orchestration skills built on Docker foundation:
 
 This action parses a raw resume document and extracts structured skill evidence.
 
-**Precondition**: A raw resume document must be available (state:has-raw-resume).
-**Postcondition**: Produces parsed resume (state:has-parsed-resume) and skill evidence (state:has-skill-evidence).
+**Precondition**: A raw resume document must be available (entity:has-raw-resume).
+**Postcondition**: Produces parsed resume (entity:has-parsed-resume) and skill evidence (entity:has-skill-evidence).
 
 The output includes confidence scores for each identified skill and years of experience.
 </Chunk>
