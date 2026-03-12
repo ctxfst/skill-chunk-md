@@ -294,11 +294,11 @@ name: analyze-resume
 description: "Parse raw resume and extract skill evidence"
 # === World Model Fields (all optional) ===
 preconditions:
-  - "state:has-raw-resume"
-  - "NOT state:has-parsed-resume"
+  - "entity:has-raw-resume"
+  - "NOT entity:has-parsed-resume"
 postconditions:
-  - "state:has-parsed-resume"
-  - "state:has-skill-evidence"
+  - "entity:has-parsed-resume"
+  - "entity:has-skill-evidence"
 related_nodes:
   - "entity:resume-parsing"
   - "entity:skill-extraction"

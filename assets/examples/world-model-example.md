@@ -62,7 +62,6 @@ chunks:
     type: text
     priority: high
     dependencies: [skill:docker-overview]
-    state_refs: [entity:learn-kubernetes-path]
   - id: action:resume-analysis
     tags: [Resume, Analysis]
     entities: [entity:analyze-resume, entity:ian-chou]

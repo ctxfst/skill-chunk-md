@@ -145,7 +145,7 @@ def validate_world_model_fields(
     definition: dict,
     def_id: str,
     line_num: int,
-    doc_entity_ids: set,
+    doc_entity_types: dict[str, str],
     context: str = 'Chunk',
 ) -> list[ValidationError]:
     """Validate v1.3 world model fields on entities or chunks."""
@@ -169,15 +169,27 @@ def validate_world_model_fields(
                             'error'
                         ))
 
-    # state_refs should reference state-type entities
-    if 'state_refs' in definition and isinstance(definition['state_refs'], list):
-        for ref in definition['state_refs']:
-            if isinstance(ref, str) and ref not in doc_entity_ids:
-                errors.append(ValidationError(
-                    line_num,
-                    f"{context} '{def_id}': state_ref '{ref}' not found in document entities",
-                    'warning'
-                ))
+    # Ensure state_refs, preconditions, postconditions reference state-type entities
+    for state_field in ('state_refs', 'preconditions', 'postconditions'):
+        if state_field in definition and isinstance(definition[state_field], list):
+            for ref in definition[state_field]:
+                if not isinstance(ref, str):
+                    continue
+                # For preconditions, ignore "NOT " prefix for checking existence
+                ref_id = ref[4:].strip() if ref.startswith("NOT ") else ref
+                
+                if ref_id not in doc_entity_types:
+                    errors.append(ValidationError(
+                        line_num,
+                        f"{context} '{def_id}': {state_field} '{ref_id}' not found in document entities",
+                        'error'
+                    ))
+                elif doc_entity_types[ref_id] != 'state':
+                    errors.append(ValidationError(
+                        line_num,
+                        f"{context} '{def_id}': {state_field} '{ref_id}' must point to an entity of type 'state' (got '{doc_entity_types[ref_id]}')",
+                        'error'
+                    ))
 
     # Validate cost enum
     if 'cost' in definition:
@@ -242,8 +254,14 @@ def validate_file(filepath: Path) -> list[ValidationError]:
     fm_chunks = {}
     all_chunk_ids = set()
 
-    doc_entity_ids = set()
+    doc_entity_types: dict[str, str] = {}
+    seen_entities: set[str] = set()
     if frontmatter and 'entities' in frontmatter:
+        # First pass: collect all entity types
+        if isinstance(frontmatter['entities'], list):
+            for entity_def in frontmatter['entities']:
+                if isinstance(entity_def, dict) and 'id' in entity_def and 'type' in entity_def:
+                    doc_entity_types[entity_def['id']] = entity_def['type']
         if not isinstance(frontmatter['entities'], list):
             errors.append(ValidationError(
                 2,
@@ -266,14 +284,14 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                     continue
                 
                 ent_id = entity_def['id']
-                if ent_id in doc_entity_ids:
+                if ent_id in seen_entities:
                     errors.append(ValidationError(
                         line_idx,
                         f"Duplicate entity ID '{ent_id}' in frontmatter",
                         'error'
                     ))
                 else:
-                    doc_entity_ids.add(ent_id)
+                    seen_entities.add(ent_id)
 
                 # Validate entity type against known types
                 ent_type = entity_def.get('type', '')
@@ -286,7 +304,7 @@ def validate_file(filepath: Path) -> list[ValidationError]:
 
                 # Validate v1.3 world model fields on entities
                 errors.extend(validate_world_model_fields(
-                    entity_def, ent_id, line_idx, doc_entity_ids, context='Entity'
+                    entity_def, ent_id, line_idx, doc_entity_types, context='Entity'
                 ))
 
     if frontmatter and 'chunks' in frontmatter:
@@ -336,7 +354,7 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                                 f"Chunk '{chunk_id}': entity reference must be a string ID, got {type(ent_ref).__name__}",
                                 'error'
                             ))
-                        elif ent_ref not in doc_entity_ids:
+                        elif ent_ref not in doc_entity_types:
                             errors.append(ValidationError(
                                 line_num,
                                 f"Chunk '{chunk_id}': entity reference '{ent_ref}' not found in document entities",
@@ -349,7 +367,7 @@ def validate_file(filepath: Path) -> list[ValidationError]:
             errors.extend(validate_multimodal_fields(chunk_def, chunk_id, line_num, doc_dir))
             # Validate v1.3 world model fields on chunks
             errors.extend(validate_world_model_fields(
-                chunk_def, chunk_id, line_num, doc_entity_ids, context='Chunk'
+                chunk_def, chunk_id, line_num, doc_entity_types, context='Chunk'
             ))
     elif frontmatter is None:
         errors.append(ValidationError(

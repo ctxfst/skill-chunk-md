@@ -295,10 +295,11 @@ def load_extra_edges(path: Path) -> list[dict[str, Any]]:
             continue
         if relation not in VALID_EDGE_RELATIONS:
             print(
-                f"Warning: extra-edges[{idx}] has unknown relation '{relation}', "
+                f"Error: extra-edges[{idx}] has unknown relation '{relation}', "
                 f"allowed: {sorted(VALID_EDGE_RELATIONS)}",
                 file=sys.stderr,
             )
+            sys.exit(1)
 
         validated_edge: dict[str, Any] = {
             "source": source,

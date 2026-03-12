@@ -13,8 +13,8 @@ Library API:
 
 CLI Usage:
     python world_state.py init --goal "entity:learn-kubernetes-path" --output state.json
-    python world_state.py add-state state.json "state:has-raw-resume"
-    python world_state.py remove-state state.json "state:has-raw-resume"
+    python world_state.py add-state state.json "entity:has-raw-resume"
+    python world_state.py remove-state state.json "entity:has-raw-resume"
     python world_state.py complete-skill state.json --skill analyze-resume --result success --summary "Parsed 3 skills"
     python world_state.py check-preconditions state.json --skill-yaml path/to/SKILL.md
     python world_state.py show state.json
@@ -153,8 +153,8 @@ def check_preconditions(
     Returns (all_satisfied, list_of_unmet_conditions).
 
     Preconditions:
-    - ``"state:foo"`` → ``state:foo`` must be in active_states
-    - ``"NOT state:foo"`` → ``state:foo`` must NOT be in active_states
+    - ``"entity:foo"`` → ``entity:foo`` must be in active_states
+    - ``"NOT entity:foo"`` → ``entity:foo`` must NOT be in active_states
     """
     active = set(state.get("active_states", []))
     unmet: list[str] = []
