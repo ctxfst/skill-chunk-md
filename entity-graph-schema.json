@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CtxFST Entity Graph",
+  "description": "JSON Schema for the entity graph output produced by build_entity_graph.py. Includes auto-computed SIMILAR edges and optional manual/runtime operational edges (v1.3).",
+  "type": "object",
+  "required": ["meta", "nodes", "edges"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Build metadata.",
+      "properties": {
+        "input": { "type": "string" },
+        "input_type": { "type": "string" },
+        "mode": { "type": "string" },
+        "vectorizer": { "type": "string" },
+        "top_k": { "type": "integer" },
+        "min_score": { "type": "number" },
+        "entity_count": { "type": "integer" },
+        "edge_count": { "type": "integer" },
+        "extra_edge_count": { "type": "integer", "description": "Number of manually-provided edges merged in (v1.3)." },
+        "dangling_chunk_entity_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "mention_count": { "type": "integer" },
+          "chunk_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "preconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "v1.3 world model field."
+          },
+          "postconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "v1.3 world model field."
+          },
+          "related_skills": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "v1.3 world model field."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relation"],
+        "properties": {
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "SIMILAR",
+              "REQUIRES",
+              "LEADS_TO",
+              "EVIDENCE",
+              "IMPLIES",
+              "COMPLETED",
+              "BLOCKED_BY"
+            ]
+          },
+          "score": {
+            "type": "number",
+            "description": "Similarity score (primarily for SIMILAR edges)."
+          },
+          "shared_chunk_count": {
+            "type": "integer",
+            "description": "Number of chunks that mention both source and target."
+          },
+          "properties": {
+            "type": "object",
+            "description": "Optional edge properties (v1.3).",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the edge was created or updated."
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "description": "Certainty of the relationship."
+              },
+              "result_summary": {
+                "type": "string",
+                "description": "Brief result of the action."
+              },
+              "status": {
+                "type": "string",
+                "enum": ["active", "expired", "failed"],
+                "description": "Current status of the edge."
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

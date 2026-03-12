@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CtxFST World State",
+  "description": "JSON Schema for the runtime world state file used by agent loops (v1.3).",
+  "type": "object",
+  "required": ["session_id", "goal", "active_states", "completed_skills"],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique session identifier (UUID)."
+    },
+    "goal": {
+      "type": "string",
+      "description": "The current goal entity ID (e.g., 'entity:learn-kubernetes-path')."
+    },
+    "active_states": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Currently active state entity IDs."
+    },
+    "completed_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "timestamp", "result"],
+        "properties": {
+          "skill": {
+            "type": "string",
+            "description": "Name of the completed skill."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the skill was completed."
+          },
+          "result": {
+            "type": "string",
+            "enum": ["success", "failed", "partial"],
+            "description": "Outcome of the skill execution."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Brief summary of the execution result."
+          }
+        },
+        "additionalProperties": true
+      },
+      "description": "Record of skills that have been executed."
+    },
+    "current_subgraph": {
+      "type": "object",
+      "description": "The goal-relevant subgraph extracted from entity-graph.json.",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Entity IDs in the subgraph."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "target", "relation"],
+            "properties": {
+              "source": { "type": "string" },
+              "target": { "type": "string" },
+              "relation": { "type": "string" }
+            },
+            "additionalProperties": true
+          },
+          "description": "Edges in the subgraph."
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this session was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this session was last updated."
+    }
+  },
+  "additionalProperties": true
+}

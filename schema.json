@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CtxFST Export Protocol",
+  "description": "JSON Schema for a CtxFST document — a semantic world model format with an entity graph and augmented semantic chunks.",
+  "type": "object",
+  "required": ["chunks"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Optional document title."
+    },
+    "entities": {
+      "type": "array",
+      "description": "Document-level canonical entity catalog. Forms the semantic backbone of the knowledge graph — includes descriptive nodes (skills, tools) and operational nodes (states, actions, goals).",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^entity:[a-z0-9-]+$",
+            "description": "Unique identifier for the entity, typically 'entity:kebab-case-name'."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable canonical name."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "skill", "tool", "library", "framework", "platform", 
+              "database", "architecture", "protocol", "concept", 
+              "domain", "product",
+              "state", "action", "goal", "agent", "evidence"
+            ],
+            "description": "Ontological classification of the entity."
+          },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Alternative names or abbreviations for the entity."
+          },
+          "preconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "State entity IDs that must exist before this entity is actionable."
+          },
+          "postconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "State entity IDs created or updated when this entity is completed."
+          },
+          "related_skills": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Names of SKILL.md files associated with this entity."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "chunks": {
+      "type": "array",
+      "description": "Array of semantic chunks carrying vector context and content.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "context", "content"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+:[a-z0-9-]+$",
+            "description": "Unique chunk identifier (v1.0), usually 'category:topic'."
+          },
+          "context": {
+            "type": "string",
+            "description": "The contextual grounding for the chunk, usually 50-100 tokens."
+          },
+          "content": {
+            "type": "string",
+            "description": "The raw markdown content of the chunk."
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Semantic tags used for strict filtering."
+          },
+          "entities": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^entity:[a-z0-9-]+$" },
+            "description": "Entity IDs that this chunk mentions. Defines chunk-to-entity edges."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date",
+            "description": "Creation date for temporal queries."
+          },
+          "version": {
+            "type": "integer",
+            "description": "Document version for temporal/state tracking."
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Agentic hint for retrieval priority."
+          },
+          "dependencies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of Chunk IDs that must be read before this one to make sense."
+          },
+          "type": {
+            "type": "string",
+            "description": "Media type indicator, defaults to text."
+          },
+          "state_refs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "State entity IDs that this chunk is relevant to."
+          },
+          "source": {
+            "type": "string",
+            "description": "Origin file or URL."
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

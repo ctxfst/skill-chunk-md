@@ -159,8 +159,8 @@ skill-chunk-md/
 CtxFST is a **stable, versioned specification**. We define exact constraints so downstream parsers and graph importers don't break. 
 
 If you are building an integration, see the definitive specifications:
-1. **[CtxFST Formal Specification (v2.0)](../references/ctxfst-spec.md)** (Markdown)
-2. **[JSON Schema](../schema.json)** (Machine-readable Draft-07)
+1. **[CtxFST Formal Specification (v2.0)](references/ctxfst-spec.md)** (Markdown)
+2. **[JSON Schema](schema.json)** (Machine-readable Draft-07)
 
 ### Layer Compatibility & Strict Superset Guarantee
 CtxFST v2.0 is a strictly backward-compatible superset of all v1.x formats.
