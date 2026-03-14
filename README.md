@@ -2,7 +2,7 @@
 
 > **Context-first Markdown for RAG & Agents. Convert raw notes into structured CtxFST documents — a semantic world model format with chunks, entities, auto-inferred operational edges, and world state tracking.**
 
-`skill-chunk-md` is the reference implementation for the `ctxfst` workflow: a [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) plus validation and backend scripts that turn plain Markdown into an agent-ready world model for LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG, and other modern RAG/Agent stacks.
+`skill-chunk-md` is the reference implementation for the `ctxfst` workflow: a [Claude skill](https://github.com/anthropics/anthropic-cookbook/tree/main/misc/prompt_caching_examples) plus validation, export, graph builder, world state, and a complete closed-loop agent runtime that turns plain Markdown into a deterministic planning surface for LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG, and other modern RAG/Agent stacks.
 
 CtxFST provides the full semantic backbone for your data:
 - `entities[]` define the world model (skills, states, actions, goals)
@@ -43,10 +43,6 @@ Use the included example to see the full pipeline end-to-end:
    python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
    ```
 
-   ```bash
-   python3 scripts/build_entity_profiles.py chunks.json --output entity-profiles.json
-   ```
-
 5. Build `entity-graph.json` (auto-infers `REQUIRES`/`LEADS_TO` causal edges):
 
    ```bash
@@ -56,7 +52,24 @@ Use the included example to see the full pipeline end-to-end:
 6. Initialize an agent World State tracking session:
 
    ```bash
-   python3 scripts/world_state.py init --goal "entity:learn-kubernetes-path" --output state.json
+   python3 scripts/world_state.py init --goal "entity:learn-kubernetes-path" --seed "entity:has-raw-resume" --output state.json
+   ```
+
+7. Run the closed-loop agent runtime:
+
+   ```bash
+   python3 scripts/agent_loop.py state.json --skill-dir tests/test-skills/ --dry-run --lookahead 3 --explain
+   ```
+
+   Output:
+   ```
+   [Step 1] Plan (3 steps): analyze-resume → match-skills → generate-plan
+   [Step 1]   Step 1: analyze-resume
+   [Step 1]     pre  ✓  entity:has-raw-resume
+   [Step 1]     post +  entity:has-parsed-resume
+   ...
+   [Step 3]     post +  entity:learn-kubernetes-path ← GOAL
+   ✅ Loop finished: goal_reached  Iterations: 3
    ```
 
 Pipeline overview:
@@ -73,6 +86,8 @@ profilesBuilder --> entityProfiles[entity-profiles.json]
 entityProfiles --> graphBuilder[build_entity_graph.py]
 graphBuilder --> entityGraph[entity-graph.json]
 entityGraph --> agentState[world_state.py]
+agentState --> agentLoop[agent_loop.py]
+entityGraph --> agentLoop
 ```
 
 For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, the derived `entity-profiles.json`, and the final `entity-graph.json`.
@@ -140,12 +155,18 @@ skill-chunk-md/
 │   ├── build_entity_profiles.py# Build derived entity profiles
 │   ├── build_entity_graph.py   # Build Entity->Entity similarity & causal edges
 │   ├── world_state.py          # Manage agent runtime session state
-│   ├── skill_selector.py       # Deterministic rule-based skill selector
+│   ├── skill_selector.py       # Relation-aware routing, lookahead planning, explanations
+│   ├── agent_loop.py           # Closed-loop agent runtime with critique interface
 │   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
+├── tests/
+│   ├── test_agent_loop.py      # 66 end-to-end tests for the agent runtime
+│   └── test-skills/            # 3-skill chain used by the demo and tests
+├── promotion/
+│   └── launch-kit.md           # Reusable copy for GitHub, HN, Reddit, Discord, X
 ├── references/
 │   ├── chunk-syntax.md         # Complete <Chunk> tag reference
 │   ├── entity-format.md        # Entity schema and field reference
-│   └── semantic-chunking.md     # Chunking methodology
+│   └── semantic-chunking.md    # Chunking methodology
 └── assets/examples/
     ├── before.md               # Sample: plain Markdown
     ├── after.md                # Sample: CtxFST format
@@ -411,6 +432,64 @@ Example:
 - `--min-score 0.15` — discard weak similarity edges
 
 These scripts are **reference builders**. They use lightweight text aggregation plus TF-IDF cosine similarity, so they work without an external embedding model. If you later switch to a stronger embedding backend, the CtxFST format does not need to change.
+
+---
+
+## Run the Closed-Loop Agent Runtime
+
+Once you have an `entity-graph.json` and a world state file, `agent_loop.py` orchestrates the full planner → executor → world-state loop.
+
+```bash
+python3 scripts/agent_loop.py state.json --skill-dir tests/test-skills/ --dry-run
+```
+
+### CLI flags
+
+| Flag | Purpose |
+|------|---------|
+| `--dry-run` | Execute all steps automatically (default) |
+| `--interactive` | Pause at each step with y/s/a prompt |
+| `--lookahead N` | BFS multi-step planning up to N depth |
+| `--explain` | Print relation-specific explanation for each selection |
+| `--critique` | Interactive plan critique before each step (auto-sets `--lookahead 5`) |
+| `--graph FILE` | Append `COMPLETED` edges back to `entity-graph.json` after each step |
+| `--max-iter N` | Stop after N iterations (default 20) |
+
+### How routing works
+
+`skill_selector.py` uses **weighted Dijkstra** over the entity graph to measure goal proximity:
+
+| Edge relation | Weight |
+|---------------|--------|
+| `REQUIRES` / `LEADS_TO` | 1 (causal path) |
+| `EVIDENCE` / `IMPLIES` | 2 |
+| `SIMILAR` | 3 (semantic neighbor) |
+| `COMPLETED` / `BLOCKED_BY` | skipped |
+
+Skills on the causal path to the goal rank above semantically-similar alternatives. Every selection decision names the specific edge relation that drove it.
+
+### Interactive plan critique
+
+With `--critique`, the loop presents the full plan before each execution step and accepts human commands:
+
+```
+Best plan (3 steps): analyze-resume → match-skills → generate-plan
+  Step 1: analyze-resume   pre ✓ entity:has-raw-resume
+
+Commands: [a]ccept  [s]kip <skill>  [f]orce <skill>  [r]eset  [q]uit
+> s match-skills
+♻️  Replanning without 'match-skills'...
+```
+
+The planner replans immediately on every command. `force` checks preconditions before accepting.
+
+### Tests
+
+66 end-to-end tests in `tests/test_agent_loop.py` cover happy path, failure tolerance, goal-aware routing, relation-aware routing, multi-step planning, explanation output, and all critique commands. No LLM required — the planning loop is fully deterministic.
+
+```bash
+python3 -m pytest tests/test_agent_loop.py -v
+```
 
 ---
 
