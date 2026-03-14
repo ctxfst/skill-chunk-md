@@ -7,13 +7,15 @@ write postconditions back → repeat until the goal is reached.
 
 Library API:
     from agent_loop import run_loop, DryRunExecutor, CallbackExecutor
-    from agent_loop import ExecutionResult, LoopResult
+    from agent_loop import ExecutionResult, LoopResult, critique_plan
 
 CLI Usage:
     python agent_loop.py state.json --skill-dir skills/ --dry-run
     python agent_loop.py state.json --skill-dir skills/ --interactive
     python agent_loop.py state.json --skill-dir skills/ --graph entity-graph.json
     python agent_loop.py state.json --skill-dir skills/ --max-iter 10
+    python agent_loop.py state.json --skill-dir skills/ --lookahead 5 --explain
+    python agent_loop.py state.json --skill-dir skills/ --lookahead 5 --critique
     python agent_loop.py state.json --skill-dir skills/ -o result.json
 """
 
@@ -34,6 +36,8 @@ from world_state import (
     show_state,
 )
 from skill_selector import (
+    PlanExplanation,
+    check_preconditions,
     explain_selection,
     find_plan,
     find_plan_with_explanation,
@@ -175,6 +179,141 @@ def _append_completed_edges(
     return added
 
 
+_CRITIQUE_HELP = (
+    "Commands: [a]ccept  [s]kip <skill>  [f]orce <skill>  [r]eset  [q]uit"
+)
+
+
+def critique_plan(
+    explanation: PlanExplanation,
+    state: dict[str, Any],
+    skills: list[dict[str, Any]],
+    max_depth: int,
+) -> list[str] | None:
+    """Present a plan for human critique in an interactive loop.
+
+    The human may accept, skip a skill, force a specific first step, reset
+    all constraints, or quit (abort the loop entirely).
+
+    Returns the accepted plan (list of skill names) or ``None`` if the user
+    aborted with ``q``.
+
+    Commands
+    --------
+    a              Accept — proceed with current plan
+    s <skill>      Skip — exclude skill and replan
+    f <skill>      Force — require skill as the next step (preconditions checked)
+    r              Reset — clear all constraints and replan from scratch
+    q              Quit — abort the loop
+    """
+    skills_by_name: dict[str, dict[str, Any]] = {
+        s.get("name", ""): s for s in skills if s.get("name")
+    }
+    skipped: set[str] = set()
+    current = explanation
+
+    while True:
+        # Display plan
+        print(file=sys.stderr)
+        for line in current.summary.splitlines():
+            print(f"  {line}", file=sys.stderr)
+        print(file=sys.stderr)
+
+        if not current.plan:
+            print("  ⚠️  No valid plan under current constraints.", file=sys.stderr)
+
+        print(_CRITIQUE_HELP, file=sys.stderr)
+
+        try:
+            raw = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n🛑 Planning aborted.", file=sys.stderr)
+            return None
+
+        parts = raw.split(maxsplit=1)
+        cmd = parts[0].lower() if parts else ""
+        arg = parts[1].strip() if len(parts) > 1 else ""
+
+        # --- accept ---
+        if cmd in ("a", "accept"):
+            if not current.plan:
+                print("❌ Nothing to accept — replan first or [r]eset.", file=sys.stderr)
+                continue
+            print(f"✅ Accepted: {' → '.join(current.plan)}", file=sys.stderr)
+            return current.plan
+
+        # --- quit ---
+        elif cmd in ("q", "quit"):
+            print("🛑 Planning aborted.", file=sys.stderr)
+            return None
+
+        # --- reset ---
+        elif cmd in ("r", "reset"):
+            skipped = set()
+            current = find_plan_with_explanation(state, skills, max_depth)
+            print("🔄 Constraints reset.", file=sys.stderr)
+
+        # --- skip ---
+        elif cmd in ("s", "skip"):
+            if not arg:
+                print("  Usage: s <skill-name>", file=sys.stderr)
+                continue
+            if arg not in skills_by_name:
+                print(f"  ❌ Unknown skill: '{arg}'", file=sys.stderr)
+                continue
+            skipped.add(arg)
+            filtered = [sk for sk in skills if sk.get("name") not in skipped]
+            current = find_plan_with_explanation(state, filtered, max_depth)
+            if not current.plan:
+                print(f"  ⚠️  No plan without '{arg}'. Use [r]eset to undo.", file=sys.stderr)
+            else:
+                print(f"  ♻️  Replanning without '{arg}'...", file=sys.stderr)
+
+        # --- force ---
+        elif cmd in ("f", "force"):
+            if not arg:
+                print("  Usage: f <skill-name>", file=sys.stderr)
+                continue
+            skill = skills_by_name.get(arg)
+            if skill is None:
+                print(f"  ❌ Unknown skill: '{arg}'", file=sys.stderr)
+                continue
+            active = set(state.get("active_states", []))
+            satisfied, unmet = check_preconditions(active, skill.get("preconditions", []))
+            if not satisfied:
+                print(f"  ❌ Cannot force '{arg}' — unmet preconditions: {unmet}", file=sys.stderr)
+                continue
+
+            # Simulate applying forced skill, then find tail plan for remainder
+            sim_active = active | set(skill.get("postconditions", []))
+            sim_state = {**state, "active_states": list(sim_active)}
+            available = [sk for sk in skills if sk.get("name") not in skipped and sk.get("name") != arg]
+            tail = find_plan_with_explanation(sim_state, available, max(1, max_depth - 1))
+
+            forced_plan = [arg] + (tail.plan or [])
+            goal = state.get("goal", "")
+            lines = [
+                f"Forced plan ({len(forced_plan)} step{'s' if len(forced_plan) != 1 else ''}): "
+                f"{' → '.join(forced_plan)}",
+                f"  Step 1: {arg} [forced by user]",
+            ]
+            for i, name in enumerate(tail.plan or [], 2):
+                lines.append(f"  Step {i}: {name}")
+            if not tail.plan:
+                lines.append("  ⚠️  No continuation found after forced step.")
+            if tail.alternatives:
+                lines.append(f"\nAlternatives ({len(tail.alternatives)}):")
+                for alt in tail.alternatives:
+                    lines.append(f"  {arg} → {' → '.join(alt)}")
+            current = PlanExplanation(
+                plan=forced_plan, steps=[], alternatives=[], summary="\n".join(lines)
+            )
+            print(f"  🔒 Forcing '{arg}' as first step...", file=sys.stderr)
+
+        else:
+            print(f"  Unknown command. {_CRITIQUE_HELP}", file=sys.stderr)
+
+
 def format_loop_result(result: LoopResult) -> str:
     """Format a human-readable summary of the loop result."""
     icon = "✅" if result.goal_reached else "❌"
@@ -210,14 +349,19 @@ def run_loop(
     stop_on_failure: bool = True,
     lookahead: int = 0,
     explain: bool = False,
+    critique: bool = False,
 ) -> LoopResult:
     """Run the agent loop until the goal is reached or termination.
 
     When ``lookahead > 0`` the planner runs BFS over the skill application
     graph (``find_plan``) at each iteration to find the shortest path to the
     goal within ``lookahead`` steps, then executes only the first step.
-    This turns the loop from greedy single-step into a replanning lookahead
-    planner.  If no plan is found, the loop falls back to greedy selection.
+
+    When ``critique=True`` (requires ``lookahead > 0``), the planner presents
+    its plan to the user before each execution step for interactive feedback
+    (accept / skip / force / reset / quit). Quitting sets
+    ``terminated_reason="user_aborted"``.  ``critique`` implies ``explain``.
+
     When ``lookahead == 0`` (default) the loop uses the original greedy mode.
     """
     goal = state.get("goal", "")
@@ -242,7 +386,20 @@ def run_loop(
         skill: dict[str, Any] | None = None
 
         if lookahead > 0:
-            if explain:
+            if critique:
+                # Interactive: show plan + collect human feedback before executing
+                explanation = find_plan_with_explanation(state, skills, max_depth=lookahead)
+                accepted = critique_plan(explanation, state, skills, lookahead)
+                if accepted is None:
+                    return LoopResult(
+                        iterations=iteration - 1,
+                        goal_reached=False,
+                        terminated_reason="user_aborted",
+                        final_state=state,
+                        history=history,
+                    )
+                plan = accepted or None
+            elif explain:
                 explanation = find_plan_with_explanation(state, skills, max_depth=lookahead)
                 for line in explanation.summary.splitlines():
                     _log(iteration, line)
@@ -363,6 +520,9 @@ def main() -> None:
                         help="Enable multi-step planning: BFS up to N steps ahead (0 = greedy, default)")
     parser.add_argument("--explain", action="store_true",
                         help="Log relation-specific explanations for each selection and plan")
+    parser.add_argument("--critique", action="store_true",
+                        help="Pause before each execution step for interactive plan critique "
+                             "(implies --lookahead 5 if --lookahead not set)")
     parser.add_argument("--output", "-o", default=None, help="Output loop result JSON file")
 
     args = parser.parse_args()
@@ -395,10 +555,14 @@ def main() -> None:
     else:
         executor = DryRunExecutor()
 
+    # --critique implies lookahead (default 5 if unset)
+    effective_lookahead = args.lookahead or (5 if args.critique else 0)
+
     # Run
     stop_on_failure = not args.continue_on_failure
     result = run_loop(state, skills, executor, graph, args.max_iter, stop_on_failure,
-                      lookahead=args.lookahead, explain=args.explain)
+                      lookahead=effective_lookahead, explain=args.explain,
+                      critique=args.critique)
 
     # Save state
     save_state(state, state_path)

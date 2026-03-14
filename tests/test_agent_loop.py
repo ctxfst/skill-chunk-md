@@ -21,6 +21,7 @@ Run:
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 # Allow importing from scripts/
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -786,6 +787,169 @@ class TestRelationAwareRouting(unittest.TestCase):
         hops = _goal_hop_distances(state)
         self.assertNotIn("entity:done-skill", hops)
         self.assertEqual(hops["entity:real"], 1)
+
+
+# ---------------------------------------------------------------------------
+# Interactive plan critique tests
+# ---------------------------------------------------------------------------
+
+class TestInteractivePlanCritique(unittest.TestCase):
+    """critique_plan() collects human feedback and returns accepted plan or None."""
+
+    def _setup(self):
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+            _make_skill("alt", preconditions=["entity:a"], postconditions=["entity:goal"], cost="high"),
+        ]
+        return state, skills
+
+    def _explanation(self, state, skills, max_depth=5):
+        from skill_selector import find_plan_with_explanation
+        return find_plan_with_explanation(state, skills, max_depth=max_depth)
+
+    # --- critique_plan unit tests ---
+
+    def test_accept_returns_plan(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        with patch("builtins.input", return_value="a"):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertEqual(result, expl.plan)
+
+    def test_quit_returns_none(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        with patch("builtins.input", return_value="q"):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertIsNone(result)
+
+    def test_eof_returns_none(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        with patch("builtins.input", side_effect=EOFError):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertIsNone(result)
+
+    def test_skip_replans_without_skill(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        # Best plan is s1→s2. Skip s1 → should find alt→goal
+        with patch("builtins.input", side_effect=["s s1", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertIsNotNone(result)
+        self.assertNotIn("s1", result)
+
+    def test_skip_unknown_skill_stays_in_loop(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        # Unknown skill → stays in loop; then accept
+        with patch("builtins.input", side_effect=["s nonexistent", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertEqual(result, expl.plan)
+
+    def test_reset_restores_original_plan(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        original_plan = list(expl.plan)
+        # Skip s1 (replans), then reset (back to original), then accept
+        with patch("builtins.input", side_effect=["s s1", "r", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertEqual(result, original_plan)
+
+    def test_force_valid_skill(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        # alt has preconditions=["entity:a"] which is active → can be forced
+        with patch("builtins.input", side_effect=["f alt", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], "alt")
+
+    def test_force_unmet_preconditions_stays_in_loop(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        # s2 requires entity:b which is not active → force should fail
+        with patch("builtins.input", side_effect=["f s2", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        # After failed force, accepted original plan
+        self.assertEqual(result, expl.plan)
+
+    def test_force_unknown_skill_stays_in_loop(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        with patch("builtins.input", side_effect=["f ghost", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertEqual(result, expl.plan)
+
+    def test_invalid_command_stays_in_loop(self):
+        from agent_loop import critique_plan
+        state, skills = self._setup()
+        expl = self._explanation(state, skills)
+        with patch("builtins.input", side_effect=["???", "a"]):
+            result = critique_plan(expl, state, skills, max_depth=5)
+        self.assertEqual(result, expl.plan)
+
+    # --- run_loop integration ---
+
+    def test_run_loop_critique_accept_reaches_goal(self):
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        with patch("builtins.input", return_value="a"):
+            result = run_loop(state, skills, DryRunExecutor(), lookahead=5, critique=True)
+        self.assertTrue(result.goal_reached)
+        self.assertEqual(result.terminated_reason, "goal_reached")
+
+    def test_run_loop_critique_quit_returns_user_aborted(self):
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [_make_skill("s1", preconditions=["entity:a"], postconditions=["entity:goal"])]
+        with patch("builtins.input", return_value="q"):
+            result = run_loop(state, skills, DryRunExecutor(), lookahead=5, critique=True)
+        self.assertFalse(result.goal_reached)
+        self.assertEqual(result.terminated_reason, "user_aborted")
+
+    def test_run_loop_critique_skip_then_accept_uses_alternative(self):
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1",  preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2",  preconditions=["entity:b"], postconditions=["entity:goal"]),
+            _make_skill("alt", preconditions=["entity:a"], postconditions=["entity:goal"], cost="high"),
+        ]
+        # Skip s1 → forces alt route; accept; then loop hits goal
+        with patch("builtins.input", side_effect=["s s1", "a"]):
+            result = run_loop(state, skills, DryRunExecutor(), lookahead=5, critique=True)
+        self.assertTrue(result.goal_reached)
+        # alt was used as first (and only) step
+        self.assertEqual(result.history[0].skill_name, "alt")
+
+    def test_run_loop_critique_does_not_change_non_critique_result(self):
+        """critique=False must give same outcome as critique=True with auto-accept."""
+        state_a = _make_state(goal="entity:goal", active=["entity:a"])
+        state_b = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        r_normal = run_loop(state_a, skills, DryRunExecutor(), lookahead=5)
+        with patch("builtins.input", return_value="a"):
+            r_critique = run_loop(state_b, skills, DryRunExecutor(), lookahead=5, critique=True)
+        self.assertEqual(r_normal.goal_reached,  r_critique.goal_reached)
+        self.assertEqual(r_normal.iterations,    r_critique.iterations)
+        self.assertEqual([s.skill_name for s in r_normal.history],
+                         [s.skill_name for s in r_critique.history])
 
 
 # ---------------------------------------------------------------------------
