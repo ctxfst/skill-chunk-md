@@ -33,7 +33,7 @@ from world_state import (
     save_state,
     show_state,
 )
-from skill_selector import scan_skills, select_best, select_candidates
+from skill_selector import find_plan, scan_skills, select_best, select_candidates
 
 
 # ---------------------------------------------------------------------------
@@ -201,10 +201,23 @@ def run_loop(
     graph: dict[str, Any] | None = None,
     max_iterations: int = 20,
     stop_on_failure: bool = True,
+    lookahead: int = 0,
 ) -> LoopResult:
-    """Run the agent loop until the goal is reached or termination."""
+    """Run the agent loop until the goal is reached or termination.
+
+    When ``lookahead > 0`` the planner runs BFS over the skill application
+    graph (``find_plan``) at each iteration to find the shortest path to the
+    goal within ``lookahead`` steps, then executes only the first step.
+    This turns the loop from greedy single-step into a replanning lookahead
+    planner.  If no plan is found, the loop falls back to greedy selection.
+    When ``lookahead == 0`` (default) the loop uses the original greedy mode.
+    """
     goal = state.get("goal", "")
     history: list[StepRecord] = []
+    # Build name→dict index once for O(1) lookup during lookahead execution
+    skills_by_name: dict[str, dict[str, Any]] = {
+        s.get("name", ""): s for s in skills if s.get("name")
+    }
 
     for iteration in range(1, max_iterations + 1):
         # Check goal
@@ -217,20 +230,32 @@ def run_loop(
                 history=history,
             )
 
-        # Select
-        candidates = select_candidates(state, skills)
-        if not candidates:
-            return LoopResult(
-                iterations=iteration - 1,
-                goal_reached=False,
-                terminated_reason="no_candidates",
-                final_state=state,
-                history=history,
-            )
+        # Select next skill — lookahead or greedy
+        skill: dict[str, Any] | None = None
 
-        skill = select_best(candidates)
-        assert skill is not None  # guaranteed by non-empty candidates
-        _log(iteration, f"Selecting: {skill['name']} (cost={skill['cost']}, postconditions={skill['postcondition_count']})")
+        if lookahead > 0:
+            plan = find_plan(state, skills, max_depth=lookahead)
+            if plan:
+                _log(iteration, f"Plan ({len(plan)} step{'s' if len(plan) != 1 else ''}): "
+                                 f"{' → '.join(plan)}")
+                skill = skills_by_name.get(plan[0])
+
+        if skill is None:
+            # Greedy fallback (also used when lookahead==0)
+            candidates = select_candidates(state, skills)
+            if not candidates:
+                return LoopResult(
+                    iterations=iteration - 1,
+                    goal_reached=False,
+                    terminated_reason="no_candidates",
+                    final_state=state,
+                    history=history,
+                )
+            skill = select_best(candidates)
+
+        assert skill is not None
+        _log(iteration, f"Selecting: {skill['name']} (cost={skill.get('cost', '?')}, "
+                         f"postconditions={len(skill.get('postconditions', []))})")
 
         # Execute
         try:
@@ -316,6 +341,8 @@ def main() -> None:
     parser.add_argument("--continue-on-failure", action="store_true", help="Continue after execution failures")
     parser.add_argument("--dry-run", action="store_true", help="Simulate execution (default)")
     parser.add_argument("--interactive", action="store_true", help="Pause at each step for user confirmation")
+    parser.add_argument("--lookahead", type=int, default=0,
+                        help="Enable multi-step planning: BFS up to N steps ahead (0 = greedy, default)")
     parser.add_argument("--output", "-o", default=None, help="Output loop result JSON file")
 
     args = parser.parse_args()
@@ -350,7 +377,8 @@ def main() -> None:
 
     # Run
     stop_on_failure = not args.continue_on_failure
-    result = run_loop(state, skills, executor, graph, args.max_iter, stop_on_failure)
+    result = run_loop(state, skills, executor, graph, args.max_iter, stop_on_failure,
+                      lookahead=args.lookahead)
 
     # Save state
     save_state(state, state_path)

@@ -386,6 +386,129 @@ class TestIdempotentReexecution(unittest.TestCase):
 # Relation-aware routing tests
 # ---------------------------------------------------------------------------
 
+class TestMultiStepPlanning(unittest.TestCase):
+    """find_plan returns the shortest skill sequence; run_loop with lookahead uses it."""
+
+    # --- find_plan unit tests ---
+
+    def test_finds_3_step_chain(self):
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:c"]),
+            _make_skill("s3", preconditions=["entity:c"], postconditions=["entity:goal"]),
+        ]
+        plan = find_plan(state, skills, max_depth=5)
+        self.assertEqual(plan, ["s1", "s2", "s3"])
+
+    def test_returns_empty_when_goal_already_active(self):
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:goal"])
+        plan = find_plan(state, [], max_depth=5)
+        self.assertEqual(plan, [])
+
+    def test_returns_none_when_no_path(self):
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [_make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"])]
+        plan = find_plan(state, skills, max_depth=5)
+        self.assertIsNone(plan)
+
+    def test_returns_none_when_depth_exceeded(self):
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        plan = find_plan(state, skills, max_depth=1)  # chain needs 2 steps
+        self.assertIsNone(plan)
+
+    def test_finds_shortest_path_when_multiple_routes(self):
+        """
+        Two routes to goal:
+          long:  a → b → c → goal  (3 steps)
+          short: a → goal          (1 step)
+        BFS should return the 1-step route.
+        """
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("long-s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("long-s2", preconditions=["entity:b"], postconditions=["entity:c"]),
+            _make_skill("long-s3", preconditions=["entity:c"], postconditions=["entity:goal"]),
+            _make_skill("short",   preconditions=["entity:a"], postconditions=["entity:goal"]),
+        ]
+        plan = find_plan(state, skills, max_depth=5)
+        self.assertEqual(plan, ["short"])
+
+    def test_does_not_reuse_non_idempotent_skill(self):
+        """A non-idempotent skill must not appear twice in the plan."""
+        from skill_selector import find_plan
+        # Only path: s1 (non-idempotent) → s2.  Can't loop via s1 again.
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"],    postconditions=["entity:b"], idempotent=False),
+            _make_skill("s2", preconditions=["entity:b"],    postconditions=["entity:goal"]),
+        ]
+        plan = find_plan(state, skills, max_depth=5)
+        self.assertEqual(plan, ["s1", "s2"])
+        self.assertEqual(plan.count("s1"), 1)
+
+    def test_skips_already_completed_non_idempotent(self):
+        """find_plan respects skills already completed in state."""
+        from skill_selector import find_plan
+        state = _make_state(goal="entity:goal", active=["entity:a", "entity:b"])
+        state["completed_skills"] = [{"skill": "s1", "result": "success"}]
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"], idempotent=False),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        plan = find_plan(state, skills, max_depth=5)
+        # s1 already done and non-idempotent → plan starts from s2
+        self.assertEqual(plan, ["s2"])
+
+    # --- run_loop integration with lookahead ---
+
+    def test_lookahead_reaches_goal(self):
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        result = run_loop(state, skills, DryRunExecutor(), lookahead=5)
+        self.assertTrue(result.goal_reached)
+        self.assertEqual(result.iterations, 2)
+
+    def test_lookahead_falls_back_to_greedy_when_no_plan(self):
+        """When find_plan returns None, loop falls back to greedy and still progresses."""
+        state = _make_state(goal="entity:unreachable", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"], idempotent=True),
+        ]
+        # lookahead=1: find_plan can't see goal in 1 step → None → greedy picks s1
+        result = run_loop(state, skills, DryRunExecutor(), lookahead=1, max_iterations=2)
+        self.assertEqual(result.iterations, 2)
+        names = [s.skill_name for s in result.history]
+        self.assertEqual(names.count("s1"), 2)
+
+    def test_lookahead_zero_is_greedy(self):
+        """lookahead=0 must behave identically to the original greedy loop."""
+        state_a = _make_state(goal="entity:goal", active=["entity:a"])
+        state_b = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        r_greedy   = run_loop(state_a, skills, DryRunExecutor(), lookahead=0)
+        r_lookahead = run_loop(state_b, skills, DryRunExecutor(), lookahead=5)
+        self.assertEqual(r_greedy.iterations,          r_lookahead.iterations)
+        self.assertEqual(r_greedy.goal_reached,        r_lookahead.goal_reached)
+        self.assertEqual([s.skill_name for s in r_greedy.history],
+                         [s.skill_name for s in r_lookahead.history])
+
+
 class TestRelationAwareRouting(unittest.TestCase):
     """_goal_hop_distances uses EDGE_WEIGHTS to distinguish causal vs. similar edges."""
 

@@ -18,6 +18,7 @@ import argparse
 import heapq
 import json
 import sys
+from collections import deque
 from pathlib import Path
 from typing import Any
 
@@ -283,6 +284,96 @@ def select_candidates(
 def select_best(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Return the single best candidate, or None if no candidates."""
     return candidates[0] if candidates else None
+
+
+def find_plan(
+    state: dict[str, Any],
+    skills: list[dict[str, Any]],
+    max_depth: int = 5,
+) -> list[str] | None:
+    """BFS over the skill application graph to find the shortest skill sequence to goal.
+
+    Each BFS node is ``(frozenset(active_states), frozenset(completed_non_idempotent))``.
+    Applying a skill transitions active_states by adding its postconditions.
+    Non-idempotent skills are tracked so they are not re-applied within the same path.
+
+    Returns an ordered list of skill names (the plan), or ``None`` if no path
+    is found within ``max_depth`` steps.
+
+    Falls back gracefully: if the goal is already active, returns ``[]``.
+    If no skills are provided, returns ``None``.
+    """
+    goal = state.get("goal", "")
+    if not goal:
+        return None
+
+    initial_active = frozenset(state.get("active_states", []))
+    if goal in initial_active:
+        return []
+
+    # Build idempotency index
+    idempotency: dict[str, bool] = {
+        s.get("name", ""): bool(s.get("idempotent", False)) for s in skills
+    }
+    initial_completed = frozenset(
+        rec.get("skill", "")
+        for rec in state.get("completed_skills", [])
+        if not idempotency.get(rec.get("skill", ""), False)
+    )
+
+    # BFS: each item is (path, active_states, completed_non_idempotent)
+    queue: deque[tuple[list[str], frozenset[str], frozenset[str]]] = deque(
+        [([], initial_active, initial_completed)]
+    )
+    visited: set[tuple[frozenset[str], frozenset[str]]] = {
+        (initial_active, initial_completed)
+    }
+
+    while queue:
+        path, active, completed = queue.popleft()
+
+        if len(path) >= max_depth:
+            continue
+
+        for skill in skills:
+            name = skill.get("name", "")
+            if not name:
+                continue
+
+            # Skip non-idempotent completed skills
+            if name in completed and not idempotency.get(name, False):
+                continue
+
+            # Check preconditions
+            preconditions = skill.get("preconditions", [])
+            if not isinstance(preconditions, list):
+                preconditions = []
+            satisfied, _ = check_preconditions(active, preconditions)
+            if not satisfied:
+                continue
+
+            # Simulate applying skill
+            postconditions = skill.get("postconditions", [])
+            if not isinstance(postconditions, list):
+                postconditions = []
+
+            new_active = active | frozenset(postconditions)
+            new_completed = completed | (
+                frozenset({name}) if not idempotency.get(name, False) else frozenset()
+            )
+            new_path = path + [name]
+
+            # Goal reached
+            if goal in new_active:
+                return new_path
+
+            # Avoid revisiting the same world state
+            state_key = (new_active, new_completed)
+            if state_key not in visited:
+                visited.add(state_key)
+                queue.append((new_path, new_active, new_completed))
+
+    return None  # No path found within max_depth
 
 
 # ---------------------------------------------------------------------------
