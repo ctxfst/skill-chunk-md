@@ -32,6 +32,11 @@ except ImportError:
 
 COST_ORDER = {"low": 0, "medium": 1, "high": 2}
 
+# Sentinel used when a skill's postconditions have no path to the goal in the
+# current subgraph.  Placing unknown-proximity skills last within each cost
+# bucket keeps routing deterministic without penalising them otherwise.
+_UNKNOWN_PROXIMITY = sys.maxsize
+
 
 # ---------------------------------------------------------------------------
 # Library API
@@ -113,6 +118,45 @@ def check_preconditions(
     return len(unmet) == 0, unmet
 
 
+def _goal_hop_distances(state: dict[str, Any]) -> dict[str, int]:
+    """BFS from the goal entity over current_subgraph edges.
+
+    Returns a mapping of entity_id → hop distance from goal.
+    Entities not reachable from the goal are absent from the dict.
+    """
+    goal = state.get("goal", "")
+    if not goal:
+        return {}
+
+    subgraph = state.get("current_subgraph", {})
+    edges = subgraph.get("edges", [])
+    if not edges:
+        return {}
+
+    # Build undirected adjacency from subgraph edges
+    adjacency: dict[str, list[str]] = {}
+    for edge in edges:
+        src = edge.get("source", "")
+        tgt = edge.get("target", "")
+        if src and tgt:
+            adjacency.setdefault(src, []).append(tgt)
+            adjacency.setdefault(tgt, []).append(src)
+
+    # BFS from goal
+    distances: dict[str, int] = {goal: 0}
+    frontier = [goal]
+    while frontier:
+        next_frontier: list[str] = []
+        for node in frontier:
+            for neighbor in adjacency.get(node, []):
+                if neighbor not in distances:
+                    distances[neighbor] = distances[node] + 1
+                    next_frontier.append(neighbor)
+        frontier = next_frontier
+
+    return distances
+
+
 def select_candidates(
     state: dict[str, Any],
     skills: list[dict[str, Any]],
@@ -121,17 +165,22 @@ def select_candidates(
 
     Returns a list of candidate dicts sorted by:
     1. Cost (low → medium → high)
-    2. Number of postconditions (more = better, descending)
-    3. Name (alphabetical tiebreak)
+    2. Goal proximity — min hop distance of postconditions to goal in
+       current_subgraph (closer = better). Falls back to a large sentinel
+       when the subgraph is empty or a postcondition is unreachable.
+    3. Number of postconditions (more = better, descending)
+    4. Name (alphabetical tiebreak)
 
     Each candidate dict includes:
     - name, description, cost, idempotent
     - preconditions, postconditions, related_skills
+    - goal_proximity: int (min hops to goal, or sys.maxsize if unknown)
     - satisfied: True
     - source_path: path to the SKILL.md file
     """
     active_states = set(state.get("active_states", []))
     completed_names = {rec.get("skill") for rec in state.get("completed_skills", [])}
+    hop_distances = _goal_hop_distances(state)
     candidates: list[dict[str, Any]] = []
 
     for skill in skills:
@@ -157,6 +206,12 @@ def select_candidates(
         if cost not in COST_ORDER:
             cost = "medium"
 
+        # Goal proximity: min hops among postconditions; sentinel when unknown
+        goal_proximity = min(
+            (hop_distances[p] for p in postconditions if p in hop_distances),
+            default=_UNKNOWN_PROXIMITY,
+        )
+
         candidates.append({
             "name": name,
             "description": skill.get("description", ""),
@@ -166,15 +221,17 @@ def select_candidates(
             "postconditions": postconditions,
             "related_skills": skill.get("related_skills", []),
             "postcondition_count": len(postconditions),
+            "goal_proximity": goal_proximity,
             "satisfied": True,
             "already_completed": name in completed_names,
             "source_path": skill.get("_source_path", ""),
         })
 
-    # Sort: lowest cost first, then most postconditions, then alphabetical
+    # Sort: lowest cost → closest to goal → most postconditions → alphabetical
     candidates.sort(
         key=lambda c: (
             COST_ORDER.get(c["cost"], 1),
+            c["goal_proximity"],
             -c["postcondition_count"],
             c["name"],
         )
