@@ -383,6 +383,112 @@ class TestIdempotentReexecution(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Relation-aware routing tests
+# ---------------------------------------------------------------------------
+
+class TestRelationAwareRouting(unittest.TestCase):
+    """_goal_hop_distances uses EDGE_WEIGHTS to distinguish causal vs. similar edges."""
+
+    def _state_with_edges(self, edges: list[dict]) -> dict:
+        state = _make_state(goal="entity:goal", active=[])
+        state["current_subgraph"] = {"nodes": [], "edges": edges}
+        return state
+
+    def test_requires_costs_1(self):
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:goal", "target": "entity:mid", "relation": "REQUIRES"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertEqual(hops["entity:mid"], 1)
+
+    def test_leads_to_costs_1(self):
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:mid", "target": "entity:goal", "relation": "LEADS_TO"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertEqual(hops["entity:mid"], 1)
+
+    def test_similar_costs_3(self):
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:goal", "target": "entity:near", "relation": "SIMILAR"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertEqual(hops["entity:near"], 3)
+
+    def test_completed_is_skipped(self):
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:old-skill", "target": "entity:goal", "relation": "COMPLETED"},
+        ])
+        hops = _goal_hop_distances(state)
+        # COMPLETED is skipped — entity:old-skill must not be reachable from goal
+        self.assertNotIn("entity:old-skill", hops)
+
+    def test_blocked_by_is_skipped(self):
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:goal", "target": "entity:blocker", "relation": "BLOCKED_BY"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertNotIn("entity:blocker", hops)
+
+    def test_causal_beats_similar_at_same_hop_count(self):
+        """requires-skill (dist=1) ranks before similar-skill (dist=3), same cost."""
+        from skill_selector import select_candidates
+        state = self._state_with_edges([
+            {"source": "entity:goal", "target": "entity:causal", "relation": "REQUIRES"},
+            {"source": "entity:goal", "target": "entity:similar", "relation": "SIMILAR"},
+        ])
+        state["active_states"] = []
+        state["completed_skills"] = []
+
+        skills_raw = [
+            {"name": "skill-similar", "preconditions": [], "postconditions": ["entity:similar"],
+             "cost": "low", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+            {"name": "skill-causal",  "preconditions": [], "postconditions": ["entity:causal"],
+             "cost": "low", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+        ]
+        candidates = select_candidates(state, skills_raw)
+        self.assertEqual(candidates[0]["name"], "skill-causal")
+        self.assertEqual(candidates[0]["goal_proximity"], 1)
+        self.assertEqual(candidates[1]["name"], "skill-similar")
+        self.assertEqual(candidates[1]["goal_proximity"], 3)
+
+    def test_dijkstra_finds_shorter_mixed_path(self):
+        """
+        Two paths to entity:mid from goal:
+          goal -REQUIRES(1)-> entity:mid          total = 1
+          goal -SIMILAR(3)-> entity:hop -REQUIRES(1)-> entity:mid  total = 4
+        Dijkstra should report distance 1, not 4.
+        """
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:goal", "target": "entity:mid",  "relation": "REQUIRES"},
+            {"source": "entity:goal", "target": "entity:hop",  "relation": "SIMILAR"},
+            {"source": "entity:hop",  "target": "entity:mid",  "relation": "REQUIRES"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertEqual(hops["entity:mid"], 1)
+
+    def test_completed_edge_does_not_pollute_proximity(self):
+        """
+        A COMPLETED edge from skill to goal must not make the skill appear
+        close to the goal in future planning.
+        """
+        from skill_selector import _goal_hop_distances
+        state = self._state_with_edges([
+            {"source": "entity:done-skill", "target": "entity:goal", "relation": "COMPLETED"},
+            {"source": "entity:goal", "target": "entity:real",      "relation": "REQUIRES"},
+        ])
+        hops = _goal_hop_distances(state)
+        self.assertNotIn("entity:done-skill", hops)
+        self.assertEqual(hops["entity:real"], 1)
+
+
+# ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 

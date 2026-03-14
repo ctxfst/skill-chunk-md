@@ -15,6 +15,7 @@ CLI Usage:
 """
 
 import argparse
+import heapq
 import json
 import sys
 from pathlib import Path
@@ -31,6 +32,29 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 COST_ORDER = {"low": 0, "medium": 1, "high": 2}
+
+# ---------------------------------------------------------------------------
+# Relation-aware edge weights for goal proximity (Dijkstra).
+#
+# Causal edges (REQUIRES / LEADS_TO) cost 1 — they represent direct planning
+# dependencies and should dominate routing decisions.
+# Soft edges (EVIDENCE / IMPLIES) cost 2 — indirect support, less authoritative.
+# Similarity edges (SIMILAR) cost 3 — semantic neighbourhood only, not causal.
+# COMPLETED and BLOCKED_BY are skipped (None) — historical / negative edges
+# that must not influence forward planning.
+# Unknown relation types fall back to _DEFAULT_EDGE_WEIGHT.
+# ---------------------------------------------------------------------------
+
+EDGE_WEIGHTS: dict[str, int | None] = {
+    "REQUIRES":   1,
+    "LEADS_TO":   1,
+    "EVIDENCE":   2,
+    "IMPLIES":    2,
+    "SIMILAR":    3,
+    "COMPLETED":  None,   # skip — historical record
+    "BLOCKED_BY": None,   # skip — negative planning edge
+}
+_DEFAULT_EDGE_WEIGHT = 2  # fallback for relation types not listed above
 
 # Sentinel used when a skill's postconditions have no path to the goal in the
 # current subgraph.  Placing unknown-proximity skills last within each cost
@@ -119,10 +143,20 @@ def check_preconditions(
 
 
 def _goal_hop_distances(state: dict[str, Any]) -> dict[str, int]:
-    """BFS from the goal entity over current_subgraph edges.
+    """Dijkstra from the goal entity over current_subgraph edges.
 
-    Returns a mapping of entity_id → hop distance from goal.
-    Entities not reachable from the goal are absent from the dict.
+    Edge traversal costs are determined by ``EDGE_WEIGHTS`` keyed on the
+    edge ``relation`` field:
+
+    - REQUIRES / LEADS_TO → 1   (causal planning edges)
+    - EVIDENCE / IMPLIES   → 2   (soft causal)
+    - SIMILAR              → 3   (semantic only)
+    - COMPLETED / BLOCKED_BY → skipped (not planning edges)
+    - unknown relation     → ``_DEFAULT_EDGE_WEIGHT``
+
+    Returns a mapping of entity_id → weighted distance from goal.
+    Entities not reachable from the goal (or only via skipped edges) are
+    absent from the returned dict.
     """
     goal = state.get("goal", "")
     if not goal:
@@ -133,26 +167,32 @@ def _goal_hop_distances(state: dict[str, Any]) -> dict[str, int]:
     if not edges:
         return {}
 
-    # Build undirected adjacency from subgraph edges
-    adjacency: dict[str, list[str]] = {}
+    # Build undirected weighted adjacency, skipping blocked relations
+    adjacency: dict[str, list[tuple[str, int]]] = {}
     for edge in edges:
         src = edge.get("source", "")
         tgt = edge.get("target", "")
-        if src and tgt:
-            adjacency.setdefault(src, []).append(tgt)
-            adjacency.setdefault(tgt, []).append(src)
+        relation = edge.get("relation", "")
+        if not src or not tgt:
+            continue
+        weight = EDGE_WEIGHTS.get(relation, _DEFAULT_EDGE_WEIGHT)
+        if weight is None:  # explicitly skipped relation
+            continue
+        adjacency.setdefault(src, []).append((tgt, weight))
+        adjacency.setdefault(tgt, []).append((src, weight))
 
-    # BFS from goal
+    # Dijkstra from goal
     distances: dict[str, int] = {goal: 0}
-    frontier = [goal]
-    while frontier:
-        next_frontier: list[str] = []
-        for node in frontier:
-            for neighbor in adjacency.get(node, []):
-                if neighbor not in distances:
-                    distances[neighbor] = distances[node] + 1
-                    next_frontier.append(neighbor)
-        frontier = next_frontier
+    heap: list[tuple[int, str]] = [(0, goal)]
+    while heap:
+        dist, node = heapq.heappop(heap)
+        if dist > distances.get(node, _UNKNOWN_PROXIMITY):
+            continue
+        for neighbor, weight in adjacency.get(node, []):
+            new_dist = dist + weight
+            if new_dist < distances.get(neighbor, _UNKNOWN_PROXIMITY):
+                distances[neighbor] = new_dist
+                heapq.heappush(heap, (new_dist, neighbor))
 
     return distances
 
