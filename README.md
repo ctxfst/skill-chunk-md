@@ -148,29 +148,35 @@ Claude will:
 
 ```
 skill-chunk-md/
-├── SKILL.md                    # Main skill instructions
+├── SKILL.md                     # Main skill instructions
+├── schema.json                  # JSON Schema (Draft-07) for CtxFST exports
+├── entity-graph-schema.json     # Graph edge relation schema
+├── world-state-schema.json      # World state session schema
 ├── scripts/
-│   ├── validate_chunks.py      # Validate chunk syntax & frontmatter
-│   ├── export_to_lancedb.py    # Export chunks to JSON/LanceDB
-│   ├── build_entity_profiles.py# Build derived entity profiles
-│   ├── build_entity_graph.py   # Build Entity->Entity similarity & causal edges
-│   ├── world_state.py          # Manage agent runtime session state
-│   ├── skill_selector.py       # Relation-aware routing, lookahead planning, explanations
-│   ├── agent_loop.py           # Closed-loop agent runtime with critique interface
-│   └── contextualize_chunks.py # Generate contextual descriptions (LLM)
+│   ├── validate_chunks.py       # Validate chunk syntax & frontmatter
+│   ├── diagnose_chunks.py       # Diagnose chunk quality (static analysis)
+│   ├── export_to_lancedb.py     # Export chunks to JSON/LanceDB
+│   ├── build_entity_profiles.py # Build derived entity profiles
+│   ├── build_entity_graph.py    # Build Entity->Entity similarity & causal edges
+│   ├── world_state.py           # Manage agent runtime session state
+│   ├── skill_selector.py        # Relation-aware routing, lookahead planning, explanations
+│   ├── agent_loop.py            # Closed-loop agent runtime with critique interface
+│   └── contextualize_chunks.py  # Generate contextual descriptions (LLM)
 ├── tests/
-│   ├── test_agent_loop.py      # 66 end-to-end tests for the agent runtime
-│   └── test-skills/            # 3-skill chain used by the demo and tests
+│   ├── test_agent_loop.py       # 66 end-to-end tests for the agent runtime
+│   └── test-skills/             # 3-skill chain used by the demo and tests
 ├── promotion/
-│   └── launch-kit.md           # Reusable copy for GitHub, HN, Reddit, Discord, X
+│   └── launch-kit.md            # Reusable copy for GitHub, HN, Reddit, Discord, X
 ├── references/
-│   ├── chunk-syntax.md         # Complete <Chunk> tag reference
-│   ├── entity-format.md        # Entity schema and field reference
-│   └── semantic-chunking.md    # Chunking methodology
+│   ├── ctxfst-spec.md           # Formal CtxFST specification (v2.0)
+│   ├── chunk-syntax.md          # Complete <Chunk> tag reference
+│   ├── entity-format.md         # Entity schema and field reference
+│   ├── entity-profiles-format.md# Derived entity profiles format reference
+│   └── semantic-chunking.md     # Chunking methodology
 └── assets/examples/
-    ├── before.md               # Sample: plain Markdown
-    ├── after.md                # Sample: CtxFST format
-    └── career/                 # End-to-end career demo packet
+    ├── before.md                # Sample: plain Markdown
+    ├── after.md                 # Sample: CtxFST format
+    └── career/                  # End-to-end career demo packet
 ```
 
 ---

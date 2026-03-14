@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Deterministic Skill Selector for CtxFST v1.3 World Model Layer.
+Deterministic Skill Selector for CtxFST v2.0 World Model Layer.
 
 Scans SKILL.md files, matches preconditions against the current world state,
 and outputs ranked candidate skills. No LLM dependency — purely rule-based.
@@ -647,7 +647,7 @@ def find_plan_with_explanation(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="CtxFST Skill Selector — deterministic, rule-based (v1.3)"
+        description="CtxFST Skill Selector — deterministic, rule-based (v2.0)"
     )
     parser.add_argument("state_file", help="World state JSON file")
     parser.add_argument(

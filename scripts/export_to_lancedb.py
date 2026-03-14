@@ -143,7 +143,7 @@ def process_file(filepath: Path) -> dict[str, Any]:
         if 'dependencies' in chunk_def:
             record['dependencies'] = chunk_def['dependencies']
 
-        # v1.3 world model fields
+        # v2.0 world model fields
         if 'state_refs' in chunk_def:
             record['state_refs'] = chunk_def['state_refs']
 
@@ -151,7 +151,7 @@ def process_file(filepath: Path) -> dict[str, Any]:
     
     entities = frontmatter.get('entities', [])
 
-    # v1.3 world model: passthrough optional entity fields
+    # v2.0 world model: passthrough optional entity fields
     enriched_entities = []
     for ent in entities:
         enriched = dict(ent)  # shallow copy

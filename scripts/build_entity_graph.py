@@ -7,7 +7,7 @@ This script can read either:
 - the JSON produced by `build_entity_profiles.py` (`entity-profiles.json`)
 
 It computes TF-IDF cosine similarity and emits a lightweight entity graph JSON.
-Optionally merges manually-defined operational edges (v1.3 World Model).
+Optionally merges manually-defined operational edges (v2.0 World Model).
 
 Usage:
     python build_entity_graph.py chunks.json
@@ -559,7 +559,7 @@ def main() -> None:
     parser.add_argument(
         "--extra-edges",
         default=None,
-        help="Optional JSON file with manually-defined operational edges (v1.3 World Model)",
+        help="Optional JSON file with manually-defined operational edges (v2.0 World Model)",
     )
 
     args = parser.parse_args()
@@ -577,7 +577,7 @@ def main() -> None:
     else:
         graph = build_graph_from_profiles(data, args.mode, args.top_k, args.min_score, input_path)
 
-    # Merge extra edges (v1.3)
+    # Merge extra edges (v2.0)
     extra_edge_count = 0
     if args.extra_edges:
         extra = load_extra_edges(Path(args.extra_edges))

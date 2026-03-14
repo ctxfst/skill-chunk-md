@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Agent Loop Runtime for CtxFST v1.3 World Model Layer.
+Agent Loop Runtime for CtxFST v2.0 World Model Layer.
 
 Orchestrates the closed loop: read world state → select skill → execute →
 write postconditions back → repeat until the goal is reached.
@@ -507,7 +507,7 @@ def run_loop(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="CtxFST Agent Loop Runtime (v1.3)"
+        description="CtxFST Agent Loop Runtime (v2.0)"
     )
     parser.add_argument("state_file", help="World state JSON file")
     parser.add_argument("--skill-dir", required=True, help="Directory to scan for SKILL.md files")

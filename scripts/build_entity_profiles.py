@@ -190,7 +190,7 @@ def build_representation(
     if related_names:
         representation_lines.append("related " + " ".join(sorted(related_names)))
 
-    # v1.3: mark operational entity types
+    # v2.0: mark operational entity types
     entity_type = entity.get("type", "")
     if entity_type in ("state", "action", "goal", "agent", "evidence"):
         representation_lines.append(f"operational_type: {entity_type}")
@@ -240,7 +240,7 @@ def build_profiles(
                 "related_entities": related_names,
                 "keywords": keywords,
                 "representation": representation,
-                # v1.3 world model fields (passthrough)
+                # v2.0 world model fields (passthrough)
                 **{field: entity[field] for field in ("preconditions", "postconditions", "related_skills") if field in entity},
             }
         )

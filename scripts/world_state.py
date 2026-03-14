@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World State Manager for CtxFST v1.3 World Model Layer.
+World State Manager for CtxFST v2.0 World Model Layer.
 
 Provides both a reusable Python API and a CLI for managing runtime session
 state in agent loops. The state tracks active conditions, completed skills,
@@ -258,11 +258,16 @@ def show_state(state: dict[str, Any]) -> str:
 
 def cli_init(args: argparse.Namespace) -> None:
     state = init_state(args.goal)
+    seeds: list[str] = args.seed or []
+    for seed_id in seeds:
+        add_state(state, seed_id)
     output = Path(args.output)
     save_state(state, output)
     print(f"✅ Initialized world state: {output}")
     print(f"   Session: {state['session_id']}")
     print(f"   Goal: {state['goal']}")
+    if seeds:
+        print(f"   Seed states: {', '.join(seeds)}")
 
 
 def cli_add_state(args: argparse.Namespace) -> None:
@@ -344,13 +349,14 @@ def cli_update_subgraph(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="CtxFST World State Manager (v1.3)"
+        description="CtxFST World State Manager (v2.0)"
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # init
     p_init = subparsers.add_parser("init", help="Create a new world state")
     p_init.add_argument("--goal", required=True, help="Goal entity ID")
+    p_init.add_argument("--seed", nargs="*", help="Initial active state(s) to seed")
     p_init.add_argument("--output", "-o", default="world-state.json", help="Output file")
 
     # add-state

@@ -39,7 +39,7 @@ VALID_ENTITY_TYPES = {
     'skill', 'tool', 'library', 'framework', 'platform',
     'database', 'architecture', 'protocol', 'concept',
     'domain', 'product',
-    # v1.3 operational types
+    # v2.0 operational types
     'state', 'action', 'goal', 'agent', 'evidence',
 }
 
@@ -148,7 +148,7 @@ def validate_world_model_fields(
     doc_entity_types: dict[str, str],
     context: str = 'Chunk',
 ) -> list[ValidationError]:
-    """Validate v1.3 world model fields on entities or chunks."""
+    """Validate v2.0 world model fields on entities or chunks."""
     errors = []
 
     # Validate string array fields
@@ -302,7 +302,7 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                         'warning'
                     ))
 
-                # Validate v1.3 world model fields on entities
+                # Validate v2.0 world model fields on entities
                 errors.extend(validate_world_model_fields(
                     entity_def, ent_id, line_idx, doc_entity_types, context='Entity'
                 ))
@@ -365,7 +365,7 @@ def validate_file(filepath: Path) -> list[ValidationError]:
             errors.extend(validate_temporal_fields(chunk_def, chunk_id, line_num))
             errors.extend(validate_agentic_fields(chunk_def, chunk_id, line_num, all_chunk_ids))
             errors.extend(validate_multimodal_fields(chunk_def, chunk_id, line_num, doc_dir))
-            # Validate v1.3 world model fields on chunks
+            # Validate v2.0 world model fields on chunks
             errors.extend(validate_world_model_fields(
                 chunk_def, chunk_id, line_num, doc_entity_types, context='Chunk'
             ))
