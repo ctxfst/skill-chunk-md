@@ -33,7 +33,14 @@ from world_state import (
     save_state,
     show_state,
 )
-from skill_selector import find_plan, scan_skills, select_best, select_candidates
+from skill_selector import (
+    explain_selection,
+    find_plan,
+    find_plan_with_explanation,
+    scan_skills,
+    select_best,
+    select_candidates,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +209,7 @@ def run_loop(
     max_iterations: int = 20,
     stop_on_failure: bool = True,
     lookahead: int = 0,
+    explain: bool = False,
 ) -> LoopResult:
     """Run the agent loop until the goal is reached or termination.
 
@@ -234,10 +242,18 @@ def run_loop(
         skill: dict[str, Any] | None = None
 
         if lookahead > 0:
-            plan = find_plan(state, skills, max_depth=lookahead)
+            if explain:
+                explanation = find_plan_with_explanation(state, skills, max_depth=lookahead)
+                for line in explanation.summary.splitlines():
+                    _log(iteration, line)
+                plan = explanation.plan or None
+            else:
+                plan = find_plan(state, skills, max_depth=lookahead)
+                if plan:
+                    _log(iteration, f"Plan ({len(plan)} step{'s' if len(plan) != 1 else ''}): "
+                                     f"{' → '.join(plan)}")
+
             if plan:
-                _log(iteration, f"Plan ({len(plan)} step{'s' if len(plan) != 1 else ''}): "
-                                 f"{' → '.join(plan)}")
                 skill = skills_by_name.get(plan[0])
 
         if skill is None:
@@ -251,6 +267,8 @@ def run_loop(
                     final_state=state,
                     history=history,
                 )
+            if explain:
+                _log(iteration, explain_selection(candidates, state))
             skill = select_best(candidates)
 
         assert skill is not None
@@ -343,6 +361,8 @@ def main() -> None:
     parser.add_argument("--interactive", action="store_true", help="Pause at each step for user confirmation")
     parser.add_argument("--lookahead", type=int, default=0,
                         help="Enable multi-step planning: BFS up to N steps ahead (0 = greedy, default)")
+    parser.add_argument("--explain", action="store_true",
+                        help="Log relation-specific explanations for each selection and plan")
     parser.add_argument("--output", "-o", default=None, help="Output loop result JSON file")
 
     args = parser.parse_args()
@@ -378,7 +398,7 @@ def main() -> None:
     # Run
     stop_on_failure = not args.continue_on_failure
     result = run_loop(state, skills, executor, graph, args.max_iter, stop_on_failure,
-                      lookahead=args.lookahead)
+                      lookahead=args.lookahead, explain=args.explain)
 
     # Save state
     save_state(state, state_path)

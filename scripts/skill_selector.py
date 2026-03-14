@@ -19,6 +19,7 @@ import heapq
 import json
 import sys
 from collections import deque
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -61,6 +62,30 @@ _DEFAULT_EDGE_WEIGHT = 2  # fallback for relation types not listed above
 # current subgraph.  Placing unknown-proximity skills last within each cost
 # bucket keeps routing deterministic without penalising them otherwise.
 _UNKNOWN_PROXIMITY = sys.maxsize
+
+
+# ---------------------------------------------------------------------------
+# Explanation types
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class PlanStepTrace:
+    """Record of one step within an explained plan."""
+
+    skill_name: str
+    preconditions_matched: list[str] = field(default_factory=list)
+    postconditions_added: list[str] = field(default_factory=list)
+
+
+@dataclass
+class PlanExplanation:
+    """Result of find_plan_with_explanation — plan + human-readable reasoning."""
+
+    plan: list[str]                         # ordered skill names
+    steps: list[PlanStepTrace]              # per-step trace
+    alternatives: list[list[str]]           # other valid plans (up to top_k-1)
+    summary: str                            # ready-to-print explanation
 
 
 # ---------------------------------------------------------------------------
@@ -196,6 +221,109 @@ def _goal_hop_distances(state: dict[str, Any]) -> dict[str, int]:
                 heapq.heappush(heap, (new_dist, neighbor))
 
     return distances
+
+
+def _goal_hop_details(state: dict[str, Any]) -> dict[str, tuple[int, str]]:
+    """Dijkstra from goal, returning ``{entity: (weighted_distance, edge_relation)}``.
+
+    The relation stored is the one on the shortest-path edge leaving the entity
+    toward the goal, so callers can report *why* an entity is considered close.
+    Entities unreachable from goal (or only via skipped relations) are absent.
+    """
+    goal = state.get("goal", "")
+    if not goal:
+        return {}
+
+    subgraph = state.get("current_subgraph", {})
+    edges = subgraph.get("edges", [])
+    if not edges:
+        return {}
+
+    # Build weighted adjacency with relation labels
+    adjacency: dict[str, list[tuple[str, int, str]]] = {}
+    for edge in edges:
+        src = edge.get("source", "")
+        tgt = edge.get("target", "")
+        relation = edge.get("relation", "")
+        if not src or not tgt:
+            continue
+        weight = EDGE_WEIGHTS.get(relation, _DEFAULT_EDGE_WEIGHT)
+        if weight is None:
+            continue
+        adjacency.setdefault(src, []).append((tgt, weight, relation))
+        adjacency.setdefault(tgt, []).append((src, weight, relation))
+
+    # Dijkstra — track which relation was used on the shortest path
+    distances: dict[str, int] = {goal: 0}
+    via_relation: dict[str, str] = {goal: ""}
+    heap: list[tuple[int, str]] = [(0, goal)]
+    while heap:
+        dist, node = heapq.heappop(heap)
+        if dist > distances.get(node, _UNKNOWN_PROXIMITY):
+            continue
+        for neighbor, weight, relation in adjacency.get(node, []):
+            new_dist = dist + weight
+            if new_dist < distances.get(neighbor, _UNKNOWN_PROXIMITY):
+                distances[neighbor] = new_dist
+                via_relation[neighbor] = relation
+                heapq.heappush(heap, (new_dist, neighbor))
+
+    return {entity: (dist, via_relation.get(entity, "")) for entity, dist in distances.items()}
+
+
+def explain_selection(
+    candidates: list[dict[str, Any]],
+    state: dict[str, Any],
+) -> str:
+    """Return a human-readable explanation of why the top candidate was selected.
+
+    Compares the winner against each rejected candidate using cost,
+    goal_proximity, and the edge relation that contributed to proximity.
+    """
+    if not candidates:
+        return "No eligible candidates."
+
+    winner = candidates[0]
+    hop_details = _goal_hop_details(state)
+
+    def _proximity_desc(skill: dict[str, Any]) -> str:
+        parts = []
+        for pc in skill.get("postconditions", []):
+            if pc in hop_details:
+                dist, relation = hop_details[pc]
+                label = f"via {relation}" if relation else "direct"
+                parts.append(f"{pc} → goal in {dist} ({label})")
+            else:
+                parts.append(f"{pc} → goal unknown")
+        return "; ".join(parts) if parts else "no subgraph proximity"
+
+    lines = [
+        f"Selected:  {winner['name']}",
+        f"  cost={winner['cost']}  proximity={winner['goal_proximity']}  "
+        f"postconditions={winner['postcondition_count']}",
+        f"  {_proximity_desc(winner)}",
+    ]
+
+    if len(candidates) > 1:
+        lines.append("Rejected:")
+        for loser in candidates[1:]:
+            reasons: list[str] = []
+            if COST_ORDER.get(loser["cost"], 1) > COST_ORDER.get(winner["cost"], 1):
+                reasons.append(f"cost {loser['cost']} > {winner['cost']}")
+            if loser["goal_proximity"] > winner["goal_proximity"]:
+                reasons.append(
+                    f"proximity {loser['goal_proximity']} > {winner['goal_proximity']} "
+                    f"({_proximity_desc(loser)})"
+                )
+            if loser["postcondition_count"] < winner["postcondition_count"]:
+                reasons.append(
+                    f"fewer postconditions ({loser['postcondition_count']} < {winner['postcondition_count']})"
+                )
+            if not reasons:
+                reasons.append("same score, lower alphabetical rank")
+            lines.append(f"  {loser['name']}: {'; '.join(reasons)}")
+
+    return "\n".join(lines)
 
 
 def select_candidates(
@@ -374,6 +502,142 @@ def find_plan(
                 queue.append((new_path, new_active, new_completed))
 
     return None  # No path found within max_depth
+
+
+def _build_step_traces(
+    plan: list[str],
+    state: dict[str, Any],
+    skills_by_name: dict[str, dict[str, Any]],
+) -> list[PlanStepTrace]:
+    """Simulate running a plan and record which preconditions were satisfied
+    and which postconditions were newly added at each step."""
+    active: set[str] = set(state.get("active_states", []))
+    traces: list[PlanStepTrace] = []
+    for name in plan:
+        skill = skills_by_name.get(name, {})
+        preconditions = skill.get("preconditions", []) or []
+        postconditions = skill.get("postconditions", []) or []
+
+        matched = [
+            p for p in preconditions
+            if (p.startswith("NOT ") and p[4:].strip() not in active)
+            or (not p.startswith("NOT ") and p in active)
+        ]
+        added = [p for p in postconditions if p not in active]
+        active.update(postconditions)
+
+        traces.append(PlanStepTrace(
+            skill_name=name,
+            preconditions_matched=matched,
+            postconditions_added=added,
+        ))
+    return traces
+
+
+def _find_alternative_plans(
+    state: dict[str, Any],
+    skills: list[dict[str, Any]],
+    best_plan: list[str],
+    max_depth: int,
+    top_k: int,
+) -> list[list[str]]:
+    """Find up to top_k-1 alternative plans by excluding one skill at a time
+    from the best plan.  Each excluded skill forces the planner to find a
+    different route, producing genuinely distinct alternatives."""
+    alternatives: list[list[str]] = []
+    for skip_name in best_plan:
+        filtered = [s for s in skills if s.get("name") != skip_name]
+        alt = find_plan(state, filtered, max_depth)
+        if alt and alt != best_plan and alt not in alternatives:
+            alternatives.append(alt)
+        if len(alternatives) >= top_k - 1:
+            break
+    return alternatives
+
+
+def _plan_comparison_reason(
+    best: list[str],
+    alt: list[str],
+    skills_by_name: dict[str, dict[str, Any]],
+) -> str:
+    """One-line reason why best is preferred over alt."""
+    if len(alt) > len(best):
+        return f"{len(alt)} steps vs {len(best)} — longer"
+    if len(alt) < len(best):
+        return f"{len(alt)} steps vs {len(best)} — shorter but uses unavailable skills"
+    best_cost = sum(COST_ORDER.get(skills_by_name.get(n, {}).get("cost", "medium"), 1) for n in best)
+    alt_cost  = sum(COST_ORDER.get(skills_by_name.get(n, {}).get("cost", "medium"), 1) for n in alt)
+    if alt_cost > best_cost:
+        return f"same length, higher total cost (score {alt_cost} vs {best_cost})"
+    if alt_cost < best_cost:
+        return f"same length, lower total cost (score {alt_cost} vs {best_cost})"
+    return "same length and cost, lower priority"
+
+
+def find_plan_with_explanation(
+    state: dict[str, Any],
+    skills: list[dict[str, Any]],
+    max_depth: int = 5,
+    top_k: int = 3,
+) -> PlanExplanation:
+    """Find the best plan and explain why it was chosen over alternatives.
+
+    Returns a ``PlanExplanation`` with:
+    - ``plan``         — ordered skill names
+    - ``steps``        — per-step trace of preconditions satisfied and
+                         postconditions newly added
+    - ``alternatives`` — up to ``top_k - 1`` other valid plans found by
+                         excluding skills from the best plan one at a time
+    - ``summary``      — ready-to-print explanation string
+    """
+    skills_by_name: dict[str, dict[str, Any]] = {
+        s.get("name", ""): s for s in skills if s.get("name")
+    }
+    goal = state.get("goal", "")
+
+    plan = find_plan(state, skills, max_depth)
+
+    if plan is None:
+        return PlanExplanation(
+            plan=[], steps=[], alternatives=[],
+            summary=f"No plan found within {max_depth} steps.",
+        )
+    if not plan:
+        return PlanExplanation(
+            plan=[], steps=[], alternatives=[],
+            summary="Goal already satisfied — no steps needed.",
+        )
+
+    steps = _build_step_traces(plan, state, skills_by_name)
+    alternatives = _find_alternative_plans(state, skills, plan, max_depth, top_k)
+
+    # Build summary
+    lines = [
+        f"Best plan ({len(plan)} step{'s' if len(plan) != 1 else ''}): "
+        f"{' → '.join(plan)}",
+    ]
+    for i, step in enumerate(steps, 1):
+        lines.append(f"  Step {i}: {step.skill_name}")
+        for p in step.preconditions_matched:
+            lines.append(f"    pre  ✓  {p}")
+        for p in step.postconditions_added:
+            marker = " ← GOAL" if p == goal else ""
+            lines.append(f"    post +  {p}{marker}")
+
+    if alternatives:
+        lines.append(f"\nAlternatives ({len(alternatives)}):")
+        for alt in alternatives:
+            reason = _plan_comparison_reason(plan, alt, skills_by_name)
+            lines.append(f"  {' → '.join(alt)}  [{reason}]")
+    else:
+        lines.append("\nNo alternatives found within depth limit.")
+
+    return PlanExplanation(
+        plan=plan,
+        steps=steps,
+        alternatives=alternatives,
+        summary="\n".join(lines),
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -386,6 +386,183 @@ class TestIdempotentReexecution(unittest.TestCase):
 # Relation-aware routing tests
 # ---------------------------------------------------------------------------
 
+class TestRelationSpecificExplanations(unittest.TestCase):
+    """explain_selection and find_plan_with_explanation produce correct reasoning."""
+
+    # --- explain_selection ---
+
+    def test_explain_selection_no_candidates(self):
+        from skill_selector import explain_selection
+        result = explain_selection([], _make_state(goal="entity:goal"))
+        self.assertEqual(result, "No eligible candidates.")
+
+    def test_explain_selection_single_winner(self):
+        from skill_selector import explain_selection, select_candidates
+        state = _make_state(goal="entity:goal", active=[])
+        state["current_subgraph"] = {"nodes": [], "edges": []}
+        skills_raw = [
+            {"name": "only", "preconditions": [], "postconditions": ["entity:x"],
+             "cost": "low", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+        ]
+        candidates = select_candidates(state, skills_raw)
+        explanation = explain_selection(candidates, state)
+        self.assertIn("Selected:  only", explanation)
+        self.assertNotIn("Rejected", explanation)
+
+    def test_explain_selection_shows_rejected(self):
+        from skill_selector import explain_selection, select_candidates
+        state = _make_state(goal="entity:goal", active=[])
+        state["current_subgraph"] = {"nodes": [], "edges": []}
+        skills_raw = [
+            {"name": "cheap", "preconditions": [], "postconditions": ["entity:x"],
+             "cost": "low",  "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+            {"name": "pricey", "preconditions": [], "postconditions": ["entity:y"],
+             "cost": "high", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+        ]
+        candidates = select_candidates(state, skills_raw)
+        explanation = explain_selection(candidates, state)
+        self.assertIn("Selected:  cheap", explanation)
+        self.assertIn("Rejected", explanation)
+        self.assertIn("pricey", explanation)
+        self.assertIn("cost high > low", explanation)
+
+    def test_explain_selection_names_edge_relation(self):
+        """When subgraph exists, explanation names the edge relation (REQUIRES/SIMILAR)."""
+        from skill_selector import explain_selection, select_candidates
+        state = _make_state(goal="entity:goal", active=[])
+        state["current_subgraph"] = {
+            "nodes": [],
+            "edges": [
+                {"source": "entity:goal", "target": "entity:causal",  "relation": "REQUIRES"},
+                {"source": "entity:goal", "target": "entity:similar", "relation": "SIMILAR"},
+            ],
+        }
+        state["completed_skills"] = []
+        skills_raw = [
+            {"name": "skill-similar", "preconditions": [], "postconditions": ["entity:similar"],
+             "cost": "low", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+            {"name": "skill-causal",  "preconditions": [], "postconditions": ["entity:causal"],
+             "cost": "low", "idempotent": False, "postcondition_count": 1, "_source_path": ""},
+        ]
+        candidates = select_candidates(state, skills_raw)
+        explanation = explain_selection(candidates, state)
+        # Winner is skill-causal (REQUIRES = weight 1 < SIMILAR = weight 3)
+        self.assertIn("skill-causal", explanation.split("Selected:")[1].split("\n")[0])
+        self.assertIn("REQUIRES", explanation)
+
+    # --- find_plan_with_explanation ---
+
+    def test_explanation_plan_matches_find_plan(self):
+        from skill_selector import find_plan, find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        expected = find_plan(state, skills, max_depth=5)
+        result = find_plan_with_explanation(state, skills, max_depth=5)
+        self.assertEqual(result.plan, expected)
+
+    def test_explanation_no_plan_summary(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=[])
+        result = find_plan_with_explanation(state, [], max_depth=5)
+        self.assertEqual(result.plan, [])
+        self.assertIn("No plan found", result.summary)
+
+    def test_explanation_goal_already_active(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:goal"])
+        result = find_plan_with_explanation(state, [], max_depth=5)
+        self.assertIn("already satisfied", result.summary)
+
+    def test_step_traces_correct(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        result = find_plan_with_explanation(state, skills, max_depth=5)
+        self.assertEqual(len(result.steps), 2)
+        self.assertEqual(result.steps[0].skill_name, "s1")
+        self.assertIn("entity:a", result.steps[0].preconditions_matched)
+        self.assertIn("entity:b", result.steps[0].postconditions_added)
+        self.assertEqual(result.steps[1].skill_name, "s2")
+        self.assertIn("entity:goal", result.steps[1].postconditions_added)
+
+    def test_step_traces_only_new_postconditions(self):
+        """Already-active entities must not appear in postconditions_added."""
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a", "entity:b"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b", "entity:goal"]),
+        ]
+        result = find_plan_with_explanation(state, skills, max_depth=5)
+        # entity:b already active → not in postconditions_added
+        self.assertNotIn("entity:b", result.steps[0].postconditions_added)
+        self.assertIn("entity:goal", result.steps[0].postconditions_added)
+
+    def test_alternatives_are_different_plans(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("route1", preconditions=["entity:a"], postconditions=["entity:goal"]),
+            _make_skill("detour1", preconditions=["entity:a"], postconditions=["entity:mid"]),
+            _make_skill("detour2", preconditions=["entity:mid"], postconditions=["entity:goal"]),
+        ]
+        result = find_plan_with_explanation(state, skills, max_depth=5, top_k=3)
+        self.assertGreater(len(result.alternatives), 0)
+        for alt in result.alternatives:
+            self.assertNotEqual(alt, result.plan)
+
+    def test_summary_contains_goal_marker(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [_make_skill("s1", preconditions=["entity:a"], postconditions=["entity:goal"])]
+        result = find_plan_with_explanation(state, skills, max_depth=5)
+        self.assertIn("← GOAL", result.summary)
+
+    def test_summary_contains_alternative_reason(self):
+        from skill_selector import find_plan_with_explanation
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("short",  preconditions=["entity:a"], postconditions=["entity:goal"], cost="low"),
+            _make_skill("detour1", preconditions=["entity:a"], postconditions=["entity:mid"], cost="low"),
+            _make_skill("detour2", preconditions=["entity:mid"], postconditions=["entity:goal"], cost="low"),
+        ]
+        result = find_plan_with_explanation(state, skills, max_depth=5, top_k=3)
+        # best = ["short"], alternative = ["detour1","detour2"] — longer
+        self.assertTrue(any("longer" in r for alt in result.alternatives
+                            for r in [result.summary]))
+
+    # --- run_loop integration ---
+
+    def test_run_loop_explain_does_not_change_result(self):
+        """explain=True must not affect the outcome — only the log output."""
+        state_a = _make_state(goal="entity:goal", active=["entity:a"])
+        state_b = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:b"]),
+            _make_skill("s2", preconditions=["entity:b"], postconditions=["entity:goal"]),
+        ]
+        r_plain   = run_loop(state_a, skills, DryRunExecutor(), explain=False)
+        r_explain = run_loop(state_b, skills, DryRunExecutor(), explain=True)
+        self.assertEqual(r_plain.goal_reached,  r_explain.goal_reached)
+        self.assertEqual(r_plain.iterations,    r_explain.iterations)
+        self.assertEqual([s.skill_name for s in r_plain.history],
+                         [s.skill_name for s in r_explain.history])
+
+    def test_run_loop_explain_with_lookahead(self):
+        """explain=True + lookahead > 0 uses find_plan_with_explanation."""
+        state = _make_state(goal="entity:goal", active=["entity:a"])
+        skills = [
+            _make_skill("s1", preconditions=["entity:a"], postconditions=["entity:goal"]),
+        ]
+        result = run_loop(state, skills, DryRunExecutor(), lookahead=3, explain=True)
+        self.assertTrue(result.goal_reached)
+
+
 class TestMultiStepPlanning(unittest.TestCase):
     """find_plan returns the shortest skill sequence; run_loop with lookahead uses it."""
 
