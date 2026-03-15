@@ -2,17 +2,25 @@
 
 Reusable copy for GitHub, Hacker News, Reddit, Discord, and X.
 
+Two audiences, two angles:
+- **Angle A (Developer)**: semantic world model for RAG, graph pipelines, and deterministic agent planning
+- **Angle B (AI User)**: debuggable AI memory — see what your AI remembers, find errors, fix them
+
+---
+
 ## Core positioning
 
 `ctxfst` is a **semantic world model substrate** for RAG and agents. It keeps `entities`, `context`, `content`, and operational metadata (`state`, `action`, `goal`, `preconditions`, `postconditions`) structured so the same document powers vector retrieval, graph workflows, deterministic agent planning, and human-in-the-loop plan critique — on one stable, backward-compatible backbone.
 
+Because the format is human-readable Markdown + YAML, it also serves as **the first debuggable AI memory layer**: you can open it, search it with keyword / vector / entity graph, find errors, and fix them — turning AI memory from a black box into an inspectable artifact.
+
 ## Short repo description
 
-Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canonical entities, JSON export, entity-graph building, deterministic agent loop with goal-aware + relation-aware routing, multi-step lookahead planning, relation-specific explanations, and interactive plan critique.
+Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canonical entities, JSON export, entity-graph building, deterministic agent loop with goal-aware + relation-aware routing, multi-step lookahead planning, relation-specific explanations, interactive plan critique, and debuggable memory loop for OpenClaw integration.
 
 ## One-paragraph project description
 
-`ctxfst` is a structured document format that turns Markdown into a **semantic world model** for RAG and agents. It separates `entities`, `context`, and `content`, and lets entities represent both descriptive knowledge (skills, tools) and operational nodes (states, actions, goals) with `preconditions`/`postconditions`. A complete reference runtime is included: validate, export to JSON, build entity graphs with similarity and causal edges, then run a deterministic agent loop that uses BFS lookahead planning, Dijkstra-weighted goal-proximity routing (causal edges cost 1, similarity edges cost 3), and relation-specific explanations for every selection decision. The loop supports interactive plan critique — humans can accept, skip, force, or reset the plan before each execution step — making it a human-in-the-loop planning interface, not just a demo.
+`ctxfst` is a structured document format that turns Markdown into a **semantic world model** for RAG and agents. It separates `entities`, `context`, and `content`, and lets entities represent both descriptive knowledge (skills, tools) and operational nodes (states, actions, goals) with `preconditions`/`postconditions`. A complete reference runtime is included: validate, export to JSON, build entity graphs with similarity and causal edges, then run a deterministic agent loop that uses BFS lookahead planning, Dijkstra-weighted goal-proximity routing (causal edges cost 1, similarity edges cost 3), and relation-specific explanations for every selection decision. The loop supports interactive plan critique — humans can accept, skip, force, or reset the plan before each execution step — making it a human-in-the-loop planning interface, not just a demo. The same structured format also enables a **debuggable memory loop**: export AI memory → convert to CtxFST → search with entity graph / vector / keyword to find errors → fix source-of-truth → reindex → AI behavior changes.
 
 ## Problem this solves
 
@@ -22,6 +30,7 @@ Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canoni
 - Agent world models are usually ad-hoc Python dicts with no shared format, no causal edges, and no planning surface.
 - Most agent selectors are LLM calls with no determinism, no explainability, and no human override.
 - Teams need one format that works across authoring, validation, export, graph derivation, agent planning, and human review.
+- **AI memory is a black box**: users spend hours training personal AI assistants (family preferences, work habits, communication patterns), but when the AI remembers something wrong, there is no way to see what it recorded, find the error, or fix it. The more you invest in training, the more painful a wrong memory becomes — and today most memory systems offer no observability and no repair path.
 
 ## Why this is different
 
@@ -33,6 +42,7 @@ Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canoni
 - **Multi-step lookahead**: `find_plan()` runs BFS over the skill application graph to find the shortest sequence to the goal, replanning after every execution step.
 - **Relation-specific explanations**: every selection decision names the edge relation that contributed to proximity, so you can audit why `skill-A` beat `skill-B`.
 - **Interactive plan critique**: before each execution step, humans can `skip` a skill, `force` a different first step (precondition-checked), or `reset` constraints — the planner replans on every command.
+- **Debuggable memory**: because the format is human-readable Markdown + YAML with canonical entities, AI memory becomes inspectable. Three search modes (FTS for exact facts, vector for semantic conflicts, entity graph for structural contradictions) let you pinpoint exactly which memory is wrong and why.
 - **66 end-to-end tests** cover happy path, failure tolerance, goal-aware routing, relation-aware routing, multi-step planning, explanation output, and all critique commands.
 - **No LLM required** at any stage of the planning loop — purely deterministic and inspectable.
 
@@ -62,6 +72,28 @@ Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canoni
 ...
 [Step 3]     post +  entity:learn-kubernetes-path ← GOAL
 ✅ Loop finished: goal_reached  Iterations: 3
+```
+
+**OpenClaw memory debug demo (debuggable memory benchmark)** — OpenClaw SQLite memory → CtxFST → find and fix wrong memory → reindex → AI behavior changes:
+
+```
+# 1. AI remembers wrong: "小明 likes beef" (actually he doesn't eat beef)
+openclaw "What should 小明 eat for dinner?"
+→ AI recommends beef dishes ❌
+
+# 2. Export memory, convert to CtxFST → entity:小明 + entity:牛肉 + pref:like
+# 3. Three-way search finds the error:
+#    FTS: locates the chunk containing "小明 likes beef"
+#    Vector: no conflicting memory found (no "avoids beef" exists)
+#    Graph: missing "avoid" edge — only "like" present
+# 4. Fix source Markdown: "小明 does not eat beef (confirmed 2026-03)"
+# 5. Delete index + rebuild:
+rm ~/.openclaw/memory/main.sqlite*
+openclaw memory index --force
+
+# 6. Verify:
+openclaw "What should 小明 eat for dinner?"
+→ AI avoids beef dishes ✅
 ```
 
 ---
@@ -120,13 +152,15 @@ Start here:
 
 ## Hacker News
 
-### Title options
+### Angle A: Developer (GraphRAG / Agent)
+
+#### Title options
 
 - `Show HN: ctxfst — Markdown → agent-ready world model with deterministic lookahead planning`
 - `Show HN: ctxfst v2.1 — semantic world model format with relation-aware routing and human-in-the-loop plan critique`
 - `ctxfst: one document format for RAG, graph pipelines, and deterministic agent planning (no LLM required)`
 
-### Post body
+#### Post body
 
 I built `ctxfst`, a semantic world model format that turns Markdown into documents that can power vector RAG, graph-based retrieval, and deterministic agent planning — from the same source file.
 
@@ -149,15 +183,51 @@ No LLM involved in the planning loop. Fully deterministic and testable — 66 en
 
 I would especially appreciate feedback from people building GraphRAG or agentic workflows: is making `preconditions`/`postconditions` a first-class field in the document format the right abstraction boundary for world models?
 
+### Angle B: AI User (Debuggable Memory)
+
+#### Title options
+
+- `Show HN: ctxfst — Make AI memory debuggable: see what it remembers, find errors, fix them`
+- `Show HN: Your AI assistant remembers things wrong and you can't fix it. ctxfst changes that.`
+- `ctxfst: a structured format that turns black-box AI memory into something you can inspect and repair`
+
+#### Post body
+
+If you use a long-term memory AI assistant — for family coordination, personal notes, work habits — you've probably hit this wall: the AI remembers something wrong, and you can't fix it.
+
+A friend put OpenClaw in a family group chat to track preferences, schedules, and meal planning. One day it recorded "小明 likes beef." Actually, he doesn't eat beef. From then on, every dinner suggestion included beef. My friend knew the answer was wrong but couldn't find *where* that memory lived or how to correct it.
+
+This is not an edge case. In AI communities, the most common complaint about long-term memory isn't "it can't find things" — it's "it remembers wrong things and I have no way to fix them." People spend hours training their AI, and the more they invest, the more painful a wrong memory becomes.
+
+`ctxfst` is a structured document format (Markdown + YAML) that makes AI memory inspectable and repairable. The idea:
+
+1. **Export** AI memory (e.g., from OpenClaw's SQLite) into CtxFST format — each memory becomes a chunk with canonical entities and structured context
+2. **Search with three methods** to find errors:
+   - FTS / keyword: find the exact chunk that says "likes beef"
+   - Vector / semantic: find memories that semantically conflict ("likes beef" vs "avoids red meat")
+   - Entity graph: find structural contradictions (entity:小明 connected to both "like" and "avoid" for entity:beef)
+3. **Fix the source** — edit the Markdown, not just argue with the chatbot
+4. **Reindex** — the AI's next response uses the corrected memory
+
+The key difference from just "editing a text file" is that CtxFST gives you *structured search across your AI's entire memory*. You go from "something feels wrong" to "this specific chunk, about this entity, recorded on this date, contradicts this other memory" — and then you fix it.
+
+The same format also powers a full deterministic agent runtime (entity graphs, BFS planning, Dijkstra routing, human-in-the-loop critique) — but the memory debugging use case is where most non-developer users feel the pain first.
+
+Would love to hear from anyone using OpenClaw, MemGPT, or any long-term memory system: how do you handle wrong memories today?
+
 ---
 
 ## Reddit
 
-### Title
+### Angle A: Developer
+
+#### Subreddits: r/MachineLearning, r/LangChain, r/LocalLLaMA
+
+#### Title
 
 `ctxfst v2.1: Markdown → deterministic agent world model with lookahead planning and human-in-the-loop critique (no LLM needed)`
 
-### Post
+#### Post
 
 I've been building `ctxfst`, a structured document format that tries to fix two annoying problems at once:
 
@@ -188,17 +258,58 @@ Demos included: career profile → entity graph, world model example → `REQUIR
 
 Would love feedback from people on r/MachineLearning, r/LangChain, or r/LocalLLaMA building agentic workflows about whether the world model abstraction boundary is useful.
 
+### Angle B: AI User (Debuggable Memory)
+
+#### Subreddits: r/OpenClaw, r/ChatGPT, r/LocalLLaMA, r/selfhosted, r/artificial
+
+#### Title
+
+`Your AI remembers things wrong and you can't fix it. I built a format that makes AI memory inspectable and repairable.`
+
+#### Post
+
+How many of you have hit this: you spend weeks training your AI assistant on your preferences, family info, work habits — and then it remembers something wrong, and there's no way to correct it?
+
+A friend uses OpenClaw in a family group chat. The AI recorded "小明 likes beef" — but 小明 doesn't eat beef. Every dinner suggestion after that included beef. He knew it was wrong but couldn't find where the AI stored that belief or how to change it.
+
+I've heard this complaint from dozens of people in AI communities. The pain isn't "AI can't find information." The pain is "AI remembers wrong information and I can't see what it remembers, can't search for contradictions, and can't fix the source."
+
+I built `ctxfst`, a structured document format (Markdown + YAML) designed to make AI memory debuggable:
+
+**The loop:**
+1. Export memory from your AI system (e.g., OpenClaw SQLite) into CtxFST
+2. Each memory becomes a chunk with named entities and structured context — you can *read* it
+3. Search three ways: keyword (find "beef"), vector (find semantic conflicts), entity graph (find contradictions in relationships)
+4. Fix the source Markdown
+5. Reindex → AI behavior changes
+
+The point isn't "edit a text file." The point is you can go from "something feels off" to "this specific memory, about this person, recorded on this date, says the opposite of what's true" — and then fix it at the source.
+
+You don't need to understand the format to find problems. It's like looking at code when you're not a developer — you don't need to write it, but when you see `entity:小明` connected to `pref: like` and `entity:beef`, you know that's wrong.
+
+Currently works with OpenClaw. The same format also powers a full agent runtime (entity graphs, deterministic planning, human-in-the-loop critique) for developers who want the deeper capabilities.
+
+For anyone using OpenClaw, MemGPT, Khoj, or any long-term memory system: how do you deal with wrong memories today? Curious if this resonates.
+
 ---
 
 ## Discord showcase
 
+### Angle A: Developer
+
 Built an open-source reference runtime for `ctxfst` — a semantic world model document format for RAG and agents. The new release closes the full planning loop: BFS lookahead planning, relation-aware Dijkstra routing (causal edges cost 1, similarity edges cost 3), relation-specific explanations that name *why* a skill was chosen, and interactive plan critique where humans can skip skills, force alternatives, or reset constraints before each execution step. No LLM in the planning loop — fully deterministic, 66 end-to-end tests. Works with LanceDB, Lance Graph, HelixDB, LightRAG, HippoRAG. Demo goes from 1 Markdown file → chunks → entity graph → agent loop reaching goal with full explanation trace.
+
+### Angle B: AI User
+
+Your AI assistant remembers things wrong and you can't fix it — sound familiar? `ctxfst` is a structured format that makes AI memory inspectable and repairable. Export memory from OpenClaw → convert to human-readable entities + chunks → search with keyword / vector / entity graph to find exactly what's wrong → fix the source → reindex → AI behavior changes. Three search modes catch different types of errors: FTS finds wrong facts, vector search finds semantic contradictions, entity graph finds broken relationships. Demo: AI records "小明 likes beef" (wrong) → export → CtxFST shows `entity:小明 + pref:like + entity:beef` → fix to "doesn't eat beef" → reindex → AI stops recommending beef. Works with OpenClaw today.
 
 ---
 
 ## X thread
 
-### Post 1
+### Angle A: Developer
+
+#### Post 1
 
 Most agent planners are LLM calls wrapped in a loop.
 
@@ -209,7 +320,7 @@ Most agent planners are LLM calls wrapped in a loop.
 
 No LLM needed in the planning loop.
 
-### Post 2
+#### Post 2
 
 The routing is relation-aware.
 
@@ -221,7 +332,7 @@ Dijkstra picks the causal path to goal, not the nearest semantic neighbor.
 
 Every selection names the edge relation that drove the decision.
 
-### Post 3
+#### Post 3
 
 The planner also explains itself.
 
@@ -236,7 +347,7 @@ Best plan (3 steps): analyze-resume → match-skills → generate-plan
 
 And the alternatives it considered — with reasons why they lost.
 
-### Post 4
+#### Post 4
 
 And if the plan is wrong, you can fix it.
 
@@ -252,7 +363,7 @@ Commands: [a]ccept  [s]kip <skill>  [f]orce <skill>  [r]eset  [q]uit
 
 The planner replans on every command. Preconditions are checked before any force.
 
-### Post 5
+#### Post 5
 
 The full runtime is in one repo:
 
@@ -261,13 +372,83 @@ The full runtime is in one repo:
 - deterministic agent loop with 66 end-to-end tests
 - works with LanceDB, HelixDB, LightRAG, HippoRAG
 
-Coming next: integration examples and `ctxc` — a compiler that auto-generates CtxFST documents from raw notes.
-
 If you are building GraphRAG or agent workflows, what is the right abstraction boundary for world models?
+
+### Angle B: AI User (Debuggable Memory)
+
+#### Post 1
+
+Your AI assistant remembers things wrong.
+
+You spent hours teaching it your family's preferences. Then it recorded one thing incorrectly, and now every recommendation is off.
+
+You know it's wrong. But you can't see what it remembers. You can't search for the error. You can't fix the source.
+
+This is the #1 complaint in every AI memory community I've been in.
+
+#### Post 2
+
+The problem isn't "AI can't find information."
+
+The problem is: AI memory is a black box.
+
+- No way to see what it recorded
+- No way to search for contradictions
+- No way to fix the source
+
+You can tell it "that's wrong" in chat. It apologizes. Next conversation, same mistake.
+
+#### Post 3
+
+I built `ctxfst` to make AI memory debuggable.
+
+Export → convert to structured entities + chunks → search three ways:
+
+- Keyword: find the exact wrong fact
+- Vector: find semantic contradictions
+- Entity graph: find broken relationships
+
+Go from "something feels off" to "this specific memory is wrong" → fix it → AI behavior changes.
+
+#### Post 4
+
+Real example:
+
+AI records "小明 likes beef." Actually, he doesn't eat beef.
+
+Export → CtxFST shows:
+```
+entity:小明 → pref:like → entity:beef
+```
+
+You see the error immediately. Fix source → reindex → AI stops recommending beef.
+
+You don't need to write code. You just need to *see* the memory.
+
+#### Post 5
+
+`ctxfst` is open source. Works with OpenClaw today.
+
+The same format also powers a full agent runtime — entity graphs, deterministic planning, human-in-the-loop critique — for developers who want the deeper layer.
+
+But the entry point for most people is simpler:
+
+Your AI remembers things wrong. Now you can see why, and fix it.
 
 ---
 
 ## Coming soon (teaser)
+
+### Completed
+
+- **CH22: Retrieval benchmark** — entity-aware retrieval vs pure text similarity, with measurable results
+- **CH23: Debuggable memory loop** — full five-step demo: OpenClaw memory export → CtxFST → three-way search → fix → reindex → AI behavior changes
+
+### Next chapters
+
+- **CH24: Export / import CLI** — `ctxfst export` and `ctxfst import` commands for OpenClaw memory
+- **CH25: Relation-aware memory repair** — using entity graph edges to automatically suggest which memories conflict
+- **CH26: Memory diff, conflict, and provenance** — version tracking, conflict resolution policy, and "who changed what when"
 
 ### Integration examples
 
