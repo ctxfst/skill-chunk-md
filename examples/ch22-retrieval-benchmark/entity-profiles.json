@@ -1,0 +1,664 @@
+{
+  "meta": {
+    "input": "examples/ch22-retrieval-benchmark/chunks.json",
+    "source_type": "ctxfst-export",
+    "profile_type": "entity-profiles",
+    "entity_count": 13,
+    "max_contexts": 3,
+    "top_keywords": 8,
+    "dangling_chunk_entity_refs": []
+  },
+  "entities": [
+    {
+      "id": "entity:backend-engineering",
+      "name": "Backend Engineering",
+      "type": "domain",
+      "aliases": [
+        "backend"
+      ],
+      "mentioned_chunks": [
+        "skill:go-service-runtime",
+        "project:service-platform",
+        "about:backend-summary",
+        "principle:retrieval-gap"
+      ],
+      "mention_count": 4,
+      "tags": [
+        "API",
+        "Backend",
+        "Benchmark",
+        "Concurrency",
+        "Deployment",
+        "Entity Graph",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project",
+        "Retrieval",
+        "Services",
+        "Storage",
+        "gRPC"
+      ],
+      "contexts": [
+        "Go service notes focused on gRPC, concurrency, and runtime behavior under load",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.",
+        "## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval."
+      ],
+      "related_entities": [
+        "Database Systems",
+        "Docker",
+        "Go",
+        "Graph-Aware Retrieval",
+        "Kubernetes",
+        "PostgreSQL",
+        "RocksDB",
+        "Service Deployment",
+        "gRPC"
+      ],
+      "keywords": [
+        "go",
+        "service",
+        "grpc",
+        "deployment",
+        "kubernetes",
+        "project",
+        "postgresql",
+        "retrieval"
+      ],
+      "representation": "name: Backend Engineering\ntype: domain\ntags Go gRPC Services Concurrency\ncontext Go service notes focused on gRPC, concurrency, and runtime behavior under load\ncontent ## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\ntags Retrieval Benchmark Entity Graph\ncontext Why literal wording alone misses useful notes when concepts are distributed across multiple files\ncontent ## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval.\naliases backend\nrelated Database Systems Docker Go Graph-Aware Retrieval Kubernetes PostgreSQL RocksDB Service Deployment gRPC"
+    },
+    {
+      "id": "entity:database-systems",
+      "name": "Database Systems",
+      "type": "domain",
+      "aliases": [
+        "databases",
+        "storage systems"
+      ],
+      "mentioned_chunks": [
+        "reference:database-tradeoffs",
+        "project:embedded-analysis-store",
+        "principle:retrieval-gap"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "Benchmark",
+        "Entity Graph",
+        "Indexing",
+        "PostgreSQL",
+        "Project",
+        "Retrieval",
+        "RocksDB",
+        "Storage"
+      ],
+      "contexts": [
+        "Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction",
+        "Project ledger entry for an analysis pipeline built around an embedded storage engine",
+        "Why literal wording alone misses useful notes when concepts are distributed across multiple files"
+      ],
+      "content_excerpts": [
+        "## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.",
+        "## Project ledger: embedded analysis pipeline\n\nAnother experiment used RocksDB inside a local analysis pipeline because I wanted a lightweight embedded store without running a full separate database service.\n\nThis note mostly talks about storage behavior and system shape, not the broad category word database.",
+        "## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Graph-Aware Retrieval",
+        "PostgreSQL",
+        "RocksDB"
+      ],
+      "keywords": [
+        "rocksdb",
+        "embedded",
+        "retrieval",
+        "notes",
+        "project",
+        "indexing",
+        "postgresql",
+        "analysis"
+      ],
+      "representation": "name: Database Systems\ntype: domain\ntags PostgreSQL RocksDB Storage Indexing\ncontext Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction\ncontent ## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.\ntags Project RocksDB Storage\ncontext Project ledger entry for an analysis pipeline built around an embedded storage engine\ncontent ## Project ledger: embedded analysis pipeline\n\nAnother experiment used RocksDB inside a local analysis pipeline because I wanted a lightweight embedded store without running a full separate database service.\n\nThis note mostly talks about storage behavior and system shape, not the broad category word database.\ntags Retrieval Benchmark Entity Graph\ncontext Why literal wording alone misses useful notes when concepts are distributed across multiple files\ncontent ## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval.\naliases databases storage systems\nrelated Backend Engineering Graph-Aware Retrieval PostgreSQL RocksDB"
+    },
+    {
+      "id": "entity:docker",
+      "name": "Docker",
+      "type": "tool",
+      "aliases": [],
+      "mentioned_chunks": [
+        "workflow:deployment-stack",
+        "about:backend-summary"
+      ],
+      "mention_count": 2,
+      "tags": [
+        "API",
+        "Backend",
+        "Deployment",
+        "Docker",
+        "Kubernetes",
+        "Storage"
+      ],
+      "contexts": [
+        "Deployment notes that treat Docker and Kubernetes as one connected stack",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "RocksDB",
+        "Service Deployment",
+        "gRPC"
+      ],
+      "keywords": [
+        "deployment",
+        "kubernetes",
+        "backend",
+        "service",
+        "storage",
+        "notes",
+        "one",
+        "stack"
+      ],
+      "representation": "name: Docker\ntype: tool\ntags Docker Kubernetes Deployment\ncontext Deployment notes that treat Docker and Kubernetes as one connected stack\ncontent ## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\nrelated Backend Engineering Go Kubernetes PostgreSQL RocksDB Service Deployment gRPC"
+    },
+    {
+      "id": "entity:go",
+      "name": "Go",
+      "type": "skill",
+      "aliases": [
+        "golang"
+      ],
+      "mentioned_chunks": [
+        "skill:go-service-runtime",
+        "project:service-platform",
+        "about:backend-summary"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Backend",
+        "Concurrency",
+        "Deployment",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project",
+        "Services",
+        "Storage",
+        "gRPC"
+      ],
+      "contexts": [
+        "Go service notes focused on gRPC, concurrency, and runtime behavior under load",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Docker",
+        "Kubernetes",
+        "PostgreSQL",
+        "RocksDB",
+        "Service Deployment",
+        "gRPC"
+      ],
+      "keywords": [
+        "service",
+        "grpc",
+        "deployment",
+        "backend",
+        "kubernetes",
+        "postgresql",
+        "project",
+        "services"
+      ],
+      "representation": "name: Go\ntype: skill\ntags Go gRPC Services Concurrency\ncontext Go service notes focused on gRPC, concurrency, and runtime behavior under load\ncontent ## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\naliases golang\nrelated Backend Engineering Docker Kubernetes PostgreSQL RocksDB Service Deployment gRPC"
+    },
+    {
+      "id": "entity:graph-aware-retrieval",
+      "name": "Graph-Aware Retrieval",
+      "type": "concept",
+      "aliases": [
+        "entity-aware retrieval"
+      ],
+      "mentioned_chunks": [
+        "workflow:agent-runtime",
+        "principle:retrieval-gap"
+      ],
+      "mention_count": 2,
+      "tags": [
+        "Benchmark",
+        "Entity Graph",
+        "OpenAI",
+        "Planning",
+        "Retrieval",
+        "Tool Calling"
+      ],
+      "contexts": [
+        "Agent runtime notes connecting tool calling, planning loops, and retrieval quality",
+        "Why literal wording alone misses useful notes when concepts are distributed across multiple files"
+      ],
+      "content_excerpts": [
+        "## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.",
+        "## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Database Systems",
+        "OpenAI",
+        "Planning Loop",
+        "Tool Calling"
+      ],
+      "keywords": [
+        "notes",
+        "tool",
+        "calling",
+        "planning",
+        "agent",
+        "runtime",
+        "openai",
+        "because"
+      ],
+      "representation": "name: Graph-Aware Retrieval\ntype: concept\ntags OpenAI Tool Calling Planning Retrieval\ncontext Agent runtime notes connecting tool calling, planning loops, and retrieval quality\ncontent ## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.\ntags Retrieval Benchmark Entity Graph\ncontext Why literal wording alone misses useful notes when concepts are distributed across multiple files\ncontent ## Why literal wording is not enough\n\nThe retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.\n\nThe gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval.\naliases entity-aware retrieval\nrelated Backend Engineering Database Systems OpenAI Planning Loop Tool Calling"
+    },
+    {
+      "id": "entity:grpc",
+      "name": "gRPC",
+      "type": "protocol",
+      "aliases": [],
+      "mentioned_chunks": [
+        "skill:go-service-runtime",
+        "project:service-platform",
+        "about:backend-summary"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Backend",
+        "Concurrency",
+        "Deployment",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project",
+        "Services",
+        "Storage",
+        "gRPC"
+      ],
+      "contexts": [
+        "Go service notes focused on gRPC, concurrency, and runtime behavior under load",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "RocksDB",
+        "Service Deployment"
+      ],
+      "keywords": [
+        "go",
+        "service",
+        "deployment",
+        "backend",
+        "kubernetes",
+        "postgresql",
+        "project",
+        "services"
+      ],
+      "representation": "name: gRPC\ntype: protocol\ntags Go gRPC Services Concurrency\ncontext Go service notes focused on gRPC, concurrency, and runtime behavior under load\ncontent ## Go service runtime notes\n\nI used Go to build internal gRPC services where latency mattered more than framework ergonomics.\n\nThe useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.\n\nMost of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\nrelated Backend Engineering Docker Go Kubernetes PostgreSQL RocksDB Service Deployment"
+    },
+    {
+      "id": "entity:kubernetes",
+      "name": "Kubernetes",
+      "type": "platform",
+      "aliases": [
+        "k8s"
+      ],
+      "mentioned_chunks": [
+        "workflow:deployment-stack",
+        "project:service-platform",
+        "about:backend-summary"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Backend",
+        "Deployment",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project",
+        "Storage"
+      ],
+      "contexts": [
+        "Deployment notes that treat Docker and Kubernetes as one connected stack",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Docker",
+        "Go",
+        "PostgreSQL",
+        "RocksDB",
+        "Service Deployment",
+        "gRPC"
+      ],
+      "keywords": [
+        "deployment",
+        "docker",
+        "service",
+        "backend",
+        "go",
+        "postgresql",
+        "project",
+        "grpc"
+      ],
+      "representation": "name: Kubernetes\ntype: platform\ntags Docker Kubernetes Deployment\ncontext Deployment notes that treat Docker and Kubernetes as one connected stack\ncontent ## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\naliases k8s\nrelated Backend Engineering Docker Go PostgreSQL RocksDB Service Deployment gRPC"
+    },
+    {
+      "id": "entity:openai",
+      "name": "OpenAI",
+      "type": "product",
+      "aliases": [],
+      "mentioned_chunks": [
+        "workflow:agent-runtime"
+      ],
+      "mention_count": 1,
+      "tags": [
+        "OpenAI",
+        "Planning",
+        "Retrieval",
+        "Tool Calling"
+      ],
+      "contexts": [
+        "Agent runtime notes connecting tool calling, planning loops, and retrieval quality"
+      ],
+      "content_excerpts": [
+        "## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones."
+      ],
+      "related_entities": [
+        "Graph-Aware Retrieval",
+        "Planning Loop",
+        "Tool Calling"
+      ],
+      "keywords": [
+        "tool",
+        "calling",
+        "planning",
+        "retrieval",
+        "agent",
+        "runtime",
+        "notes",
+        "loops"
+      ],
+      "representation": "name: OpenAI\ntype: product\ntags OpenAI Tool Calling Planning Retrieval\ncontext Agent runtime notes connecting tool calling, planning loops, and retrieval quality\ncontent ## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.\nrelated Graph-Aware Retrieval Planning Loop Tool Calling"
+    },
+    {
+      "id": "entity:planning-loop",
+      "name": "Planning Loop",
+      "type": "concept",
+      "aliases": [
+        "planner"
+      ],
+      "mentioned_chunks": [
+        "workflow:agent-runtime"
+      ],
+      "mention_count": 1,
+      "tags": [
+        "OpenAI",
+        "Planning",
+        "Retrieval",
+        "Tool Calling"
+      ],
+      "contexts": [
+        "Agent runtime notes connecting tool calling, planning loops, and retrieval quality"
+      ],
+      "content_excerpts": [
+        "## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones."
+      ],
+      "related_entities": [
+        "Graph-Aware Retrieval",
+        "OpenAI",
+        "Tool Calling"
+      ],
+      "keywords": [
+        "tool",
+        "calling",
+        "retrieval",
+        "agent",
+        "runtime",
+        "notes",
+        "openai",
+        "loops"
+      ],
+      "representation": "name: Planning Loop\ntype: concept\ntags OpenAI Tool Calling Planning Retrieval\ncontext Agent runtime notes connecting tool calling, planning loops, and retrieval quality\ncontent ## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.\naliases planner\nrelated Graph-Aware Retrieval OpenAI Tool Calling"
+    },
+    {
+      "id": "entity:postgresql",
+      "name": "PostgreSQL",
+      "type": "database",
+      "aliases": [
+        "postgres"
+      ],
+      "mentioned_chunks": [
+        "reference:database-tradeoffs",
+        "project:service-platform",
+        "about:backend-summary"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Backend",
+        "Deployment",
+        "Go",
+        "Indexing",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project",
+        "RocksDB",
+        "Storage"
+      ],
+      "contexts": [
+        "Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Database Systems",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "RocksDB",
+        "Service Deployment",
+        "gRPC"
+      ],
+      "keywords": [
+        "storage",
+        "service",
+        "deployment",
+        "backend",
+        "go",
+        "kubernetes",
+        "rocksdb",
+        "project"
+      ],
+      "representation": "name: PostgreSQL\ntype: database\ntags PostgreSQL RocksDB Storage Indexing\ncontext Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction\ncontent ## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\naliases postgres\nrelated Backend Engineering Database Systems Docker Go Kubernetes RocksDB Service Deployment gRPC"
+    },
+    {
+      "id": "entity:rocksdb",
+      "name": "RocksDB",
+      "type": "database",
+      "aliases": [],
+      "mentioned_chunks": [
+        "reference:database-tradeoffs",
+        "project:embedded-analysis-store",
+        "about:backend-summary"
+      ],
+      "mention_count": 3,
+      "tags": [
+        "API",
+        "Backend",
+        "Deployment",
+        "Indexing",
+        "PostgreSQL",
+        "Project",
+        "RocksDB",
+        "Storage"
+      ],
+      "contexts": [
+        "Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction",
+        "Project ledger entry for an analysis pipeline built around an embedded storage engine",
+        "High-level summary of backend experience across service, storage, and deployment topics"
+      ],
+      "content_excerpts": [
+        "## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.",
+        "## Project ledger: embedded analysis pipeline\n\nAnother experiment used RocksDB inside a local analysis pipeline because I wanted a lightweight embedded store without running a full separate database service.\n\nThis note mostly talks about storage behavior and system shape, not the broad category word database.",
+        "## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Database Systems",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "gRPC"
+      ],
+      "keywords": [
+        "storage",
+        "database",
+        "embedded",
+        "postgresql",
+        "backend",
+        "service",
+        "deployment",
+        "notes"
+      ],
+      "representation": "name: RocksDB\ntype: database\ntags PostgreSQL RocksDB Storage Indexing\ncontext Database notes comparing transactional systems, embedded stores, indexing, WAL, and compaction\ncontent ## Storage and database tradeoffs\n\nWhen I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.\n\nThe interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.\n\nSome notes only mention those lower-level details without repeating the higher-level category word database.\ntags Project RocksDB Storage\ncontext Project ledger entry for an analysis pipeline built around an embedded storage engine\ncontent ## Project ledger: embedded analysis pipeline\n\nAnother experiment used RocksDB inside a local analysis pipeline because I wanted a lightweight embedded store without running a full separate database service.\n\nThis note mostly talks about storage behavior and system shape, not the broad category word database.\ntags Backend API Storage Deployment\ncontext High-level summary of backend experience across service, storage, and deployment topics\ncontent ## Backend experience summary\n\nIf I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.\n\nThe concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.\n\nThat spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.\nrelated Backend Engineering Database Systems Docker Go Kubernetes PostgreSQL gRPC"
+    },
+    {
+      "id": "entity:service-deployment",
+      "name": "Service Deployment",
+      "type": "domain",
+      "aliases": [
+        "deployment",
+        "infra"
+      ],
+      "mentioned_chunks": [
+        "workflow:deployment-stack",
+        "project:service-platform"
+      ],
+      "mention_count": 2,
+      "tags": [
+        "Deployment",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "Project"
+      ],
+      "contexts": [
+        "Deployment notes that treat Docker and Kubernetes as one connected stack",
+        "Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes"
+      ],
+      "content_excerpts": [
+        "## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.",
+        "## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents."
+      ],
+      "related_entities": [
+        "Backend Engineering",
+        "Docker",
+        "Go",
+        "Kubernetes",
+        "PostgreSQL",
+        "gRPC"
+      ],
+      "keywords": [
+        "kubernetes",
+        "docker",
+        "project",
+        "one",
+        "go",
+        "postgresql",
+        "stack",
+        "layer"
+      ],
+      "representation": "name: Service Deployment\ntype: domain\ntags Docker Kubernetes Deployment\ncontext Deployment notes that treat Docker and Kubernetes as one connected stack\ncontent ## Docker and Kubernetes as one deployment stack\n\nMy deployment notes started from Docker basics and then gradually shifted toward Kubernetes.\n\nDocker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.\n\nIn practice I usually wrote about them as one deployment stack instead of as isolated tools.\ntags Project Go PostgreSQL Kubernetes\ncontext Project ledger entry for a service platform using Go, gRPC, PostgreSQL, and Kubernetes\ncontent ## Project ledger: service platform\n\nOne side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.\n\nThe note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.\naliases deployment infra\nrelated Backend Engineering Docker Go Kubernetes PostgreSQL gRPC"
+    },
+    {
+      "id": "entity:tool-calling",
+      "name": "Tool Calling",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "workflow:agent-runtime"
+      ],
+      "mention_count": 1,
+      "tags": [
+        "OpenAI",
+        "Planning",
+        "Retrieval",
+        "Tool Calling"
+      ],
+      "contexts": [
+        "Agent runtime notes connecting tool calling, planning loops, and retrieval quality"
+      ],
+      "content_excerpts": [
+        "## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones."
+      ],
+      "related_entities": [
+        "Graph-Aware Retrieval",
+        "OpenAI",
+        "Planning Loop"
+      ],
+      "keywords": [
+        "planning",
+        "retrieval",
+        "agent",
+        "runtime",
+        "notes",
+        "openai",
+        "loops",
+        "graph-aware"
+      ],
+      "representation": "name: Tool Calling\ntype: concept\ntags OpenAI Tool Calling Planning Retrieval\ncontext Agent runtime notes connecting tool calling, planning loops, and retrieval quality\ncontent ## Agent runtime notes\n\nMy recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.\n\nI usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.\n\nThese notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.\nrelated Graph-Aware Retrieval OpenAI Planning Loop"
+    }
+  ]
+}

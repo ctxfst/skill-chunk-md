@@ -1,0 +1,829 @@
+{
+  "edges": [
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:langchain",
+      "score": 0.65
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:llm-api",
+      "score": 0.85
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:openclaw",
+      "score": 0.65
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:prompt-engineering",
+      "score": 0.7
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:state-management",
+      "score": 0.7
+    },
+    {
+      "source": "entity:agent-architecture",
+      "target": "entity:tool-calling",
+      "score": 0.85
+    },
+    {
+      "source": "entity:api-key-management",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:api-key-management",
+      "target": "entity:openai",
+      "score": 0.7
+    },
+    {
+      "source": "entity:api-key-management",
+      "target": "entity:prompt-engineering",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:browser-automation",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:control-flow",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:discord-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:expressjs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:os-concepts",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:puppeteer",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:typescript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:async-programming",
+      "target": "entity:webhooks",
+      "score": 0.7
+    },
+    {
+      "source": "entity:autogpt",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:autogpt",
+      "target": "entity:state-management",
+      "score": 0.7
+    },
+    {
+      "source": "entity:autogpt",
+      "target": "entity:tool-calling",
+      "score": 0.7
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:css-selectors",
+      "score": 0.7
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:discord-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:dom",
+      "score": 0.7
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:nodejs",
+      "score": 0.85
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:openclaw",
+      "score": 0.85
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:puppeteer",
+      "score": 0.65
+    },
+    {
+      "source": "entity:browser-automation",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:cloudflare-workers",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:cloudflare-workers",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:cloudflare-workers",
+      "target": "entity:web-standards",
+      "score": 0.7
+    },
+    {
+      "source": "entity:control-flow",
+      "target": "entity:coroutines",
+      "score": 0.7
+    },
+    {
+      "source": "entity:control-flow",
+      "target": "entity:promises",
+      "score": 0.7
+    },
+    {
+      "source": "entity:control-flow",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:css-selectors",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:css-selectors",
+      "target": "entity:puppeteer",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:django",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:embeddings",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:linear-algebra-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:rest",
+      "score": 0.7
+    },
+    {
+      "source": "entity:database-concepts",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:nodejs",
+      "score": 0.85
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:openclaw",
+      "score": 0.65
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:shell-scripting",
+      "score": 0.7
+    },
+    {
+      "source": "entity:discord-bot",
+      "target": "entity:webhooks",
+      "score": 0.7
+    },
+    {
+      "source": "entity:django",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:django",
+      "target": "entity:pydantic",
+      "score": 0.7
+    },
+    {
+      "source": "entity:django",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:dom",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:dom",
+      "target": "entity:programming-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:dom",
+      "target": "entity:puppeteer",
+      "score": 0.7
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:expressjs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:fastapi",
+      "score": 0.7
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:hono",
+      "score": 0.85
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:edge-runtime",
+      "target": "entity:web-standards",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:langchain",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:linear-algebra-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:llamaindex",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:nlp-concepts",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:rag",
+      "score": 0.7
+    },
+    {
+      "source": "entity:embeddings",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:expressjs",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:expressjs",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:expressjs",
+      "target": "entity:nodejs",
+      "score": 0.85
+    },
+    {
+      "source": "entity:expressjs",
+      "target": "entity:npm",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:json",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:programming-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:pydantic",
+      "score": 0.7
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:python",
+      "score": 0.85
+    },
+    {
+      "source": "entity:fastapi",
+      "target": "entity:virtual-environments",
+      "score": 0.7
+    },
+    {
+      "source": "entity:flask",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:flask",
+      "target": "entity:pydantic",
+      "score": 0.7
+    },
+    {
+      "source": "entity:flask",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:function-calling",
+      "target": "entity:json-schema",
+      "score": 0.7
+    },
+    {
+      "source": "entity:function-calling",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:hono",
+      "target": "entity:http",
+      "score": 0.7
+    },
+    {
+      "source": "entity:hono",
+      "target": "entity:javascript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:hono",
+      "target": "entity:typescript",
+      "score": 0.85
+    },
+    {
+      "source": "entity:hono",
+      "target": "entity:web-standards",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:openai",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:prompt-engineering",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:pydantic",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:rest",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:typescript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:http",
+      "target": "entity:webhooks",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:openclaw",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:programming-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:puppeteer",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:tool-calling",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:typescript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:javascript",
+      "target": "entity:webhooks",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json",
+      "target": "entity:openai",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json",
+      "target": "entity:prompt-engineering",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json",
+      "target": "entity:pydantic",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json-schema",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json-schema",
+      "target": "entity:openapi",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json-schema",
+      "target": "entity:openclaw",
+      "score": 0.7
+    },
+    {
+      "source": "entity:json-schema",
+      "target": "entity:tool-calling",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langchain",
+      "target": "entity:llm-api",
+      "score": 0.85
+    },
+    {
+      "source": "entity:langchain",
+      "target": "entity:prompt-engineering",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langchain",
+      "target": "entity:python",
+      "score": 0.85
+    },
+    {
+      "source": "entity:langchain",
+      "target": "entity:rag",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langchain",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langgraph",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langgraph",
+      "target": "entity:state-management",
+      "score": 0.7
+    },
+    {
+      "source": "entity:langgraph",
+      "target": "entity:tool-calling",
+      "score": 0.7
+    },
+    {
+      "source": "entity:linear-algebra-basics",
+      "target": "entity:semantic-search",
+      "score": 0.7
+    },
+    {
+      "source": "entity:linear-algebra-basics",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llamaindex",
+      "target": "entity:llm-api",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llamaindex",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:nodejs",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:openapi",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:openclaw",
+      "score": 0.85
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:python",
+      "score": 0.85
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:rag",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:llm-api",
+      "target": "entity:tool-calling",
+      "score": 0.7
+    },
+    {
+      "source": "entity:nlp-concepts",
+      "target": "entity:semantic-search",
+      "score": 0.7
+    },
+    {
+      "source": "entity:nlp-concepts",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:nodejs",
+      "target": "entity:npm",
+      "score": 0.7
+    },
+    {
+      "source": "entity:nodejs",
+      "target": "entity:openclaw",
+      "score": 0.85
+    },
+    {
+      "source": "entity:nodejs",
+      "target": "entity:os-concepts",
+      "score": 0.7
+    },
+    {
+      "source": "entity:nodejs",
+      "target": "entity:telegram-bot",
+      "score": 0.85
+    },
+    {
+      "source": "entity:npm",
+      "target": "entity:typescript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:openai",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:openclaw",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:openclaw",
+      "target": "entity:shell-scripting",
+      "score": 0.85
+    },
+    {
+      "source": "entity:openclaw",
+      "target": "entity:telegram-bot",
+      "score": 0.65
+    },
+    {
+      "source": "entity:openclaw",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:os-concepts",
+      "target": "entity:shell-scripting",
+      "score": 0.7
+    },
+    {
+      "source": "entity:pip",
+      "target": "entity:programming-basics",
+      "score": 0.7
+    },
+    {
+      "source": "entity:pip",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:pip",
+      "target": "entity:virtual-environments",
+      "score": 0.7
+    },
+    {
+      "source": "entity:programming-basics",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:programming-basics",
+      "target": "entity:typescript",
+      "score": 0.7
+    },
+    {
+      "source": "entity:prompt-engineering",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:prompt-engineering",
+      "target": "entity:rag",
+      "score": 0.7
+    },
+    {
+      "source": "entity:pydantic",
+      "target": "entity:python",
+      "score": 0.7
+    },
+    {
+      "source": "entity:python",
+      "target": "entity:rag",
+      "score": 0.7
+    },
+    {
+      "source": "entity:python",
+      "target": "entity:rest",
+      "score": 0.7
+    },
+    {
+      "source": "entity:python",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:python",
+      "target": "entity:virtual-environments",
+      "score": 0.7
+    },
+    {
+      "source": "entity:rag",
+      "target": "entity:vector-db",
+      "score": 0.7
+    },
+    {
+      "source": "entity:shell-scripting",
+      "target": "entity:telegram-bot",
+      "score": 0.7
+    },
+    {
+      "source": "entity:telegram-bot",
+      "target": "entity:webhooks",
+      "score": 0.7
+    }
+  ]
+}

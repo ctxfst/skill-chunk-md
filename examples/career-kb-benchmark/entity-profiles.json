@@ -1,0 +1,2419 @@
+{
+  "meta": {
+    "input": "examples/ch22-retrieval-benchmark/career_kb_chunks.jsonl",
+    "source_type": "career-kb-export",
+    "profile_type": "entity-profiles",
+    "entity_count": 55
+  },
+  "entities": [
+    {
+      "id": "entity:agent-architecture",
+      "name": "Agent Architecture",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_623bb4d3455b5918",
+        "doc_e28f69c1f4825bfe",
+        "doc_4839fc8f779e5165",
+        "doc_41d2434d28525f22",
+        "doc_50612e609bd05175"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "LangGraph",
+        "AutoGPT",
+        "LangChain",
+        "RAG"
+      ],
+      "contexts": [
+        "LangChain Agent 架構設計與實作",
+        "Agent Architecture 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從 Tool Calling 到 Agent Architecture：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "agent",
+        "architecture",
+        "tool",
+        "observation",
+        "react",
+        "state",
+        "machine",
+        "llm",
+        "thought",
+        "thinking"
+      ],
+      "representation": "Agent Architecture"
+    },
+    {
+      "id": "entity:api-key-management",
+      "name": "API Key Management",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3006e7c27bb558a9",
+        "doc_1ccf5126c0c25e70",
+        "doc_5c1b527e8485564e",
+        "doc_5a842c5523545049",
+        "doc_22c29d037a48518a",
+        "doc_518fbc3324835655",
+        "doc_dd2f0093c07b5067",
+        "doc_16d0403dc9b056f6",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_b1cf217922525431"
+      ],
+      "mention_count": 11,
+      "tags": [
+        "LLM API",
+        "Prompt Engineering",
+        "OpenAI"
+      ],
+      "contexts": [
+        "API Key Management 踩坑紀錄：LLM API 專案中的血淚教訓",
+        "從 計算機概論 到 API Key Management：升級你的 General 工具箱",
+        "LLM API 與 OpenAI 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "api",
+        "llm",
+        "openai",
+        "key",
+        "management",
+        "token",
+        "rate",
+        "limit",
+        "gpt-4o",
+        "temperature"
+      ],
+      "representation": "API Key Management"
+    },
+    {
+      "id": "entity:async-programming",
+      "name": "Async Programming",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_69bd990bc98f5e95",
+        "doc_77dd0bf6997b5d74",
+        "doc_a80b1c0c667d553d",
+        "doc_217decaafab45f49",
+        "doc_263ea6919ac55cad",
+        "doc_f5a4bc1b58d55f79",
+        "doc_c5743fa7e1465f7e",
+        "doc_0693e557a3ed5a0a",
+        "doc_c61c9f2dd8325b7d",
+        "doc_ef25c4e80d48522d",
+        "doc_449ded6bfc995e35",
+        "doc_32aef13c1cfb56c3",
+        "doc_c570414ce3105a41",
+        "doc_d2bbb5d2441050af",
+        "doc_6fed3d7f687b52c5",
+        "doc_5549461564165f8d",
+        "doc_51110067b37e5350",
+        "doc_21c1d4c27d3e5645",
+        "doc_99c1dde6c65c5ff6",
+        "doc_31389c2f76515c8e",
+        "doc_e61fda924fc95e91"
+      ],
+      "mention_count": 21,
+      "tags": [
+        "Node.js",
+        "Telegram Bot",
+        "Discord Bot",
+        "TypeScript",
+        "Express.js",
+        "Promises",
+        "Coroutines",
+        "Browser Automation"
+      ],
+      "contexts": [
+        "Node.js Event Loop 深入理解：從 libuv 到 async/await",
+        "Telegram Bot API 整合入門：從建立到部署",
+        "Python asyncio 深入理解：從 coroutine 到 event loop"
+      ],
+      "keywords": [
+        "bot",
+        "node",
+        "async",
+        "event",
+        "loop",
+        "await",
+        "browser",
+        "telegram",
+        "programming",
+        "const"
+      ],
+      "representation": "Async Programming"
+    },
+    {
+      "id": "entity:autogpt",
+      "name": "AutoGPT",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_623bb4d3455b5918",
+        "doc_e28f69c1f4825bfe",
+        "doc_bc5b67e380cf54ed",
+        "doc_41d2434d28525f22",
+        "doc_4839fc8f779e5165",
+        "doc_054ebed5c2de5086",
+        "doc_0f71299047fd50ad"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "Agent Architecture",
+        "LangGraph"
+      ],
+      "contexts": [
+        "AutoGPT 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "Agent Architecture 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從 Tool Calling 到 Agent Architecture：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "agent",
+        "architecture",
+        "autogpt",
+        "api",
+        "state",
+        "react",
+        "observation",
+        "machine",
+        "tool",
+        "thought"
+      ],
+      "representation": "AutoGPT"
+    },
+    {
+      "id": "entity:browser-automation",
+      "name": "Browser Automation",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_c5743fa7e1465f7e",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_c61c9f2dd8325b7d",
+        "doc_43931a796cf75674",
+        "doc_983a1fd12f5052fb",
+        "doc_d2bbb5d2441050af",
+        "doc_0e3c5525e6a656b2"
+      ],
+      "mention_count": 11,
+      "tags": [
+        "OpenClaw",
+        "Telegram Bot",
+        "Discord Bot",
+        "Puppeteer",
+        "Playwright",
+        "Node.js"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "Puppeteer 網頁自動化實戰：從爬蟲到 E2E 測試",
+        "OpenClaw 與 Discord Bot 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "openclaw",
+        "browser",
+        "puppeteer",
+        "await",
+        "automation",
+        "page",
+        "const",
+        "whatsapp",
+        "bot",
+        "screenshot"
+      ],
+      "representation": "Browser Automation"
+    },
+    {
+      "id": "entity:cloudflare-workers",
+      "name": "Cloudflare Workers",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_bf19ea16b6b05e07",
+        "doc_9f03dfb7229c5166",
+        "doc_95def536f5c85eb9",
+        "doc_ef65ca52014850ad",
+        "doc_02cc0f74352054ab"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Edge Runtime",
+        "Hono"
+      ],
+      "contexts": [
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？",
+        "Edge Runtime 入門：從 0 到能用的最小專案",
+        "從 JavaScript 到 Edge Runtime：升級你的 Web 工具箱"
+      ],
+      "keywords": [
+        "edge",
+        "runtime",
+        "web",
+        "javascript",
+        "storage",
+        "api",
+        "value",
+        "await",
+        "env",
+        "my_kv"
+      ],
+      "representation": "Cloudflare Workers"
+    },
+    {
+      "id": "entity:control-flow",
+      "name": "Control Flow",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_69bd990bc98f5e95",
+        "doc_0693e557a3ed5a0a",
+        "doc_32aef13c1cfb56c3",
+        "doc_99c1dde6c65c5ff6",
+        "doc_31389c2f76515c8e"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Async Programming",
+        "Promises",
+        "Coroutines",
+        "Python"
+      ],
+      "contexts": [
+        "Python asyncio 深入理解：從 coroutine 到 event loop",
+        "Async Programming 入門：從 0 到能用的最小專案",
+        "Async Programming 踩坑紀錄：Browser Automation 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "async",
+        "programming",
+        "loop",
+        "event",
+        "users",
+        "promise",
+        "await",
+        "balance",
+        "stash",
+        "control"
+      ],
+      "representation": "Control Flow"
+    },
+    {
+      "id": "entity:coroutines",
+      "name": "Coroutines",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_69bd990bc98f5e95",
+        "doc_0693e557a3ed5a0a",
+        "doc_9c969462059f58f8",
+        "doc_32aef13c1cfb56c3",
+        "doc_92e17736c1435133",
+        "doc_31389c2f76515c8e",
+        "doc_9cffb5c7c97a5f5c"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "Async Programming",
+        "Promises"
+      ],
+      "contexts": [
+        "Async Programming 入門：從 0 到能用的最小專案",
+        "Coroutines 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "Coroutines 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "coroutines",
+        "async",
+        "programming",
+        "users",
+        "api",
+        "promise",
+        "balance",
+        "json",
+        "event",
+        "loop"
+      ],
+      "representation": "Coroutines"
+    },
+    {
+      "id": "entity:css-selectors",
+      "name": "CSS Selectors",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_c5743fa7e1465f7e",
+        "doc_280c4dccfa385e32",
+        "doc_c61c9f2dd8325b7d",
+        "doc_d2998169f59357ea",
+        "doc_d2bbb5d2441050af",
+        "doc_0e3c5525e6a656b2"
+      ],
+      "mention_count": 6,
+      "tags": [
+        "Puppeteer",
+        "Browser Automation",
+        "Playwright",
+        "Node.js"
+      ],
+      "contexts": [
+        "Puppeteer 網頁自動化實戰：從爬蟲到 E2E 測試",
+        "Browser Automation 入門：從 0 到能用的最小專案",
+        "從需求推導 Browser Automation：別先選工具"
+      ],
+      "keywords": [
+        "browser",
+        "await",
+        "css",
+        "automation",
+        "page",
+        "selectors",
+        "const",
+        "puppeteer",
+        "screenshot",
+        "navigation"
+      ],
+      "representation": "CSS Selectors"
+    },
+    {
+      "id": "entity:database-concepts",
+      "name": "Database Concepts",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_307a19dd22675192",
+        "doc_4f9fccb5fca856bd",
+        "doc_c062f63e171b5e03",
+        "doc_5e9d0685042a5246",
+        "doc_7198db0fa1f75e46",
+        "doc_5e6cfb61f4a356b9",
+        "doc_f15a4eee649550f5",
+        "doc_fd5d6086f9f15f1f"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Vector DB",
+        "LanceDB",
+        "Pinecone",
+        "Django",
+        "Python",
+        "REST",
+        "Linear Algebra Basics",
+        "Embeddings"
+      ],
+      "contexts": [
+        "Django REST Framework API 設計：從 Serializer 到 ViewSet",
+        "Linear Algebra Basics：工程師需要的向量與矩陣直覺",
+        "Database Concepts 與 軟體工程 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "vector",
+        "database",
+        "concepts",
+        "api",
+        "metadata",
+        "index",
+        "cosine",
+        "similarity",
+        "where",
+        "json"
+      ],
+      "representation": "Database Concepts"
+    },
+    {
+      "id": "entity:discord-bot",
+      "name": "Discord Bot",
+      "type": "application",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_77dd0bf6997b5d74",
+        "doc_21c1d4c27d3e5645",
+        "doc_c570414ce3105a41",
+        "doc_a80b1c0c667d553d",
+        "doc_449ded6bfc995e35",
+        "doc_43931a796cf75674",
+        "doc_983a1fd12f5052fb",
+        "doc_263ea6919ac55cad"
+      ],
+      "mention_count": 13,
+      "tags": [
+        "Telegram Bot",
+        "OpenClaw",
+        "Chat UX"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "OpenClaw 與 Discord Bot 的邊界：怎麼拆才不會痛苦",
+        "從 Shell Scripting 到 OpenClaw：升級你的 Application 工具箱"
+      ],
+      "keywords": [
+        "bot",
+        "openclaw",
+        "telegram",
+        "discord",
+        "whatsapp",
+        "puppeteer",
+        "inline",
+        "api",
+        "shell",
+        "skills"
+      ],
+      "representation": "Discord Bot"
+    },
+    {
+      "id": "entity:django",
+      "name": "Django",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_b5d9c7a6b21759d9",
+        "doc_d2ae257f461e5bfa",
+        "doc_c31f49e0a7a35d70",
+        "doc_24bfcc5038e156ab",
+        "doc_f15a4eee649550f5"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "FastAPI",
+        "Flask",
+        "Python",
+        "REST"
+      ],
+      "contexts": [
+        "Django REST Framework API 設計：從 Serializer 到 ViewSet",
+        "從需求推導 FastAPI：別先選工具",
+        "FastAPI 踩坑紀錄：高階架構設計 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "fastapi",
+        "python",
+        "django",
+        "pydantic",
+        "api",
+        "class",
+        "field",
+        "asgi",
+        "user",
+        "uvicorn"
+      ],
+      "representation": "Django"
+    },
+    {
+      "id": "entity:dom",
+      "name": "DOM",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_c5743fa7e1465f7e",
+        "doc_1614003498895402",
+        "doc_c61c9f2dd8325b7d",
+        "doc_bd7552c484285b9a",
+        "doc_d2bbb5d2441050af",
+        "doc_0e3c5525e6a656b2",
+        "doc_436e2f6419f15384",
+        "doc_079ba7a7874d509c"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Puppeteer",
+        "Browser Automation",
+        "JavaScript",
+        "TypeScript",
+        "Playwright",
+        "Node.js",
+        "CSS"
+      ],
+      "contexts": [
+        "Puppeteer 網頁自動化實戰：從爬蟲到 E2E 測試",
+        "從 Programming Basics 到 JavaScript：升級你的 Language 工具箱",
+        "Browser Automation 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "browser",
+        "javascript",
+        "await",
+        "const",
+        "page",
+        "automation",
+        "puppeteer",
+        "dom",
+        "screenshot",
+        "navigation"
+      ],
+      "representation": "DOM"
+    },
+    {
+      "id": "entity:edge-runtime",
+      "name": "Edge Runtime",
+      "type": "platform",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_bf19ea16b6b05e07",
+        "doc_9f03dfb7229c5166",
+        "doc_95def536f5c85eb9",
+        "doc_6003f15ad3c25564",
+        "doc_2360127f96075e9a",
+        "doc_ef65ca52014850ad",
+        "doc_02cc0f74352054ab",
+        "doc_0acfae3ebf5f5d6c"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Hono",
+        "Cloudflare Workers",
+        "FastAPI",
+        "Express.js",
+        "TypeScript"
+      ],
+      "contexts": [
+        "Hono 實戰：為 Edge Runtime 設計的極速微型 Web 框架",
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？",
+        "Hono 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "edge",
+        "runtime",
+        "hono",
+        "web",
+        "cloudflare",
+        "javascript",
+        "workers",
+        "api",
+        "storage",
+        "const"
+      ],
+      "representation": "Edge Runtime"
+    },
+    {
+      "id": "entity:embeddings",
+      "name": "Embeddings",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_307a19dd22675192",
+        "doc_5e9d0685042a5246",
+        "doc_4efa8d37ee0953d1",
+        "doc_1f2e2598c77454f1",
+        "doc_5117fe624dac5b25",
+        "doc_d7773a03c98f593f",
+        "doc_c156c6527554578e",
+        "doc_f08e614ed2105709",
+        "doc_9b60bf368b7a579a",
+        "doc_3b21f114c44c5285",
+        "doc_105dcc6c409a5ea7",
+        "doc_bad8b19d175750bf",
+        "doc_7198db0fa1f75e46",
+        "doc_7cc6af6bb6385096",
+        "doc_470f1eb51cba58a2",
+        "doc_5e6cfb61f4a356b9"
+      ],
+      "mention_count": 16,
+      "tags": [
+        "Vector DB",
+        "Semantic Search",
+        "RAG",
+        "LangChain",
+        "LlamaIndex",
+        "LanceDB",
+        "Pinecone",
+        "Linear Algebra Basics"
+      ],
+      "contexts": [
+        "Linear Algebra Basics：工程師需要的向量與矩陣直覺",
+        "Embeddings 踩坑紀錄：Vector DB 專案中的血淚教訓",
+        "Vector DB 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "embeddings",
+        "rag",
+        "similarity",
+        "vector",
+        "embedding",
+        "context",
+        "python",
+        "semantic",
+        "retrieve",
+        "chunk"
+      ],
+      "representation": "Embeddings"
+    },
+    {
+      "id": "entity:expressjs",
+      "name": "Express.js",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_ef25c4e80d48522d",
+        "doc_2360127f96075e9a",
+        "doc_e61fda924fc95e91",
+        "doc_217decaafab45f49",
+        "doc_437c718647f558e3",
+        "doc_e2eeacfea7d65d04",
+        "doc_9315164235d05385",
+        "doc_6fed3d7f687b52c5",
+        "doc_0acfae3ebf5f5d6c",
+        "doc_51110067b37e5350"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "Node.js",
+        "TypeScript",
+        "Hono",
+        "FastAPI"
+      ],
+      "contexts": [
+        "Express.js 路由設計與中間件模式深入解析",
+        "Node.js 入門：從 0 到能用的最小專案",
+        "Hono 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "node",
+        "express",
+        "json",
+        "router",
+        "javascript",
+        "app",
+        "hono",
+        "const",
+        "non-blocking",
+        "event"
+      ],
+      "representation": "Express.js"
+    },
+    {
+      "id": "entity:fastapi",
+      "name": "FastAPI",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_e7a876c3cd595c80",
+        "doc_3187ca55b01a5f92",
+        "doc_b5d9c7a6b21759d9",
+        "doc_0aa4af6ab9a85a71",
+        "doc_d2ae257f461e5bfa",
+        "doc_a09ef9379014525d",
+        "doc_2360127f96075e9a",
+        "doc_17198c57bdef5796",
+        "doc_24bfcc5038e156ab",
+        "doc_d428ba331e2f5809",
+        "doc_0acfae3ebf5f5d6c",
+        "doc_66422274129957d5"
+      ],
+      "mention_count": 12,
+      "tags": [
+        "Python",
+        "Pip",
+        "Django",
+        "Flask",
+        "Hono",
+        "Express.js",
+        "Pydantic"
+      ],
+      "contexts": [
+        "FastAPI 高併發框架深度指南：從 Pydantic 到 Production",
+        "從需求推導 Python：別先選工具",
+        "Hono 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "python",
+        "fastapi",
+        "pdb",
+        "pip",
+        "pydantic",
+        "import",
+        "hono",
+        "type",
+        "hints",
+        "name"
+      ],
+      "representation": "FastAPI"
+    },
+    {
+      "id": "entity:flask",
+      "name": "Flask",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_b5d9c7a6b21759d9",
+        "doc_d2ae257f461e5bfa",
+        "doc_2627b1c841d351af",
+        "doc_24bfcc5038e156ab",
+        "doc_0b44f0fa2aea5a78"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "FastAPI",
+        "Django"
+      ],
+      "contexts": [
+        "從需求推導 FastAPI：別先選工具",
+        "FastAPI 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從 計算機概論 到 Flask：升級你的 General 工具箱"
+      ],
+      "keywords": [
+        "fastapi",
+        "flask",
+        "pydantic",
+        "python",
+        "field",
+        "asgi",
+        "uvicorn",
+        "users",
+        "dependency",
+        "injection"
+      ],
+      "representation": "Flask"
+    },
+    {
+      "id": "entity:function-calling",
+      "name": "Function Calling",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_dbfa6bc768ba5c12",
+        "doc_efce8254e78a55c7",
+        "doc_09b8d07e19955863",
+        "doc_2b9d8e34d74c5f86",
+        "doc_dbe0a44982c85eac"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Tool Calling",
+        "OpenAPI"
+      ],
+      "contexts": [
+        "從 計算機概論 到 Function Calling：升級你的 General 工具箱",
+        "Tool Calling 踩坑紀錄：Agent Architecture 專案中的血淚教訓",
+        "從 LLM API 到 Tool Calling：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "calling",
+        "tool",
+        "function",
+        "json",
+        "parameter",
+        "validation",
+        "schema",
+        "llm",
+        "type",
+        "parallel"
+      ],
+      "representation": "Function Calling"
+    },
+    {
+      "id": "entity:hono",
+      "name": "Hono",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_bf19ea16b6b05e07",
+        "doc_9f03dfb7229c5166",
+        "doc_95def536f5c85eb9",
+        "doc_6003f15ad3c25564",
+        "doc_2360127f96075e9a",
+        "doc_ef65ca52014850ad",
+        "doc_02cc0f74352054ab",
+        "doc_0acfae3ebf5f5d6c"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Edge Runtime",
+        "Cloudflare Workers",
+        "FastAPI",
+        "Express.js",
+        "TypeScript"
+      ],
+      "contexts": [
+        "Hono 實戰：為 Edge Runtime 設計的極速微型 Web 框架",
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？",
+        "Hono 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "edge",
+        "runtime",
+        "hono",
+        "web",
+        "cloudflare",
+        "javascript",
+        "workers",
+        "api",
+        "storage",
+        "const"
+      ],
+      "representation": "Hono"
+    },
+    {
+      "id": "entity:http",
+      "name": "HTTP",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3006e7c27bb558a9",
+        "doc_5c1b527e8485564e",
+        "doc_77dd0bf6997b5d74",
+        "doc_9f03dfb7229c5166",
+        "doc_2360127f96075e9a",
+        "doc_a80b1c0c667d553d",
+        "doc_24bfcc5038e156ab",
+        "doc_16d0403dc9b056f6",
+        "doc_f5a4bc1b58d55f79",
+        "doc_1ccf5126c0c25e70",
+        "doc_5a842c5523545049",
+        "doc_449ded6bfc995e35",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_3187ca55b01a5f92",
+        "doc_b5d9c7a6b21759d9",
+        "doc_6003f15ad3c25564",
+        "doc_01d95f723929525d",
+        "doc_f15a4eee649550f5",
+        "doc_d2ae257f461e5bfa",
+        "doc_9ec15807299e54b3",
+        "doc_437c718647f558e3",
+        "doc_0acfae3ebf5f5d6c",
+        "doc_b1cf217922525431"
+      ],
+      "mention_count": 24,
+      "tags": [
+        "LLM API",
+        "Prompt Engineering",
+        "OpenAI",
+        "FastAPI",
+        "Hono",
+        "Telegram Bot",
+        "Django",
+        "Express.js"
+      ],
+      "contexts": [
+        "Hono 實戰：為 Edge Runtime 設計的極速微型 Web 框架",
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？",
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰"
+      ],
+      "keywords": [
+        "api",
+        "bot",
+        "llm",
+        "openai",
+        "token",
+        "python",
+        "fastapi",
+        "import",
+        "hono",
+        "telegram"
+      ],
+      "representation": "HTTP"
+    },
+    {
+      "id": "entity:javascript",
+      "name": "JavaScript",
+      "type": "language",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_1614003498895402",
+        "doc_9f03dfb7229c5166",
+        "doc_2360127f96075e9a",
+        "doc_217decaafab45f49",
+        "doc_f5a4bc1b58d55f79",
+        "doc_436e2f6419f15384",
+        "doc_079ba7a7874d509c",
+        "doc_bf19ea16b6b05e07",
+        "doc_ef25c4e80d48522d",
+        "doc_b2baaaffa63d5e08",
+        "doc_02cc0f74352054ab",
+        "doc_48a317ad4c165a55",
+        "doc_0e3c5525e6a656b2",
+        "doc_6003f15ad3c25564",
+        "doc_ef65ca52014850ad",
+        "doc_6fed3d7f687b52c5",
+        "doc_5549461564165f8d",
+        "doc_51110067b37e5350",
+        "doc_95def536f5c85eb9",
+        "doc_e61fda924fc95e91",
+        "doc_437c718647f558e3",
+        "doc_bd7552c484285b9a",
+        "doc_0acfae3ebf5f5d6c"
+      ],
+      "mention_count": 23,
+      "tags": [
+        "Node.js",
+        "TypeScript",
+        "Hono",
+        "Express.js",
+        "Edge Runtime",
+        "Cloudflare Workers",
+        "DOM",
+        "FastAPI"
+      ],
+      "contexts": [
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "Hono 實戰：為 Edge Runtime 設計的極速微型 Web 框架",
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？"
+      ],
+      "keywords": [
+        "javascript",
+        "node",
+        "edge",
+        "const",
+        "runtime",
+        "hono",
+        "await",
+        "json",
+        "event",
+        "loop"
+      ],
+      "representation": "JavaScript"
+    },
+    {
+      "id": "entity:json",
+      "name": "JSON",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3006e7c27bb558a9",
+        "doc_1ccf5126c0c25e70",
+        "doc_5c1b527e8485564e",
+        "doc_3187ca55b01a5f92",
+        "doc_5a842c5523545049",
+        "doc_9ec15807299e54b3",
+        "doc_7628aba1cd705ef3",
+        "doc_16d0403dc9b056f6",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_c2b327100c3f5d82",
+        "doc_b1cf217922525431"
+      ],
+      "mention_count": 12,
+      "tags": [
+        "LLM API",
+        "Prompt Engineering",
+        "OpenAI",
+        "YAML",
+        "XML",
+        "FastAPI",
+        "Python",
+        "Pydantic"
+      ],
+      "contexts": [
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰",
+        "FastAPI 高併發框架深度指南：從 Pydantic 到 Production",
+        "LLM API 與 OpenAI 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "api",
+        "openai",
+        "llm",
+        "token",
+        "response",
+        "client",
+        "streaming",
+        "import",
+        "content",
+        "rate"
+      ],
+      "representation": "JSON"
+    },
+    {
+      "id": "entity:json-schema",
+      "name": "JSON Schema",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_fcfc73ecde77517f",
+        "doc_1017c207dadb5883",
+        "doc_55d56923146050d2",
+        "doc_efce8254e78a55c7",
+        "doc_09b8d07e19955863",
+        "doc_2b9d8e34d74c5f86",
+        "doc_48a317ad4c165a55",
+        "doc_dbe0a44982c85eac"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Tool Calling",
+        "Function Calling",
+        "OpenAPI",
+        "OpenClaw",
+        "Node.js"
+      ],
+      "contexts": [
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "JSON Schema 入門：從 0 到能用的最小專案",
+        "Tool Calling 踩坑紀錄：Agent Architecture 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "json",
+        "schema",
+        "calling",
+        "tool",
+        "api",
+        "llm",
+        "pdb",
+        "parameter",
+        "validation",
+        "type"
+      ],
+      "representation": "JSON Schema"
+    },
+    {
+      "id": "entity:langchain",
+      "name": "LangChain",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_71a73df2b0355dc0",
+        "doc_8db4ba0be8655cd2",
+        "doc_1f2e2598c77454f1",
+        "doc_88967a2d43295e9a",
+        "doc_d7773a03c98f593f",
+        "doc_c156c6527554578e",
+        "doc_3b21f114c44c5285",
+        "doc_14029efbb18854bc",
+        "doc_7cc6af6bb6385096",
+        "doc_50612e609bd05175",
+        "doc_895b427eafd65009",
+        "doc_727eedb0b9545a4a"
+      ],
+      "mention_count": 12,
+      "tags": [
+        "RAG",
+        "LlamaIndex",
+        "AutoGPT-Lite",
+        "OpenClaw",
+        "Agent Architecture",
+        "Chat PDF",
+        "Vector DB"
+      ],
+      "contexts": [
+        "LangChain Agent 架構設計與實作",
+        "從需求推導 RAG：別先選工具",
+        "RAG 踩坑紀錄：Chat PDF 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "langchain",
+        "rag",
+        "llm",
+        "context",
+        "retrieve",
+        "api",
+        "chunk",
+        "agent",
+        "embedding",
+        "autogpt-lite"
+      ],
+      "representation": "LangChain"
+    },
+    {
+      "id": "entity:langgraph",
+      "name": "LangGraph",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_623bb4d3455b5918",
+        "doc_e28f69c1f4825bfe",
+        "doc_18e6402d6f7152e8",
+        "doc_41d2434d28525f22",
+        "doc_4839fc8f779e5165",
+        "doc_dab9e3c3d68e54c6"
+      ],
+      "mention_count": 6,
+      "tags": [
+        "Agent Architecture",
+        "AutoGPT"
+      ],
+      "contexts": [
+        "LangGraph 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "Agent Architecture 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從 Tool Calling 到 Agent Architecture：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "agent",
+        "architecture",
+        "langgraph",
+        "api",
+        "state",
+        "react",
+        "observation",
+        "machine",
+        "tool",
+        "thought"
+      ],
+      "representation": "LangGraph"
+    },
+    {
+      "id": "entity:linear-algebra-basics",
+      "name": "Linear Algebra Basics",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_4efa8d37ee0953d1",
+        "doc_5117fe624dac5b25",
+        "doc_f08e614ed2105709",
+        "doc_9b60bf368b7a579a",
+        "doc_105dcc6c409a5ea7",
+        "doc_bad8b19d175750bf",
+        "doc_470f1eb51cba58a2",
+        "doc_5e6cfb61f4a356b9",
+        "doc_56c5ad8a0d8b5d6a"
+      ],
+      "mention_count": 9,
+      "tags": [
+        "Embeddings",
+        "Vector DB",
+        "Semantic Search"
+      ],
+      "contexts": [
+        "Linear Algebra Basics：工程師需要的向量與矩陣直覺",
+        "Embeddings 踩坑紀錄：Vector DB 專案中的血淚教訓",
+        "從需求推導 Embeddings：別先選工具"
+      ],
+      "keywords": [
+        "embeddings",
+        "similarity",
+        "linear",
+        "algebra",
+        "basics",
+        "semantic",
+        "openai",
+        "tokenizer",
+        "python",
+        "vector"
+      ],
+      "representation": "Linear Algebra Basics"
+    },
+    {
+      "id": "entity:llamaindex",
+      "name": "LlamaIndex",
+      "type": "framework",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_ff61fac36b8451e6",
+        "doc_1f2e2598c77454f1",
+        "doc_d7773a03c98f593f",
+        "doc_c156c6527554578e",
+        "doc_3b21f114c44c5285",
+        "doc_c21b879eb9de527f",
+        "doc_7cc6af6bb6385096"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "RAG",
+        "LangChain"
+      ],
+      "contexts": [
+        "從需求推導 RAG：別先選工具",
+        "RAG 踩坑紀錄：Chat PDF 專案中的血淚教訓",
+        "從 LLM API 到 RAG：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "rag",
+        "context",
+        "chunk",
+        "retrieve",
+        "api",
+        "llm",
+        "embedding",
+        "llamaindex",
+        "rerank",
+        "overlap"
+      ],
+      "representation": "LlamaIndex"
+    },
+    {
+      "id": "entity:llm-api",
+      "name": "LLM API",
+      "type": "service",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_921c81751a9458ee",
+        "doc_3006e7c27bb558a9",
+        "doc_5c1b527e8485564e",
+        "doc_d7773a03c98f593f",
+        "doc_09b8d07e19955863",
+        "doc_41d2434d28525f22",
+        "doc_43931a796cf75674",
+        "doc_14029efbb18854bc",
+        "doc_16d0403dc9b056f6",
+        "doc_1ccf5126c0c25e70",
+        "doc_5a842c5523545049",
+        "doc_efce8254e78a55c7",
+        "doc_c156c6527554578e",
+        "doc_3b21f114c44c5285",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_48a317ad4c165a55",
+        "doc_7ef4df22bb7d5ce2",
+        "doc_71a73df2b0355dc0",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_2b9d8e34d74c5f86",
+        "doc_983a1fd12f5052fb",
+        "doc_50612e609bd05175",
+        "doc_623bb4d3455b5918",
+        "doc_824410a1e3875212",
+        "doc_e28f69c1f4825bfe",
+        "doc_1f2e2598c77454f1",
+        "doc_9ec15807299e54b3",
+        "doc_4839fc8f779e5165",
+        "doc_7cc6af6bb6385096",
+        "doc_dbe0a44982c85eac",
+        "doc_b1cf217922525431"
+      ],
+      "mention_count": 33,
+      "tags": [
+        "OpenClaw",
+        "Prompt Engineering",
+        "OpenAI",
+        "LangChain",
+        "Telegram Bot",
+        "Discord Bot",
+        "RAG",
+        "Tool Calling"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰"
+      ],
+      "keywords": [
+        "llm",
+        "api",
+        "calling",
+        "agent",
+        "openai",
+        "tool",
+        "openclaw",
+        "token",
+        "rag",
+        "json"
+      ],
+      "representation": "LLM API"
+    },
+    {
+      "id": "entity:nlp-concepts",
+      "name": "NLP Concepts",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_4efa8d37ee0953d1",
+        "doc_5117fe624dac5b25",
+        "doc_f08e614ed2105709",
+        "doc_9b60bf368b7a579a",
+        "doc_a7cbe894b91755a1",
+        "doc_f26f0d9cc5bd593b",
+        "doc_105dcc6c409a5ea7",
+        "doc_bad8b19d175750bf",
+        "doc_fd61a19b66f152f6",
+        "doc_470f1eb51cba58a2",
+        "doc_9451427a115b53df"
+      ],
+      "mention_count": 11,
+      "tags": [
+        "Embeddings",
+        "Vector DB",
+        "Semantic Search"
+      ],
+      "contexts": [
+        "Embeddings 踩坑紀錄：Vector DB 專案中的血淚教訓",
+        "從需求推導 NLP Concepts：別先選工具",
+        "從需求推導 Embeddings：別先選工具"
+      ],
+      "keywords": [
+        "embeddings",
+        "nlp",
+        "concepts",
+        "similarity",
+        "python",
+        "semantic",
+        "tokenizer",
+        "text-embedding-3-small",
+        "openai",
+        "response"
+      ],
+      "representation": "NLP Concepts"
+    },
+    {
+      "id": "entity:nodejs",
+      "name": "Node.js",
+      "type": "runtime",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_ef25c4e80d48522d",
+        "doc_43931a796cf75674",
+        "doc_e61fda924fc95e91",
+        "doc_b2baaaffa63d5e08",
+        "doc_217decaafab45f49",
+        "doc_437c718647f558e3",
+        "doc_983a1fd12f5052fb",
+        "doc_51110067b37e5350",
+        "doc_48a317ad4c165a55",
+        "doc_6fed3d7f687b52c5",
+        "doc_5549461564165f8d",
+        "doc_0e3c5525e6a656b2",
+        "doc_f5a4bc1b58d55f79"
+      ],
+      "mention_count": 18,
+      "tags": [
+        "OpenClaw",
+        "Telegram Bot",
+        "Discord Bot",
+        "Express.js",
+        "TypeScript",
+        "Tool Calling",
+        "Async Programming",
+        "Puppeteer"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "Node.js Event Loop 深入理解：從 libuv 到 async/await"
+      ],
+      "keywords": [
+        "node",
+        "openclaw",
+        "json",
+        "bot",
+        "puppeteer",
+        "loop",
+        "javascript",
+        "const",
+        "event",
+        "index"
+      ],
+      "representation": "Node.js"
+    },
+    {
+      "id": "entity:npm",
+      "name": "NPM",
+      "type": "tool",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_ef25c4e80d48522d",
+        "doc_3e6d68edadc65595",
+        "doc_e61fda924fc95e91",
+        "doc_f5c1c2ebe4c05196",
+        "doc_217decaafab45f49",
+        "doc_437c718647f558e3",
+        "doc_6fed3d7f687b52c5",
+        "doc_068b909d04d751d8",
+        "doc_51110067b37e5350"
+      ],
+      "mention_count": 9,
+      "tags": [
+        "Express.js",
+        "Node.js",
+        "TypeScript"
+      ],
+      "contexts": [
+        "Express.js 路由設計與中間件模式深入解析",
+        "Node.js 入門：從 0 到能用的最小專案",
+        "從需求推導 Node.js：別先選工具"
+      ],
+      "keywords": [
+        "node",
+        "npm",
+        "json",
+        "users",
+        "javascript",
+        "non-blocking",
+        "event",
+        "loop",
+        "api",
+        "scripts"
+      ],
+      "representation": "NPM"
+    },
+    {
+      "id": "entity:openai",
+      "name": "OpenAI",
+      "type": "service",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3006e7c27bb558a9",
+        "doc_1ccf5126c0c25e70",
+        "doc_5c1b527e8485564e",
+        "doc_5a842c5523545049",
+        "doc_9ec15807299e54b3",
+        "doc_0b696e8211db59d7",
+        "doc_16d0403dc9b056f6",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_b1cf217922525431"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "LLM API",
+        "Prompt Engineering"
+      ],
+      "contexts": [
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰",
+        "LLM API 與 OpenAI 的邊界：怎麼拆才不會痛苦",
+        "OpenAI 踩坑紀錄：高階架構設計 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "api",
+        "openai",
+        "llm",
+        "token",
+        "response",
+        "client",
+        "rate",
+        "limit",
+        "gpt-4o",
+        "streaming"
+      ],
+      "representation": "OpenAI"
+    },
+    {
+      "id": "entity:openapi",
+      "name": "OpenAPI",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_8684d6f7a35c5bdf",
+        "doc_efce8254e78a55c7",
+        "doc_09b8d07e19955863",
+        "doc_2b9d8e34d74c5f86",
+        "doc_dbe0a44982c85eac"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Tool Calling",
+        "Function Calling"
+      ],
+      "contexts": [
+        "OpenAPI 與 軟體工程 的邊界：怎麼拆才不會痛苦",
+        "Tool Calling 踩坑紀錄：Agent Architecture 專案中的血淚教訓",
+        "從 LLM API 到 Tool Calling：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "calling",
+        "tool",
+        "json",
+        "parameter",
+        "validation",
+        "schema",
+        "llm",
+        "type",
+        "function",
+        "openapi"
+      ],
+      "representation": "OpenAPI"
+    },
+    {
+      "id": "entity:openclaw",
+      "name": "OpenClaw",
+      "type": "application",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_71a73df2b0355dc0",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_43931a796cf75674",
+        "doc_14029efbb18854bc",
+        "doc_983a1fd12f5052fb",
+        "doc_48a317ad4c165a55"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "Telegram Bot",
+        "Discord Bot",
+        "AutoGPT-Lite",
+        "LangChain",
+        "Tool Calling",
+        "Node.js"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "OpenClaw 與 Discord Bot 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "openclaw",
+        "whatsapp",
+        "api",
+        "skills",
+        "puppeteer",
+        "json",
+        "autogpt-lite",
+        "bot",
+        "shell",
+        "plugin"
+      ],
+      "representation": "OpenClaw"
+    },
+    {
+      "id": "entity:os-concepts",
+      "name": "OS Concepts",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_5549461564165f8d",
+        "doc_c326d8037fab5eab",
+        "doc_76fc9a47de08512a",
+        "doc_069ee5a0fca156e9",
+        "doc_cf70e15e81be5ad4"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Node.js",
+        "Async Programming",
+        "Shell Scripting",
+        "Linux Basics",
+        "Bash"
+      ],
+      "contexts": [
+        "Node.js Event Loop 深入理解：從 libuv 到 async/await",
+        "Shell Scripting 實戰：自動化你的開發工作流",
+        "OS Concepts 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "concepts",
+        "bash",
+        "users",
+        "loop",
+        "python",
+        "event",
+        "date",
+        "node",
+        "console",
+        "log"
+      ],
+      "representation": "OS Concepts"
+    },
+    {
+      "id": "entity:pip",
+      "name": "Pip",
+      "type": "tool",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_188edec7b3c9551a",
+        "doc_e7a876c3cd595c80",
+        "doc_0aa4af6ab9a85a71",
+        "doc_242520d62879595a",
+        "doc_a09ef9379014525d",
+        "doc_17198c57bdef5796",
+        "doc_34d6700f338d536c",
+        "doc_d30d5837ff815a90",
+        "doc_d428ba331e2f5809",
+        "doc_66422274129957d5"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "Python",
+        "FastAPI",
+        "Virtual Environments"
+      ],
+      "contexts": [
+        "Python Virtual Environments 完全指南：venv、conda、poetry",
+        "從需求推導 Python：別先選工具",
+        "Python 踩坑紀錄：Chat PDF 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "python",
+        "pip",
+        "pdb",
+        "type",
+        "venv",
+        "hints",
+        "list",
+        "comprehension",
+        "stash",
+        "bash"
+      ],
+      "representation": "Pip"
+    },
+    {
+      "id": "entity:programming-basics",
+      "name": "Programming Basics",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_1614003498895402",
+        "doc_493043f55a715cc2",
+        "doc_e7a876c3cd595c80",
+        "doc_0aa4af6ab9a85a71",
+        "doc_079ba7a7874d509c",
+        "doc_a09ef9379014525d",
+        "doc_17198c57bdef5796",
+        "doc_d428ba331e2f5809",
+        "doc_436e2f6419f15384",
+        "doc_66422274129957d5"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "Python",
+        "Pip",
+        "FastAPI",
+        "JavaScript",
+        "DOM",
+        "TypeScript"
+      ],
+      "contexts": [
+        "從需求推導 Python：別先選工具",
+        "從 Programming Basics 到 JavaScript：升級你的 Language 工具箱",
+        "Python 踩坑紀錄：Chat PDF 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "python",
+        "pdb",
+        "javascript",
+        "pip",
+        "programming",
+        "basics",
+        "type",
+        "hints",
+        "list",
+        "comprehension"
+      ],
+      "representation": "Programming Basics"
+    },
+    {
+      "id": "entity:promises",
+      "name": "Promises",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_69bd990bc98f5e95",
+        "doc_0693e557a3ed5a0a",
+        "doc_32aef13c1cfb56c3",
+        "doc_31389c2f76515c8e",
+        "doc_5e26002268fb5d3c",
+        "doc_181fc2bd652b58d7"
+      ],
+      "mention_count": 6,
+      "tags": [
+        "Async Programming",
+        "Coroutines"
+      ],
+      "contexts": [
+        "Async Programming 入門：從 0 到能用的最小專案",
+        "從 計算機概論 到 Promises：升級你的 General 工具箱",
+        "從需求推導 Promises：別先選工具"
+      ],
+      "keywords": [
+        "users",
+        "async",
+        "programming",
+        "promises",
+        "promise",
+        "balance",
+        "api",
+        "event",
+        "loop",
+        "get"
+      ],
+      "representation": "Promises"
+    },
+    {
+      "id": "entity:prompt-engineering",
+      "name": "Prompt Engineering",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3006e7c27bb558a9",
+        "doc_1ccf5126c0c25e70",
+        "doc_8f8e663cde5e5e6b",
+        "doc_5c1b527e8485564e",
+        "doc_5a842c5523545049",
+        "doc_9ec15807299e54b3",
+        "doc_16d0403dc9b056f6",
+        "doc_af42b1a0c9155eeb",
+        "doc_f81c962ed0a75516",
+        "doc_d9e46cce6787595d",
+        "doc_50612e609bd05175",
+        "doc_b1cf217922525431",
+        "doc_272455989fcb5df6"
+      ],
+      "mention_count": 13,
+      "tags": [
+        "LLM API",
+        "OpenAI",
+        "LangChain",
+        "Agent Architecture",
+        "RAG"
+      ],
+      "contexts": [
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰",
+        "LangChain Agent 架構設計與實作",
+        "Prompt Engineering 與 軟體工程 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "llm",
+        "api",
+        "openai",
+        "token",
+        "prompt",
+        "response",
+        "temperature",
+        "client",
+        "import",
+        "rate"
+      ],
+      "representation": "Prompt Engineering"
+    },
+    {
+      "id": "entity:puppeteer",
+      "name": "Puppeteer",
+      "type": "tool",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_d2bbb5d2441050af",
+        "doc_c61c9f2dd8325b7d",
+        "doc_0e3c5525e6a656b2",
+        "doc_c5743fa7e1465f7e"
+      ],
+      "mention_count": 4,
+      "tags": [
+        "Browser Automation",
+        "Playwright",
+        "Node.js"
+      ],
+      "contexts": [
+        "Puppeteer 網頁自動化實戰：從爬蟲到 E2E 測試",
+        "Browser Automation 入門：從 0 到能用的最小專案",
+        "從需求推導 Browser Automation：別先選工具"
+      ],
+      "keywords": [
+        "browser",
+        "await",
+        "page",
+        "automation",
+        "puppeteer",
+        "const",
+        "screenshot",
+        "navigation",
+        "javascript",
+        "launch"
+      ],
+      "representation": "Puppeteer"
+    },
+    {
+      "id": "entity:pydantic",
+      "name": "Pydantic",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_b5d9c7a6b21759d9",
+        "doc_3187ca55b01a5f92",
+        "doc_d2ae257f461e5bfa",
+        "doc_24bfcc5038e156ab",
+        "doc_394f22fba54b512c"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "FastAPI",
+        "Django",
+        "Flask",
+        "Python"
+      ],
+      "contexts": [
+        "FastAPI 高併發框架深度指南：從 Pydantic 到 Production",
+        "從需求推導 FastAPI：別先選工具",
+        "Pydantic 與 軟體工程 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "fastapi",
+        "pydantic",
+        "python",
+        "asgi",
+        "field",
+        "name",
+        "uvicorn",
+        "basemodel",
+        "int",
+        "class"
+      ],
+      "representation": "Pydantic"
+    },
+    {
+      "id": "entity:python",
+      "name": "Python",
+      "type": "language",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_188edec7b3c9551a",
+        "doc_71a73df2b0355dc0",
+        "doc_e7a876c3cd595c80",
+        "doc_3187ca55b01a5f92",
+        "doc_b5d9c7a6b21759d9",
+        "doc_0aa4af6ab9a85a71",
+        "doc_d2ae257f461e5bfa",
+        "doc_a09ef9379014525d",
+        "doc_9ec15807299e54b3",
+        "doc_99c1dde6c65c5ff6",
+        "doc_17198c57bdef5796",
+        "doc_14029efbb18854bc",
+        "doc_24bfcc5038e156ab",
+        "doc_d428ba331e2f5809",
+        "doc_50612e609bd05175",
+        "doc_f15a4eee649550f5",
+        "doc_727eedb0b9545a4a",
+        "doc_66422274129957d5"
+      ],
+      "mention_count": 22,
+      "tags": [
+        "FastAPI",
+        "Pip",
+        "Django",
+        "LangChain",
+        "Flask",
+        "Pydantic",
+        "Async Programming",
+        "REST"
+      ],
+      "contexts": [
+        "LLM API 整合入門：OpenAI 與 Anthropic Claude 實戰",
+        "FastAPI 高併發框架深度指南：從 Pydantic 到 Production",
+        "FastAPI 高併發框架深度指南：從 Pydantic 到 Production"
+      ],
+      "keywords": [
+        "python",
+        "fastapi",
+        "pdb",
+        "pydantic",
+        "import",
+        "pip",
+        "api",
+        "venv",
+        "async",
+        "agent"
+      ],
+      "representation": "Python"
+    },
+    {
+      "id": "entity:rag",
+      "name": "RAG",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_1f2e2598c77454f1",
+        "doc_d7773a03c98f593f",
+        "doc_c156c6527554578e",
+        "doc_3b21f114c44c5285",
+        "doc_7cc6af6bb6385096",
+        "doc_50612e609bd05175",
+        "doc_727eedb0b9545a4a"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "LangChain",
+        "LlamaIndex",
+        "Agent Architecture",
+        "Chat PDF",
+        "Vector DB"
+      ],
+      "contexts": [
+        "LangChain Agent 架構設計與實作",
+        "從需求推導 RAG：別先選工具",
+        "RAG 踩坑紀錄：Chat PDF 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "rag",
+        "context",
+        "llm",
+        "retrieve",
+        "chunk",
+        "embedding",
+        "langchain",
+        "pdf",
+        "agent",
+        "rerank"
+      ],
+      "representation": "RAG"
+    },
+    {
+      "id": "entity:rest",
+      "name": "REST",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_c364768880595b4f",
+        "doc_31bc22dc6d645019",
+        "doc_01d95f723929525d",
+        "doc_2d8f7bedacec5467",
+        "doc_f15a4eee649550f5"
+      ],
+      "mention_count": 5,
+      "tags": [
+        "Django",
+        "Python",
+        "HTTP",
+        "GraphQL"
+      ],
+      "contexts": [
+        "Django REST Framework API 設計：從 Serializer 到 ViewSet",
+        "從需求推導 REST：別先選工具",
+        "REST 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "rest",
+        "api",
+        "users",
+        "router",
+        "content-type",
+        "git",
+        "json",
+        "class",
+        "bash",
+        "http"
+      ],
+      "representation": "REST"
+    },
+    {
+      "id": "entity:semantic-search",
+      "name": "Semantic Search",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_e786b585bffe5221",
+        "doc_4efa8d37ee0953d1",
+        "doc_5117fe624dac5b25",
+        "doc_f08e614ed2105709",
+        "doc_9b60bf368b7a579a",
+        "doc_2a4d50d6d7e65938",
+        "doc_105dcc6c409a5ea7",
+        "doc_bad8b19d175750bf",
+        "doc_470f1eb51cba58a2"
+      ],
+      "mention_count": 9,
+      "tags": [
+        "Embeddings",
+        "Vector DB"
+      ],
+      "contexts": [
+        "Embeddings 踩坑紀錄：Vector DB 專案中的血淚教訓",
+        "從需求推導 Embeddings：別先選工具",
+        "從 計算機概論 到 Semantic Search：升級你的 General 工具箱"
+      ],
+      "keywords": [
+        "embeddings",
+        "semantic",
+        "search",
+        "similarity",
+        "python",
+        "tokenizer",
+        "text-embedding-3-small",
+        "openai",
+        "response",
+        "linalg"
+      ],
+      "representation": "Semantic Search"
+    },
+    {
+      "id": "entity:shell-scripting",
+      "name": "Shell Scripting",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_c326d8037fab5eab",
+        "doc_43931a796cf75674",
+        "doc_983a1fd12f5052fb",
+        "doc_8aeae0f615885411",
+        "doc_2bcedf07007c507d"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "OpenClaw",
+        "Telegram Bot",
+        "Discord Bot",
+        "Bash",
+        "Cron",
+        "Linux Basics"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "Shell Scripting 實戰：自動化你的開發工作流",
+        "OpenClaw 與 Discord Bot 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "openclaw",
+        "shell",
+        "bash",
+        "scripting",
+        "whatsapp",
+        "puppeteer",
+        "bot",
+        "skills",
+        "plugin",
+        "docker"
+      ],
+      "representation": "Shell Scripting"
+    },
+    {
+      "id": "entity:state-management",
+      "name": "State Management",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_623bb4d3455b5918",
+        "doc_73ef9cf1bc405b83",
+        "doc_e28f69c1f4825bfe",
+        "doc_41d2434d28525f22",
+        "doc_4839fc8f779e5165",
+        "doc_9e13d09ba5e2510f",
+        "doc_1f88002f77735cee"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "Agent Architecture",
+        "LangGraph",
+        "AutoGPT"
+      ],
+      "contexts": [
+        "Agent Architecture 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從需求推導 State Management：別先選工具",
+        "從 Tool Calling 到 Agent Architecture：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "agent",
+        "state",
+        "architecture",
+        "management",
+        "react",
+        "observation",
+        "machine",
+        "tool",
+        "api",
+        "thought"
+      ],
+      "representation": "State Management"
+    },
+    {
+      "id": "entity:telegram-bot",
+      "name": "Telegram Bot",
+      "type": "application",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_7ef4df22bb7d5ce2",
+        "doc_921c81751a9458ee",
+        "doc_8a0ed3f6d2fb523f",
+        "doc_98a7e45e0bf652a4",
+        "doc_824410a1e3875212",
+        "doc_77dd0bf6997b5d74",
+        "doc_21c1d4c27d3e5645",
+        "doc_c570414ce3105a41",
+        "doc_a80b1c0c667d553d",
+        "doc_449ded6bfc995e35",
+        "doc_43931a796cf75674",
+        "doc_983a1fd12f5052fb",
+        "doc_263ea6919ac55cad",
+        "doc_f5a4bc1b58d55f79"
+      ],
+      "mention_count": 14,
+      "tags": [
+        "Discord Bot",
+        "OpenClaw",
+        "Chat UX",
+        "Node.js",
+        "Webhooks"
+      ],
+      "contexts": [
+        "OpenClaw 安裝與設定：從零開始部署你的 AI 助理",
+        "Telegram Bot API 整合入門：從建立到部署",
+        "OpenClaw 與 Discord Bot 的邊界：怎麼拆才不會痛苦"
+      ],
+      "keywords": [
+        "bot",
+        "openclaw",
+        "telegram",
+        "discord",
+        "whatsapp",
+        "ctx",
+        "puppeteer",
+        "webhook",
+        "api",
+        "inline"
+      ],
+      "representation": "Telegram Bot"
+    },
+    {
+      "id": "entity:tool-calling",
+      "name": "Tool Calling",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_623bb4d3455b5918",
+        "doc_e28f69c1f4825bfe",
+        "doc_efce8254e78a55c7",
+        "doc_09b8d07e19955863",
+        "doc_41d2434d28525f22",
+        "doc_4839fc8f779e5165",
+        "doc_2b9d8e34d74c5f86",
+        "doc_48a317ad4c165a55",
+        "doc_dbe0a44982c85eac"
+      ],
+      "mention_count": 9,
+      "tags": [
+        "Agent Architecture",
+        "LangGraph",
+        "AutoGPT",
+        "Function Calling",
+        "OpenAPI",
+        "OpenClaw",
+        "Node.js"
+      ],
+      "contexts": [
+        "打造自訂 OpenClaw Skills：Plugin 開發指南",
+        "Agent Architecture 踩坑紀錄：高階架構設計 專案中的血淚教訓",
+        "從 Tool Calling 到 Agent Architecture：升級你的 AI 工具箱"
+      ],
+      "keywords": [
+        "calling",
+        "agent",
+        "tool",
+        "architecture",
+        "llm",
+        "json",
+        "observation",
+        "state",
+        "schema",
+        "machine"
+      ],
+      "representation": "Tool Calling"
+    },
+    {
+      "id": "entity:typescript",
+      "name": "TypeScript",
+      "type": "language",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_1614003498895402",
+        "doc_ef25c4e80d48522d",
+        "doc_6003f15ad3c25564",
+        "doc_b2baaaffa63d5e08",
+        "doc_e61fda924fc95e91",
+        "doc_217decaafab45f49",
+        "doc_6fed3d7f687b52c5",
+        "doc_51110067b37e5350",
+        "doc_436e2f6419f15384",
+        "doc_079ba7a7874d509c"
+      ],
+      "mention_count": 10,
+      "tags": [
+        "Node.js",
+        "Express.js",
+        "JavaScript",
+        "DOM",
+        "Hono",
+        "Edge Runtime",
+        "React"
+      ],
+      "contexts": [
+        "Hono 實戰：為 Edge Runtime 設計的極速微型 Web 框架",
+        "從 Programming Basics 到 JavaScript：升級你的 Language 工具箱",
+        "Node.js 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "node",
+        "javascript",
+        "const",
+        "event",
+        "loop",
+        "json",
+        "hono",
+        "programming",
+        "non-blocking",
+        "typescript"
+      ],
+      "representation": "TypeScript"
+    },
+    {
+      "id": "entity:vector-db",
+      "name": "Vector DB",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_d7773a03c98f593f",
+        "doc_14029efbb18854bc",
+        "doc_c156c6527554578e",
+        "doc_9b60bf368b7a579a",
+        "doc_3b21f114c44c5285",
+        "doc_bad8b19d175750bf",
+        "doc_470f1eb51cba58a2",
+        "doc_727eedb0b9545a4a",
+        "doc_307a19dd22675192",
+        "doc_71a73df2b0355dc0",
+        "doc_4efa8d37ee0953d1",
+        "doc_f08e614ed2105709",
+        "doc_7198db0fa1f75e46",
+        "doc_5e9d0685042a5246",
+        "doc_1f2e2598c77454f1",
+        "doc_5117fe624dac5b25",
+        "doc_105dcc6c409a5ea7",
+        "doc_7cc6af6bb6385096",
+        "doc_5e6cfb61f4a356b9"
+      ],
+      "mention_count": 19,
+      "tags": [
+        "Embeddings",
+        "LangChain",
+        "Semantic Search",
+        "RAG",
+        "LlamaIndex",
+        "LanceDB",
+        "Pinecone",
+        "AutoGPT-Lite"
+      ],
+      "contexts": [
+        "Linear Algebra Basics：工程師需要的向量與矩陣直覺",
+        "Embeddings 踩坑紀錄：Vector DB 專案中的血淚教訓",
+        "Vector DB 入門：從 0 到能用的最小專案"
+      ],
+      "keywords": [
+        "embeddings",
+        "rag",
+        "vector",
+        "similarity",
+        "embedding",
+        "python",
+        "context",
+        "llm",
+        "semantic",
+        "retrieve"
+      ],
+      "representation": "Vector DB"
+    },
+    {
+      "id": "entity:virtual-environments",
+      "name": "Virtual Environments",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_188edec7b3c9551a",
+        "doc_e7a876c3cd595c80",
+        "doc_0aa4af6ab9a85a71",
+        "doc_a09ef9379014525d",
+        "doc_17198c57bdef5796",
+        "doc_d428ba331e2f5809",
+        "doc_22ab75408c3a5b72",
+        "doc_66422274129957d5"
+      ],
+      "mention_count": 8,
+      "tags": [
+        "Python",
+        "Pip",
+        "FastAPI"
+      ],
+      "contexts": [
+        "Python Virtual Environments 完全指南：venv、conda、poetry",
+        "從需求推導 Python：別先選工具",
+        "Python 踩坑紀錄：Chat PDF 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "python",
+        "pdb",
+        "pip",
+        "venv",
+        "type",
+        "hints",
+        "list",
+        "comprehension",
+        "users",
+        "virtual"
+      ],
+      "representation": "Virtual Environments"
+    },
+    {
+      "id": "entity:web-standards",
+      "name": "Web Standards",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_bf19ea16b6b05e07",
+        "doc_9f03dfb7229c5166",
+        "doc_95def536f5c85eb9",
+        "doc_ef65ca52014850ad",
+        "doc_7a25af349fa35142",
+        "doc_02cc0f74352054ab",
+        "doc_515ee377094c5a32"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "Edge Runtime",
+        "Hono",
+        "Cloudflare Workers"
+      ],
+      "contexts": [
+        "Edge Runtime 全面解析：為什麼要把 Server 搬到邊緣？",
+        "Edge Runtime 入門：從 0 到能用的最小專案",
+        "Web Standards 踩坑紀錄：Edge Runtime 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "edge",
+        "runtime",
+        "web",
+        "standards",
+        "javascript",
+        "api",
+        "storage",
+        "value",
+        "await",
+        "env"
+      ],
+      "representation": "Web Standards"
+    },
+    {
+      "id": "entity:webhooks",
+      "name": "Webhooks",
+      "type": "concept",
+      "aliases": [],
+      "mentioned_chunks": [
+        "doc_3ccafd5bdd6d5636",
+        "doc_77dd0bf6997b5d74",
+        "doc_a80b1c0c667d553d",
+        "doc_449ded6bfc995e35",
+        "doc_1dcc6fb3c8e555ac",
+        "doc_37b6e4d4916852c1",
+        "doc_f5a4bc1b58d55f79"
+      ],
+      "mention_count": 7,
+      "tags": [
+        "Telegram Bot",
+        "Discord Bot",
+        "Chat UX",
+        "Node.js"
+      ],
+      "contexts": [
+        "Telegram Bot API 整合入門：從建立到部署",
+        "從 HTTP 到 Telegram Bot：升級你的 Web 工具箱",
+        "Webhooks 踩坑紀錄：Telegram Bot 專案中的血淚教訓"
+      ],
+      "keywords": [
+        "bot",
+        "telegram",
+        "webhooks",
+        "ctx",
+        "webhook",
+        "api",
+        "inline",
+        "botfather",
+        "telegraf",
+        "text"
+      ],
+      "representation": "Webhooks"
+    }
+  ]
+}

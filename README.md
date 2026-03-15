@@ -92,6 +92,8 @@ entityGraph --> agentLoop
 
 For a shareable end-to-end sample, see [`assets/examples/career/`](assets/examples/career/), which includes the raw Markdown input, the converted CtxFST document, the exported `chunks.json`, the derived `entity-profiles.json`, and the final `entity-graph.json`.
 
+For a benchmark-oriented scaffold that compares pure RAG with entity-aware retrieval, see [`examples/ch22-retrieval-benchmark/`](examples/ch22-retrieval-benchmark/).
+
 ### Why chunk your Markdown?
 
 When you feed a long document to an LLM, retrieval can be imprecise.  

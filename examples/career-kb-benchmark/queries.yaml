@@ -1,0 +1,81 @@
+queries:
+- id: q1-semantic-search
+  query: 我有哪些跟「用 AI 做語意搜尋」相關的筆記？
+  intent: category-expansion
+  expected_entities:
+  - entity:semantic-search
+  - entity:embeddings
+  - entity:vector-db
+  - entity:rag
+  - entity:lancedb
+  likely_rag_failure: Many RAG/Vector DB/Embeddings/LanceDB chunks do not contain
+    the phrase「語意搜尋」or「AI 搜尋」. TF-IDF will rank chunks that happen to say
+    those exact words above the conceptually related ones. Entity-aware retrieval
+    can traverse entity:semantic-search → entity:embeddings → entity:vector-db →
+    entity:rag and recover the full ecosystem.
+- id: q2-chatbot-prerequisites
+  query: 我想做一個聊天機器人，需要先學哪些基礎？
+  intent: prerequisite-chain
+  expected_entities:
+  - entity:telegram-bot
+  - entity:discord-bot
+  - entity:nodejs
+  - entity:http
+  - entity:webhooks
+  likely_rag_failure: No chunk is titled「聊天機器人基礎」. Baseline finds chunks
+    about HTTP/Node.js but misses that they are prerequisites for Telegram Bot and
+    Discord Bot. Entity-aware retrieval traverses entity:telegram-bot / entity:discord-bot
+    → requires entity:nodejs, entity:http, entity:webhooks.
+- id: q3-agent-runtime-internals
+  query: 要理解一個完整的 AI agent runtime，我需要哪些底層知識？
+  intent: requires-fan-out
+  expected_entities:
+  - entity:agent-architecture
+  - entity:llm-api
+  - entity:tool-calling
+  - entity:langchain
+  - entity:prompt-engineering
+  likely_rag_failure: '"AI agent runtime 底層知識" does not appear verbatim in most
+    chunks. Baseline finds chunks that happen to say "agent" or "runtime" but misses
+    the graph-encoded prerequisite cluster: LLM API, Tool Calling, Prompt Engineering,
+    LangChain. Entity-aware retrieval fans out from entity:agent-architecture through
+    its requires edges.'
+- id: q4-frontend-to-llm
+  query: 前端工程師想接觸 LLM 開發，有什麼入門路徑？
+  intent: graph-traversal
+  expected_entities:
+  - entity:javascript
+  - entity:nodejs
+  - entity:llm-api
+  - entity:tool-calling
+  - entity:openclaw
+  likely_rag_failure: '"前端工程師" is not a keyword in any chunk. Baseline anchors
+    on "LLM" and returns LLM API / OpenAI chunks that do not mention JavaScript or
+    frontend context. Entity-aware retrieval traverses entity:javascript → entity:nodejs
+    → entity:openclaw / entity:llm-api and surfaces the JS-native path to LLM development.'
+- id: q5-python-web
+  query: 我對 Python Web 框架懂多少？
+  intent: implicit-category
+  expected_entities:
+  - entity:python
+  - entity:fastapi
+  - entity:flask
+  - entity:django
+  - entity:pydantic
+  likely_rag_failure: Chunks on FastAPI, Flask, Django, Pydantic each focus on the
+    specific framework without repeating「Python Web 框架」as a category phrase. Baseline
+    ranks by lexical overlap with「Web」and surfaces Web Standards / Edge Runtime
+    chunks instead.
+- id: q6-automation-beyond-scraping
+  query: 學了網頁操作自動化之後，還能拿來做哪些不只是爬蟲的事？
+  intent: cross-entity-exploration
+  expected_entities:
+  - entity:browser-automation
+  - entity:puppeteer
+  - entity:openclaw
+  - entity:playwright
+  likely_rag_failure: '"網頁操作自動化"「爬蟲」do not appear as keywords in OpenClaw
+    or E2E-testing chunks. Baseline returns only crawling/scraping-labeled chunks.
+    Entity-aware retrieval goes from entity:browser-automation → relatedTo entity:puppeteer
+    / entity:playwright and entity:openclaw (which requires browser-automation) to
+    surface agent-runtime and testing use cases.'

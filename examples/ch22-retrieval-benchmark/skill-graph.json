@@ -1,0 +1,33 @@
+{
+  "description": "手動維護的技能關係圖（Ch1 方式二 demo 用）",
+  "nodes": [
+    "Telegram Bot", "Discord Bot", "Node.js", "LLM API",
+    "Agent Architecture", "OpenClaw", "Tool Calling", "Python",
+    "Browser Automation", "Puppeteer", "Shell Scripting",
+    "LangChain", "FastAPI", "Hono", "Edge Runtime",
+    "Express.js", "Prompt Engineering", "TypeScript"
+  ],
+  "edges": [
+    {"from": "Telegram Bot", "to": "Node.js", "type": "requires"},
+    {"from": "Telegram Bot", "to": "OpenClaw", "type": "relatedTo"},
+    {"from": "Discord Bot", "to": "Node.js", "type": "requires"},
+    {"from": "Discord Bot", "to": "OpenClaw", "type": "relatedTo"},
+    {"from": "OpenClaw", "to": "Node.js", "type": "requires"},
+    {"from": "OpenClaw", "to": "LLM API", "type": "requires"},
+    {"from": "OpenClaw", "to": "Browser Automation", "type": "requires"},
+    {"from": "OpenClaw", "to": "Shell Scripting", "type": "requires"},
+    {"from": "OpenClaw", "to": "Agent Architecture", "type": "relatedTo"},
+    {"from": "Agent Architecture", "to": "LLM API", "type": "requires"},
+    {"from": "Agent Architecture", "to": "Tool Calling", "type": "requires"},
+    {"from": "Agent Architecture", "to": "LangChain", "type": "relatedTo"},
+    {"from": "LLM API", "to": "Python", "type": "requires"},
+    {"from": "LangChain", "to": "LLM API", "type": "requires"},
+    {"from": "LangChain", "to": "Python", "type": "requires"},
+    {"from": "Browser Automation", "to": "Puppeteer", "type": "relatedTo"},
+    {"from": "Browser Automation", "to": "Node.js", "type": "requires"},
+    {"from": "FastAPI", "to": "Python", "type": "requires"},
+    {"from": "Express.js", "to": "Node.js", "type": "requires"},
+    {"from": "Hono", "to": "Edge Runtime", "type": "requires"},
+    {"from": "Hono", "to": "TypeScript", "type": "requires"}
+  ]
+}

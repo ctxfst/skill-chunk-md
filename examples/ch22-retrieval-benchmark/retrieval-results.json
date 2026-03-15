@@ -1,0 +1,568 @@
+{
+  "queries": [
+    {
+      "id": "q1-backend",
+      "query": "我有哪些後端經驗？",
+      "baseline_top": [
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.4402,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.0733,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "principle:retrieval-gap",
+          "score": 0.0723,
+          "entities": [
+            "entity:graph-aware-retrieval",
+            "entity:backend-engineering",
+            "entity:database-systems"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 1.2662,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.824,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "workflow:deployment-stack",
+          "score": 0.7506,
+          "entities": [
+            "entity:docker",
+            "entity:kubernetes",
+            "entity:service-deployment"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:docker",
+          "score": 0.2398
+        },
+        {
+          "entity_id": "entity:kubernetes",
+          "score": 0.1976
+        },
+        {
+          "entity_id": "entity:postgresql",
+          "score": 0.1951
+        },
+        {
+          "entity_id": "entity:grpc",
+          "score": 0.1777
+        },
+        {
+          "entity_id": "entity:service-deployment",
+          "score": 0.0538
+        }
+      ]
+    },
+    {
+      "id": "q2-database",
+      "query": "我對資料庫其實懂哪些東西？",
+      "baseline_top": [
+        {
+          "chunk_id": "reference:database-tradeoffs",
+          "score": 0.317,
+          "entities": [
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "project:embedded-analysis-store",
+          "score": 0.2586,
+          "entities": [
+            "entity:rocksdb",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "principle:retrieval-gap",
+          "score": 0.1539,
+          "entities": [
+            "entity:graph-aware-retrieval",
+            "entity:backend-engineering",
+            "entity:database-systems"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "reference:database-tradeoffs",
+          "score": 1.2972,
+          "entities": [
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "project:embedded-analysis-store",
+          "score": 1.1001,
+          "entities": [
+            "entity:rocksdb",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "principle:retrieval-gap",
+          "score": 0.6497,
+          "entities": [
+            "entity:graph-aware-retrieval",
+            "entity:backend-engineering",
+            "entity:database-systems"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:rocksdb",
+          "score": 0.2123
+        },
+        {
+          "entity_id": "entity:database-systems",
+          "score": 0.196
+        },
+        {
+          "entity_id": "entity:postgresql",
+          "score": 0.1582
+        },
+        {
+          "entity_id": "entity:backend-engineering",
+          "score": 0.0802
+        },
+        {
+          "entity_id": "entity:kubernetes",
+          "score": 0.0266
+        }
+      ]
+    },
+    {
+      "id": "q3-docker-k8s",
+      "query": "我在哪裡寫過 Docker 和 Kubernetes 的關係？",
+      "baseline_top": [
+        {
+          "chunk_id": "workflow:deployment-stack",
+          "score": 0.6198,
+          "entities": [
+            "entity:docker",
+            "entity:kubernetes",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.215,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.1624,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "workflow:deployment-stack",
+          "score": 1.3292,
+          "entities": [
+            "entity:docker",
+            "entity:kubernetes",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.7383,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.7282,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:docker",
+          "score": 0.2136
+        },
+        {
+          "entity_id": "entity:service-deployment",
+          "score": 0.2128
+        },
+        {
+          "entity_id": "entity:kubernetes",
+          "score": 0.165
+        },
+        {
+          "entity_id": "entity:grpc",
+          "score": 0.0652
+        },
+        {
+          "entity_id": "entity:go",
+          "score": 0.0354
+        }
+      ]
+    },
+    {
+      "id": "q4-go",
+      "query": "我的 Go 經驗有哪些？",
+      "baseline_top": [
+        {
+          "chunk_id": "skill:go-service-runtime",
+          "score": 0.354,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:backend-engineering"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.3013,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.2569,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "skill:go-service-runtime",
+          "score": 1.2216,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:backend-engineering"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 1.0876,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 1.0756,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:go",
+          "score": 0.2479
+        },
+        {
+          "entity_id": "entity:backend-engineering",
+          "score": 0.1776
+        },
+        {
+          "entity_id": "entity:grpc",
+          "score": 0.177
+        },
+        {
+          "entity_id": "entity:postgresql",
+          "score": 0.1185
+        },
+        {
+          "entity_id": "entity:kubernetes",
+          "score": 0.044
+        }
+      ]
+    },
+    {
+      "id": "q5-high-concurrency",
+      "query": "如果我要把現有服務做得更適合高併發，我以前寫過哪些相關想法？",
+      "baseline_top": [
+        {
+          "chunk_id": "skill:go-service-runtime",
+          "score": 0.3467,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:backend-engineering"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.0655,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.0473,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "skill:go-service-runtime",
+          "score": 1.2551,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:backend-engineering"
+          ]
+        },
+        {
+          "chunk_id": "project:service-platform",
+          "score": 0.8698,
+          "entities": [
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:kubernetes",
+            "entity:backend-engineering",
+            "entity:service-deployment"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.8196,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:go",
+          "score": 0.1518
+        },
+        {
+          "entity_id": "entity:grpc",
+          "score": 0.1167
+        },
+        {
+          "entity_id": "entity:backend-engineering",
+          "score": 0.1164
+        },
+        {
+          "entity_id": "entity:kubernetes",
+          "score": 0.0503
+        },
+        {
+          "entity_id": "entity:service-deployment",
+          "score": 0.0209
+        }
+      ]
+    },
+    {
+      "id": "q6-retrieval",
+      "query": "我在哪裡寫過 retrieval 為什麼需要 entity graph？",
+      "baseline_top": [
+        {
+          "chunk_id": "principle:retrieval-gap",
+          "score": 0.3289,
+          "entities": [
+            "entity:graph-aware-retrieval",
+            "entity:backend-engineering",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "workflow:agent-runtime",
+          "score": 0.1344,
+          "entities": [
+            "entity:openai",
+            "entity:tool-calling",
+            "entity:planning-loop",
+            "entity:graph-aware-retrieval"
+          ]
+        },
+        {
+          "chunk_id": "about:backend-summary",
+          "score": 0.0409,
+          "entities": [
+            "entity:backend-engineering",
+            "entity:go",
+            "entity:grpc",
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:docker",
+            "entity:kubernetes"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "principle:retrieval-gap",
+          "score": 1.1055,
+          "entities": [
+            "entity:graph-aware-retrieval",
+            "entity:backend-engineering",
+            "entity:database-systems"
+          ]
+        },
+        {
+          "chunk_id": "workflow:agent-runtime",
+          "score": 0.7829,
+          "entities": [
+            "entity:openai",
+            "entity:tool-calling",
+            "entity:planning-loop",
+            "entity:graph-aware-retrieval"
+          ]
+        },
+        {
+          "chunk_id": "reference:database-tradeoffs",
+          "score": 0.3667,
+          "entities": [
+            "entity:postgresql",
+            "entity:rocksdb",
+            "entity:database-systems"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:graph-aware-retrieval",
+          "score": 0.1336
+        },
+        {
+          "entity_id": "entity:database-systems",
+          "score": 0.0819
+        },
+        {
+          "entity_id": "entity:tool-calling",
+          "score": 0.07
+        },
+        {
+          "entity_id": "entity:backend-engineering",
+          "score": 0.0602
+        },
+        {
+          "entity_id": "entity:planning-loop",
+          "score": 0.0295
+        }
+      ]
+    }
+  ]
+}

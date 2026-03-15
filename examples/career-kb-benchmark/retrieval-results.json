@@ -1,0 +1,567 @@
+{
+  "queries": [
+    {
+      "id": "q1-semantic-search",
+      "query": "我有哪些跟「用 AI 做語意搜尋」相關的筆記？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_43931a796cf75674",
+          "score": 0.1959,
+          "entities": [
+            "entity:openclaw",
+            "entity:shell-scripting",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:browser-automation",
+            "entity:llm-api",
+            "entity:nodejs"
+          ]
+        },
+        {
+          "chunk_id": "doc_98a7e45e0bf652a4",
+          "score": 0.1916,
+          "entities": [
+            "entity:openclaw",
+            "entity:shell-scripting",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:browser-automation",
+            "entity:llm-api",
+            "entity:nodejs"
+          ]
+        },
+        {
+          "chunk_id": "doc_7ef4df22bb7d5ce2",
+          "score": 0.1348,
+          "entities": [
+            "entity:openclaw",
+            "entity:shell-scripting",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:browser-automation",
+            "entity:llm-api",
+            "entity:nodejs"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_9b60bf368b7a579a",
+          "score": 0.9798,
+          "entities": [
+            "entity:vector-db",
+            "entity:embeddings",
+            "entity:semantic-search",
+            "entity:linear-algebra-basics",
+            "entity:nlp-concepts"
+          ]
+        },
+        {
+          "chunk_id": "doc_470f1eb51cba58a2",
+          "score": 0.9008,
+          "entities": [
+            "entity:vector-db",
+            "entity:embeddings",
+            "entity:semantic-search",
+            "entity:linear-algebra-basics",
+            "entity:nlp-concepts"
+          ]
+        },
+        {
+          "chunk_id": "doc_5117fe624dac5b25",
+          "score": 0.8837,
+          "entities": [
+            "entity:vector-db",
+            "entity:embeddings",
+            "entity:semantic-search",
+            "entity:linear-algebra-basics",
+            "entity:nlp-concepts"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:semantic-search",
+          "score": 0.3771
+        },
+        {
+          "entity_id": "entity:embeddings",
+          "score": 0.1939
+        },
+        {
+          "entity_id": "entity:vector-db",
+          "score": 0.1824
+        },
+        {
+          "entity_id": "entity:linear-algebra-basics",
+          "score": 0.1779
+        },
+        {
+          "entity_id": "entity:nlp-concepts",
+          "score": 0.0739
+        }
+      ]
+    },
+    {
+      "id": "q2-chatbot-prerequisites",
+      "query": "我想做一個聊天機器人，需要先學哪些基礎？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_01d95f723929525d",
+          "score": 0.0,
+          "entities": [
+            "entity:http",
+            "entity:rest"
+          ]
+        },
+        {
+          "chunk_id": "doc_02cc0f74352054ab",
+          "score": 0.0,
+          "entities": [
+            "entity:hono",
+            "entity:javascript",
+            "entity:cloudflare-workers",
+            "entity:edge-runtime",
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_054ebed5c2de5086",
+          "score": 0.0,
+          "entities": [
+            "entity:autogpt"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_449ded6bfc995e35",
+          "score": 0.8263,
+          "entities": [
+            "entity:webhooks",
+            "entity:http",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:async-programming"
+          ]
+        },
+        {
+          "chunk_id": "doc_77dd0bf6997b5d74",
+          "score": 0.8263,
+          "entities": [
+            "entity:webhooks",
+            "entity:http",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:async-programming"
+          ]
+        },
+        {
+          "chunk_id": "doc_a80b1c0c667d553d",
+          "score": 0.8263,
+          "entities": [
+            "entity:webhooks",
+            "entity:http",
+            "entity:telegram-bot",
+            "entity:discord-bot",
+            "entity:async-programming"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:webhooks",
+          "score": 0.1974
+        },
+        {
+          "entity_id": "entity:telegram-bot",
+          "score": 0.1941
+        },
+        {
+          "entity_id": "entity:discord-bot",
+          "score": 0.1471
+        },
+        {
+          "entity_id": "entity:openclaw",
+          "score": 0.0898
+        },
+        {
+          "entity_id": "entity:shell-scripting",
+          "score": 0.0342
+        }
+      ]
+    },
+    {
+      "id": "q3-agent-runtime-internals",
+      "query": "要理解一個完整的 AI agent runtime，我需要哪些底層知識？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_50612e609bd05175",
+          "score": 0.5461,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:rag",
+            "entity:python",
+            "entity:langchain"
+          ]
+        },
+        {
+          "chunk_id": "doc_41d2434d28525f22",
+          "score": 0.5148,
+          "entities": [
+            "entity:tool-calling",
+            "entity:langgraph",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:autogpt",
+            "entity:state-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_4839fc8f779e5165",
+          "score": 0.5123,
+          "entities": [
+            "entity:tool-calling",
+            "entity:langgraph",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:autogpt",
+            "entity:state-management"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_41d2434d28525f22",
+          "score": 1.3657,
+          "entities": [
+            "entity:tool-calling",
+            "entity:langgraph",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:autogpt",
+            "entity:state-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_4839fc8f779e5165",
+          "score": 1.3641,
+          "entities": [
+            "entity:tool-calling",
+            "entity:langgraph",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:autogpt",
+            "entity:state-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_e28f69c1f4825bfe",
+          "score": 1.2897,
+          "entities": [
+            "entity:tool-calling",
+            "entity:langgraph",
+            "entity:llm-api",
+            "entity:agent-architecture",
+            "entity:autogpt",
+            "entity:state-management"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:agent-architecture",
+          "score": 0.1553
+        },
+        {
+          "entity_id": "entity:autogpt",
+          "score": 0.1523
+        },
+        {
+          "entity_id": "entity:langgraph",
+          "score": 0.1515
+        },
+        {
+          "entity_id": "entity:tool-calling",
+          "score": 0.1375
+        },
+        {
+          "entity_id": "entity:state-management",
+          "score": 0.0304
+        }
+      ]
+    },
+    {
+      "id": "q4-frontend-to-llm",
+      "query": "前端工程師想接觸 LLM 開發，有什麼入門路徑？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_16d0403dc9b056f6",
+          "score": 0.5204,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:http",
+            "entity:json",
+            "entity:llm-api",
+            "entity:openai",
+            "entity:api-key-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_09b8d07e19955863",
+          "score": 0.416,
+          "entities": [
+            "entity:tool-calling",
+            "entity:json-schema",
+            "entity:llm-api",
+            "entity:function-calling",
+            "entity:openapi"
+          ]
+        },
+        {
+          "chunk_id": "doc_b1cf217922525431",
+          "score": 0.3925,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:http",
+            "entity:json",
+            "entity:llm-api",
+            "entity:openai",
+            "entity:api-key-management"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_16d0403dc9b056f6",
+          "score": 1.0639,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:http",
+            "entity:json",
+            "entity:llm-api",
+            "entity:openai",
+            "entity:api-key-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_b1cf217922525431",
+          "score": 0.978,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:http",
+            "entity:json",
+            "entity:llm-api",
+            "entity:openai",
+            "entity:api-key-management"
+          ]
+        },
+        {
+          "chunk_id": "doc_f81c962ed0a75516",
+          "score": 0.9738,
+          "entities": [
+            "entity:prompt-engineering",
+            "entity:http",
+            "entity:json",
+            "entity:llm-api",
+            "entity:openai",
+            "entity:api-key-management"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:openai",
+          "score": 0.1532
+        },
+        {
+          "entity_id": "entity:typescript",
+          "score": 0.1182
+        },
+        {
+          "entity_id": "entity:json",
+          "score": 0.114
+        },
+        {
+          "entity_id": "entity:llm-api",
+          "score": 0.0892
+        },
+        {
+          "entity_id": "entity:api-key-management",
+          "score": 0.03
+        }
+      ]
+    },
+    {
+      "id": "q5-python-web",
+      "query": "我對 Python Web 框架懂多少？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_515ee377094c5a32",
+          "score": 0.5301,
+          "entities": [
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_7a25af349fa35142",
+          "score": 0.4998,
+          "entities": [
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_bf19ea16b6b05e07",
+          "score": 0.3337,
+          "entities": [
+            "entity:hono",
+            "entity:javascript",
+            "entity:cloudflare-workers",
+            "entity:edge-runtime",
+            "entity:web-standards"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_515ee377094c5a32",
+          "score": 0.9333,
+          "entities": [
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_7a25af349fa35142",
+          "score": 0.9133,
+          "entities": [
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_66422274129957d5",
+          "score": 0.8008,
+          "entities": [
+            "entity:programming-basics",
+            "entity:virtual-environments",
+            "entity:python",
+            "entity:fastapi",
+            "entity:pip"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:web-standards",
+          "score": 0.13
+        },
+        {
+          "entity_id": "entity:pip",
+          "score": 0.1083
+        },
+        {
+          "entity_id": "entity:virtual-environments",
+          "score": 0.0926
+        },
+        {
+          "entity_id": "entity:programming-basics",
+          "score": 0.0679
+        },
+        {
+          "entity_id": "entity:cloudflare-workers",
+          "score": 0.0255
+        }
+      ]
+    },
+    {
+      "id": "q6-automation-beyond-scraping",
+      "query": "學了網頁操作自動化之後，還能拿來做哪些不只是爬蟲的事？",
+      "baseline_top": [
+        {
+          "chunk_id": "doc_01d95f723929525d",
+          "score": 0.0,
+          "entities": [
+            "entity:http",
+            "entity:rest"
+          ]
+        },
+        {
+          "chunk_id": "doc_02cc0f74352054ab",
+          "score": 0.0,
+          "entities": [
+            "entity:hono",
+            "entity:javascript",
+            "entity:cloudflare-workers",
+            "entity:edge-runtime",
+            "entity:web-standards"
+          ]
+        },
+        {
+          "chunk_id": "doc_054ebed5c2de5086",
+          "score": 0.0,
+          "entities": [
+            "entity:autogpt"
+          ]
+        }
+      ],
+      "ctxfst_top": [
+        {
+          "chunk_id": "doc_c5743fa7e1465f7e",
+          "score": 0.9652,
+          "entities": [
+            "entity:css-selectors",
+            "entity:puppeteer",
+            "entity:browser-automation",
+            "entity:async-programming",
+            "entity:dom"
+          ]
+        },
+        {
+          "chunk_id": "doc_c61c9f2dd8325b7d",
+          "score": 0.9652,
+          "entities": [
+            "entity:css-selectors",
+            "entity:puppeteer",
+            "entity:browser-automation",
+            "entity:async-programming",
+            "entity:dom"
+          ]
+        },
+        {
+          "chunk_id": "doc_d2bbb5d2441050af",
+          "score": 0.9652,
+          "entities": [
+            "entity:css-selectors",
+            "entity:puppeteer",
+            "entity:browser-automation",
+            "entity:async-programming",
+            "entity:dom"
+          ]
+        }
+      ],
+      "top_entities": [
+        {
+          "entity_id": "entity:puppeteer",
+          "score": 0.2483
+        },
+        {
+          "entity_id": "entity:css-selectors",
+          "score": 0.2323
+        },
+        {
+          "entity_id": "entity:dom",
+          "score": 0.2114
+        },
+        {
+          "entity_id": "entity:browser-automation",
+          "score": 0.1515
+        },
+        {
+          "entity_id": "entity:programming-basics",
+          "score": 0.0321
+        }
+      ]
+    }
+  ]
+}
