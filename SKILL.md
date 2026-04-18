@@ -1,6 +1,6 @@
 ---
 name: skill-chunk-md
-description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, adding `<Chunk>` tags and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
+description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, building entity memory or per-entity dossiers (memory-shaped, one-file-one-entity convention), adding `<Chunk>` tags and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
 ---
 
 # Skill Chunk MD
@@ -15,6 +15,15 @@ Use this skill to produce documents that support both:
 2. **Entity retrieval** for navigation, graph expansion, and related-concept discovery
 
 Do not only split text. Also extract the important domain entities, normalize them, and link each chunk to the entities it actually discusses.
+
+## Choosing a Layout
+
+Decide early whether the source is **note-shaped** or **memory-shaped**:
+
+- **Note-shaped** (one profile, one benchmark, one meeting log): use the standard multi-entity-per-file layout described below.
+- **Memory-shaped** (a knowledge base that grows over time, per-entity dossiers, agent memory): use the **Entity-Centric convention** — one file per entity, filename `entity-<id-suffix>.ctxfst.md`, `entities:` with exactly one owner, every chunk referencing the owner. Cross-references use entity IDs and resolve to other files.
+
+Entity-centric is a convention, not a schema change. The same frontmatter rules apply; the difference is that `len(entities) == 1` and the filename carries the owner. See `assets/examples/entity-centric/` for a worked example, and validate with `python3 scripts/validate_chunks.py <path> --entity-centric`.
 
 ## Target Format
 

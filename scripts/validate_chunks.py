@@ -10,11 +10,18 @@ Checks for:
 - Balanced opening/closing tags
 - No nested chunks
 
+Optional: --entity-centric flag enforces the one-file-one-entity convention
+(filename matches owner entity, entities[] has length 1, all chunks reference
+the owner). See assets/examples/entity-centric/ for the pattern.
+
 Usage:
     python validate_chunks.py <file.md>
     python validate_chunks.py <directory>
+    python validate_chunks.py <dir> --entity-centric
+    python validate_chunks.py <dir> --entity-centric --entity-registry <dir>
 """
 
+import argparse
 import sys
 import re
 from pathlib import Path
@@ -241,7 +248,108 @@ def parse_frontmatter(content: str) -> tuple[dict | None, str, int]:
         return None, content, 0
 
 
-def validate_file(filepath: Path) -> list[ValidationError]:
+ENTITY_CENTRIC_FILENAME_RE = re.compile(r'^entity-([a-z0-9-]+)\.ctxfst\.md$')
+
+
+def build_entity_registry(registry_dir: Path) -> dict[str, str]:
+    """Scan entity-*.ctxfst.md files in dir, return {entity_id: entity_type}.
+
+    Used by --entity-registry to resolve cross-file entity references when
+    validating in entity-centric mode.
+    """
+    registry: dict[str, str] = {}
+    for p in sorted(registry_dir.glob('entity-*.ctxfst.md')):
+        try:
+            content = p.read_text(encoding='utf-8')
+        except OSError:
+            continue
+        fm, _, _ = parse_frontmatter(content)
+        if not fm or not isinstance(fm.get('entities'), list):
+            continue
+        for ent in fm['entities']:
+            if isinstance(ent, dict) and 'id' in ent:
+                registry[ent['id']] = ent.get('type', '')
+    return registry
+
+
+def validate_entity_centric_rules(
+    filepath: Path,
+    frontmatter: dict | None,
+    all_chunk_ids: set[str],
+    chunk_defs: dict[str, dict],
+) -> tuple[list[ValidationError], str | None]:
+    """Enforce the one-file-one-entity convention.
+
+    Returns (errors, owner_entity_id). owner_entity_id is None if the file
+    does not have exactly one owner.
+    """
+    errors: list[ValidationError] = []
+
+    if not frontmatter or 'entities' not in frontmatter:
+        errors.append(ValidationError(
+            1,
+            "Entity-centric mode: frontmatter must declare exactly one owner entity",
+            'error'
+        ))
+        return errors, None
+
+    entities = frontmatter.get('entities')
+    if not isinstance(entities, list) or len(entities) != 1:
+        count = len(entities) if isinstance(entities, list) else 0
+        errors.append(ValidationError(
+            1,
+            f"Entity-centric mode: 'entities' must contain exactly 1 owner, got {count}",
+            'error'
+        ))
+        return errors, None
+
+    owner = entities[0]
+    if not isinstance(owner, dict) or 'id' not in owner:
+        errors.append(ValidationError(
+            1,
+            "Entity-centric mode: owner entity must be an object with an 'id' field",
+            'error'
+        ))
+        return errors, None
+
+    owner_id: str = owner['id']
+
+    # Filename must match: entity-<id-suffix>.ctxfst.md
+    m = ENTITY_CENTRIC_FILENAME_RE.match(filepath.name)
+    if not m:
+        errors.append(ValidationError(
+            1,
+            f"Entity-centric mode: filename '{filepath.name}' must match 'entity-<id-suffix>.ctxfst.md'",
+            'error'
+        ))
+    else:
+        id_suffix = m.group(1)
+        expected_id = f"entity:{id_suffix}"
+        if owner_id != expected_id:
+            errors.append(ValidationError(
+                1,
+                f"Entity-centric mode: filename suffix '{id_suffix}' does not match owner id '{owner_id}' (expected '{expected_id}')",
+                'error'
+            ))
+
+    # Every chunk must list the owner in its entities[]
+    for chunk_id, chunk_def in chunk_defs.items():
+        refs = chunk_def.get('entities')
+        if not isinstance(refs, list) or owner_id not in refs:
+            errors.append(ValidationError(
+                1,
+                f"Entity-centric mode: chunk '{chunk_id}' must include owner '{owner_id}' in its 'entities' list",
+                'error'
+            ))
+
+    return errors, owner_id
+
+
+def validate_file(
+    filepath: Path,
+    entity_centric: bool = False,
+    entity_registry: dict[str, str] | None = None,
+) -> list[ValidationError]:
     """Validate chunk tags in a single file."""
     errors = []
     content = filepath.read_text(encoding='utf-8')
@@ -355,11 +463,28 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                                 'error'
                             ))
                         elif ent_ref not in doc_entity_types:
-                            errors.append(ValidationError(
-                                line_num,
-                                f"Chunk '{chunk_id}': entity reference '{ent_ref}' not found in document entities",
-                                'error'
-                            ))
+                            # In entity-centric mode, external refs are expected.
+                            # Resolve against registry if provided; otherwise warn.
+                            if entity_centric:
+                                if entity_registry is not None:
+                                    if ent_ref not in entity_registry:
+                                        errors.append(ValidationError(
+                                            line_num,
+                                            f"Chunk '{chunk_id}': entity reference '{ent_ref}' not found in document or registry",
+                                            'error'
+                                        ))
+                                else:
+                                    errors.append(ValidationError(
+                                        line_num,
+                                        f"Chunk '{chunk_id}': external entity reference '{ent_ref}' unresolved (use --entity-registry to check)",
+                                        'warning'
+                                    ))
+                            else:
+                                errors.append(ValidationError(
+                                    line_num,
+                                    f"Chunk '{chunk_id}': entity reference '{ent_ref}' not found in document entities",
+                                    'error'
+                                ))
 
             # Validate 2026 RAG extension fields
             errors.extend(validate_temporal_fields(chunk_def, chunk_id, line_num))
@@ -459,31 +584,71 @@ def validate_file(filepath: Path) -> list[ValidationError]:
                     f"Frontmatter chunk '{chunk_id}' not found in document body",
                     'warning'
                 ))
-    
+
+    # Apply entity-centric rules last so they ride on top of the standard checks.
+    if entity_centric:
+        ec_errors, _owner_id = validate_entity_centric_rules(
+            filepath, frontmatter, all_chunk_ids, fm_chunks
+        )
+        errors.extend(ec_errors)
+
     return errors
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: validate_chunks.py <file.md|directory>")
-        sys.exit(1)
-    
-    target = Path(sys.argv[1])
-    
+    parser = argparse.ArgumentParser(
+        description="Validate CtxFST chunk documents.",
+    )
+    parser.add_argument(
+        'target',
+        help="Markdown file or directory to validate.",
+    )
+    parser.add_argument(
+        '--entity-centric',
+        action='store_true',
+        help="Enforce the one-file-one-entity convention (see assets/examples/entity-centric/).",
+    )
+    parser.add_argument(
+        '--entity-registry',
+        metavar='DIR',
+        help="Directory of entity-*.ctxfst.md files used to resolve cross-file entity references (entity-centric mode only).",
+    )
+    args = parser.parse_args()
+
+    target = Path(args.target)
+
     if target.is_file():
         files = [target]
     elif target.is_dir():
-        files = list(target.glob('**/*.md'))
+        # In entity-centric mode, only scan .ctxfst.md files so README.md and
+        # other plain docs are left alone.
+        pattern = '**/*.ctxfst.md' if args.entity_centric else '**/*.md'
+        files = list(target.glob(pattern))
     else:
         print(f"Error: '{target}' not found")
         sys.exit(1)
-    
+
+    entity_registry: dict[str, str] | None = None
+    if args.entity_registry:
+        registry_dir = Path(args.entity_registry)
+        if not registry_dir.is_dir():
+            print(f"Error: --entity-registry path '{registry_dir}' is not a directory")
+            sys.exit(1)
+        entity_registry = build_entity_registry(registry_dir)
+
+    if args.entity_registry and not args.entity_centric:
+        print("Note: --entity-registry has no effect without --entity-centric")
+
     total_errors = 0
     total_warnings = 0
-    
+
     for filepath in files:
-        errors = validate_file(filepath)
-        
+        errors = validate_file(
+            filepath,
+            entity_centric=args.entity_centric,
+            entity_registry=entity_registry,
+        )
+
         if errors:
             print(f"\n📄 {filepath}")
             for err in sorted(errors, key=lambda e: e.line):
@@ -493,14 +658,14 @@ def main():
                     total_errors += 1
                 else:
                     total_warnings += 1
-    
+
     # Summary
     print(f"\n{'='*50}")
     if total_errors == 0 and total_warnings == 0:
         print("✅ All files valid!")
     else:
         print(f"Found {total_errors} error(s) and {total_warnings} warning(s)")
-    
+
     sys.exit(1 if total_errors > 0 else 0)
 
 

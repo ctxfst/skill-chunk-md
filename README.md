@@ -178,7 +178,8 @@ skill-chunk-md/
 └── assets/examples/
     ├── before.md                # Sample: plain Markdown
     ├── after.md                 # Sample: CtxFST format
-    └── career/                  # End-to-end career demo packet
+    ├── career/                  # End-to-end career demo packet
+    └── entity-centric/          # One-file-one-entity convention demo
 ```
 
 ---
@@ -280,6 +281,46 @@ chunks:
 | **GraphRAG enabled** | Tags and chunk links build the semantic graph for LightRAG/HippoRAG |
 | **Agentic RAG** | Priority & dependencies guide agent retrieval strategy |
 | **Temporal RAG** | `created_at` & `version` enable historical queries |
+
+---
+
+## Entity-Centric Mode (one file, one entity)
+
+CtxFST documents can hold many entities and many chunks. That fits **note-shaped** sources — a profile, a benchmark write-up, a meeting log. For **memory-shaped** sources (knowledge bases that grow over time, agent memory systems, per-entity dossiers), the recommended convention is **one file per entity**.
+
+An entity-centric file:
+
+1. Declares exactly **one owner entity** in `entities:`.
+2. Uses the filename convention `entity-<id-suffix>.ctxfst.md` (so `entity:fastapi` → `entity-fastapi.ctxfst.md`).
+3. Contains chunks that are observations about that owner. Every chunk's `entities:` list includes the owner.
+4. References other entities by ID — those entities live in their own files.
+
+### Why use it
+
+- **Debuggable** — open one file, see everything the system knows about one entity.
+- **Incremental append** — a new observation updates exactly one file; no merge surface.
+- **1:1 with a graph node** — the filesystem layout itself becomes the node index.
+- **Git-friendly** — a change in one entity only touches that entity's file.
+
+### Example
+
+See [`assets/examples/entity-centric/`](assets/examples/entity-centric/) for a three-file demo: `entity-python.ctxfst.md`, `entity-fastapi.ctxfst.md`, `entity-docker.ctxfst.md`. Each file is a self-contained dossier; they cross-reference each other by entity ID.
+
+### Validating
+
+```bash
+# Single file, standalone
+python3 scripts/validate_chunks.py entity-fastapi.ctxfst.md --entity-centric
+
+# Directory with cross-file entity-ID resolution
+python3 scripts/validate_chunks.py ./entities/ --entity-centric --entity-registry ./entities/
+```
+
+Without `--entity-registry`, external entity references are reported as warnings. With it, they must resolve to an `entity-*.ctxfst.md` file in the registry directory.
+
+### Relationship to standard CtxFST
+
+Entity-centric mode is a **convention**, not a schema change. An entity-centric file is a normal CtxFST document with `len(entities) == 1`, so every existing tool (export, entity-profile builder, graph builder) still works on it. You can mix entity-centric files and multi-entity files in the same project.
 
 ---
 
@@ -625,6 +666,8 @@ Checks for:
 - ✅ Temporal fields (ISO date format, valid version numbers)
 - ✅ Agentic fields (valid priority values, dependency references)
 - ✅ Multi-modal fields (valid type values, referenced file paths)
+
+Add `--entity-centric` to enforce the one-file-one-entity convention (filename matches owner, single-entity frontmatter, every chunk references the owner). Add `--entity-registry <dir>` to resolve cross-file entity references — see [Entity-Centric Mode](#entity-centric-mode-one-file-one-entity).
 
 ---
 
