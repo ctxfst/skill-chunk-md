@@ -75,7 +75,7 @@ Use the included example to see the full pipeline end-to-end:
 Pipeline overview:
 
 ```mermaid
-flowchart LR
+flowchart TD
 rawMarkdown[RawMarkdown] --> skill[SKILL.md]
 skill --> ctxfstDoc[CtxFSTDocument]
 ctxfstDoc --> validate[validate_chunks.py]
