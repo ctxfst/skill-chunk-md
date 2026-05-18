@@ -130,7 +130,7 @@ chunks:
 
 # CH22 Retrieval Benchmark Notes
 
-<Chunk id="skill:go-service-runtime">
+%% chunk-start id="skill:go-service-runtime" %%
 ## Go service runtime notes
 
 I used Go to build internal gRPC services where latency mattered more than framework ergonomics.
@@ -138,9 +138,9 @@ I used Go to build internal gRPC services where latency mattered more than frame
 The useful lesson was not just that Go is fast. It was that the language made concurrency behavior easier to reason about when a service had to multiplex work under load.
 
 Most of the deployment work for these services later moved into containers and Kubernetes, even when the original note was mainly about service runtime design.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="workflow:deployment-stack">
+%% chunk-start id="workflow:deployment-stack" %%
 ## Docker and Kubernetes as one deployment stack
 
 My deployment notes started from Docker basics and then gradually shifted toward Kubernetes.
@@ -148,9 +148,9 @@ My deployment notes started from Docker basics and then gradually shifted toward
 Docker gave me the packaging layer. Kubernetes gave me the scheduling, rollout, and service-discovery layer that made multiple services manageable together.
 
 In practice I usually wrote about them as one deployment stack instead of as isolated tools.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="reference:database-tradeoffs">
+%% chunk-start id="reference:database-tradeoffs" %%
 ## Storage and database tradeoffs
 
 When I wrote about databases, I often meant very different things under one umbrella: PostgreSQL for transactional application data, and RocksDB for embedded storage engines.
@@ -158,9 +158,9 @@ When I wrote about databases, I often meant very different things under one umbr
 The interesting part was comparing indexing, write amplification, transaction behavior, WAL tuning, and compaction strategy.
 
 Some notes only mention those lower-level details without repeating the higher-level category word database.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="workflow:agent-runtime">
+%% chunk-start id="workflow:agent-runtime" %%
 ## Agent runtime notes
 
 My recent work shifted toward OpenAI tool calling, planning loops, and graph-aware execution.
@@ -168,25 +168,25 @@ My recent work shifted toward OpenAI tool calling, planning loops, and graph-awa
 I usually grouped these ideas under agent runtime rather than under any one vendor API, because the main concern was how tools, memory, and planner state fit together.
 
 These notes connect back to retrieval because the planner behaves better when the knowledge layer returns conceptually related chunks instead of only textually similar ones.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="project:service-platform">
+%% chunk-start id="project:service-platform" %%
 ## Project ledger: service platform
 
 One side project combined a Go API layer, gRPC between services, PostgreSQL for the main data model, and a Kubernetes deployment target.
 
 The note was written like a project journal entry, so it did not explicitly label itself as backend engineering or service deployment, even though that is what the work clearly represents.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="project:embedded-analysis-store">
+%% chunk-start id="project:embedded-analysis-store" %%
 ## Project ledger: embedded analysis pipeline
 
 Another experiment used RocksDB inside a local analysis pipeline because I wanted a lightweight embedded store without running a full separate database service.
 
 This note mostly talks about storage behavior and system shape, not the broad category word database.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="about:backend-summary">
+%% chunk-start id="about:backend-summary" %%
 ## Backend experience summary
 
 If I summarize my backend experience at a high level, it includes API design, service decomposition, deployment workflows, and storage tradeoffs.
@@ -194,13 +194,13 @@ If I summarize my backend experience at a high level, it includes API design, se
 The concrete technologies are spread across different notes: Go and gRPC on the service side, PostgreSQL and RocksDB on the storage side, and Docker plus Kubernetes on the deployment side.
 
 That spread is exactly why a retrieval system based only on literal wording tends to miss useful supporting chunks.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="principle:retrieval-gap">
+%% chunk-start id="principle:retrieval-gap" %%
 ## Why literal wording is not enough
 
 The retrieval problem here is not that pure vector search never finds anything useful. It often retrieves high-level summary chunks first.
 
 The gap is that many relevant notes are written as project logs, lower-level implementation details, or adjacent concepts. Entity-aware retrieval has a chance to recover those chunks because it can move through canonical concepts such as backend engineering, database systems, or graph-aware retrieval.
-</Chunk>
+%% chunk-end %%
 

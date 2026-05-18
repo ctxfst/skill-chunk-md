@@ -1,11 +1,11 @@
 ---
 name: skill-chunk-md
-description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, building entity memory or per-entity dossiers (memory-shaped, one-file-one-entity convention), adding `<Chunk>` tags and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
+description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, building entity memory or per-entity dossiers (memory-shaped, one-file-one-entity convention), adding `%% chunk-start %%` / `%% chunk-end %%` markers and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
 ---
 
 # Skill Chunk MD
 
-Transform Markdown into CtxFST documents with semantic `<Chunk>` tags, structured frontmatter, and an explicit entity layer.
+Transform Markdown into CtxFST documents with semantic `%% chunk-start %%` / `%% chunk-end %%` markers, structured frontmatter, and an explicit entity layer.
 
 ## Goal
 
@@ -32,7 +32,7 @@ CtxFST documents should contain:
 1. **YAML frontmatter**
 2. **Document-level `entities` catalog**
 3. **Document-level `chunks` catalog**
-4. **Body content wrapped in `<Chunk>` tags**
+4. **Body content wrapped in `%% chunk-start %%` / `%% chunk-end %%` markers**
 
 ```markdown
 ---
@@ -53,10 +53,10 @@ chunks:
     context: "Python backend work focused on APIs built with FastAPI"
 ---
 
-<Chunk id="skill:python-api">
+%% chunk-start id="skill:python-api" %%
 ## Python API Work
 I use Python and FastAPI to build REST APIs...
-</Chunk>
+%% chunk-end %%
 ```
 
 ## Core Principle
@@ -212,16 +212,16 @@ Linking rules:
 - Do not copy all document entities into every chunk
 - If two chunks mention the same entity for different reasons, differentiate that in `context`
 
-### Step 9: Wrap Content with `<Chunk>` Tags
+### Step 9: Wrap Content with `%% chunk-start %%` / `%% chunk-end %%` Markers
 
-Apply `<Chunk>` tags that match the frontmatter chunk IDs.
+Apply `%% chunk-start %%` / `%% chunk-end %%` markers that match the frontmatter chunk IDs.
 
 ```markdown
-<Chunk id="skill:python-api">
+%% chunk-start id="skill:python-api" %%
 ## Python API Work
 
 I use Python and FastAPI to build REST APIs and internal services.
-</Chunk>
+%% chunk-end %%
 ```
 
 ### Step 10: Validate and Export
@@ -476,13 +476,13 @@ chunks:
     dependencies: [about:background]
 ---
 
-<Chunk id="about:background">
+%% chunk-start id="about:background" %%
 ## About Me
 
 I'm a backend engineer focused on APIs and distributed systems.
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="skill:python">
+%% chunk-start id="skill:python" %%
 ## Python
 
 I use Python for REST APIs and internal tools.
@@ -490,7 +490,7 @@ I use Python for REST APIs and internal tools.
 ### Key Libraries
 - FastAPI for web services
 - Pandas for data processing
-</Chunk>
+%% chunk-end %%
 ```
 
 ## GraphRAG Guidance
@@ -519,7 +519,7 @@ In these cases, return a smaller, cleaner entity set.
 
 After conversion, verify:
 
-1. Every `<Chunk>` ID exists in `chunks`
+1. Every `%% chunk-start %%` ID exists in `chunks`
 2. Every `chunks[].entities` reference exists in `entities`
 3. Entity IDs are unique and canonical
 4. Chunk IDs are unique

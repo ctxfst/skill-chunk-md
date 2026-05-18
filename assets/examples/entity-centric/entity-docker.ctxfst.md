@@ -24,7 +24,7 @@ chunks:
 
 # Docker
 
-<Chunk id="tool:docker-packaging">
+%% chunk-start id="tool:docker-packaging" %%
 ## Packaging layer
 
 Docker is the packaging layer: one service, one image, one entrypoint.
@@ -34,9 +34,9 @@ Conventions:
 - Non-root user inside the container
 - `.dockerignore` mirrors `.gitignore` plus build artefacts
 - Tags follow `<service>:<git-sha>` for traceability
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="tool:docker-fastapi-images">
+%% chunk-start id="tool:docker-fastapi-images" %%
 ## Images for FastAPI services
 
 For FastAPI services (see [entity-fastapi.ctxfst.md](./entity-fastapi.ctxfst.md)), the image pattern is:
@@ -45,4 +45,4 @@ For FastAPI services (see [entity-fastapi.ctxfst.md](./entity-fastapi.ctxfst.md)
 2. Install with `uv sync --frozen`
 3. Copy application code last (to maximise layer cache hits on dependency-only changes)
 4. `CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]`
-</Chunk>
+%% chunk-end %%

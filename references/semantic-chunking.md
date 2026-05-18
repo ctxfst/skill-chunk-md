@@ -44,13 +44,13 @@ CtxFST implements **Anthropic's Contextual Retrieval** method:
 ```
 Document → Semantic Chunks → LLM Context Generation → Prepend Context → Index
                   ↓                    ↓
-            <Chunk> tags       Claude generates 50-100 token
-            mark boundaries    contextual descriptions
+             %% chunk-start %%       Claude generates 50-100 token
+             markers mark             contextual descriptions
 ```
 
 ### How It Works (Anthropic Method)
 
-1. **Chunk the document** semantically (this is what `<Chunk>` tags provide)
+1. **Chunk the document** semantically (this is what `%% chunk-start %%` / `%% chunk-end %%` markers provide)
 2. **For each chunk**, use Claude to generate a brief context explaining where it fits in the full document
 3. **Prepend the context** to the chunk content before embedding/indexing
 

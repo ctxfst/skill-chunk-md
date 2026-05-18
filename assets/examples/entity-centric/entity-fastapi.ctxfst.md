@@ -24,7 +24,7 @@ chunks:
 
 # FastAPI
 
-<Chunk id="framework:fastapi-overview">
+%% chunk-start id="framework:fastapi-overview" %%
 ## Overview
 
 FastAPI is the default Python framework for REST services. It depends on Python (see [entity-python.ctxfst.md](./entity-python.ctxfst.md)) and builds on top of Pydantic for request/response validation.
@@ -34,9 +34,9 @@ Key properties:
 - Automatic OpenAPI schema generation
 - Dependency injection via function parameters
 - Type hints drive validation without extra decorators
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="framework:fastapi-deployment">
+%% chunk-start id="framework:fastapi-deployment" %%
 ## Deployment
 
 FastAPI services are shipped as Docker images (see [entity-docker.ctxfst.md](./entity-docker.ctxfst.md)).
@@ -46,4 +46,4 @@ Typical image layout:
 - Install with `uv` for reproducible dependency resolution
 - Run under `uvicorn` with one worker per CPU
 - Health check endpoint at `/healthz`
-</Chunk>
+%% chunk-end %%

@@ -95,7 +95,7 @@ def parse_frontmatter(content: str) -> tuple[dict | None, str]:
 def extract_chunks(content: str) -> dict[str, str]:
     """Extract chunk ID -> content mapping from document body."""
     pattern = re.compile(
-        r'<Chunk\s+id=["\']([^"\']+)["\']\s*>(.*?)</Chunk>',
+        r'%%\s*chunk-start\s+id=["\']([^"\']+)["\']\s*%%(.*?)%%\s*chunk-end\s*%%',
         re.DOTALL | re.IGNORECASE
     )
     return {m.group(1): m.group(2).strip() for m in pattern.finditer(content)}

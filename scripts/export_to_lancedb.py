@@ -2,7 +2,7 @@
 """
 Export CtxFST Chunks to JSON for LanceDB/Vector DB Ingestion
 
-Parses Markdown files with YAML frontmatter and <Chunk> tags,
+Parses Markdown files with YAML frontmatter and %% chunk-start %% / %% chunk-end %% markers,
 outputs structured JSON suitable for LanceDB or other vector databases.
 
 Usage:
@@ -81,9 +81,9 @@ def extract_chunks(content: str) -> dict[str, str]:
     """Extract chunk ID -> content mapping from document body."""
     chunks = {}
     
-    # Pattern to match <Chunk id="...">...</Chunk>
+    # Pattern to match %% chunk-start id="..." %% ... %% chunk-end %%
     pattern = re.compile(
-        r'<Chunk\s+id=["\']([^"\']+)["\']>(.*?)</Chunk>',
+        r'%%\s*chunk-start\s+id=["\']([^"\']+)["\']\s*%%(.*?)%%\s*chunk-end\s*%%',
         re.DOTALL | re.IGNORECASE
     )
     

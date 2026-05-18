@@ -4,10 +4,10 @@ Validate Chunk Tags in Markdown Documents with Frontmatter Support
 
 Checks for:
 - Valid YAML frontmatter with chunk definitions
-- Proper <Chunk> tag syntax
-- All <Chunk> IDs match frontmatter entries
+- Proper %% chunk-start %% / %% chunk-end %% marker syntax
+- All %% chunk-start %% IDs match frontmatter entries
 - Unique chunk IDs
-- Balanced opening/closing tags
+- Balanced opening/closing markers
 - No nested chunks
 
 Optional: --entity-centric flag enforces the one-file-one-entity convention
@@ -507,13 +507,13 @@ def validate_file(
             'warning'
         ))
     
-    # Validate <Chunk> tags in body
+    # Validate %% chunk-start %% / %% chunk-end %% markers in body
     lines = body_content.split('\n')
     body_chunk_ids = {}  # id -> line number
     open_chunks = []  # stack of (id, line_number)
     
-    open_pattern = re.compile(r'<Chunk\s+id=["\']([^"\']+)["\']>', re.IGNORECASE)
-    close_pattern = re.compile(r'</Chunk>', re.IGNORECASE)
+    open_pattern = re.compile(r'%%\s*chunk-start\s+id=["\']([^"\']+)["\']\s*%%', re.IGNORECASE)
+    close_pattern = re.compile(r'%%\s*chunk-end\s*%%', re.IGNORECASE)
     
     for i, line in enumerate(lines, fm_end_line + 1):
         # Check for opening tags
@@ -561,7 +561,7 @@ def validate_file(
             if not open_chunks:
                 errors.append(ValidationError(
                     i,
-                    "Closing </Chunk> without matching opening tag",
+                    "Closing %% chunk-end %% without matching opening %% chunk-start %%",
                     'error'
                 ))
             else:

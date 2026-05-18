@@ -1,10 +1,10 @@
 # Chunk Syntax Reference
 
-Complete reference for the `<Chunk>` tag syntax used in CtxFST documents.
+Complete reference for the `%% chunk-start %%` / `%% chunk-end %%` marker syntax used in CtxFST documents.
 
 ## Document Structure
 
-CtxFST documents use **YAML frontmatter** for metadata and `<Chunk>` tags for content:
+CtxFST documents use **YAML frontmatter** for metadata and `%% chunk-start %%` / `%% chunk-end %%` markers for content:
 
 ```markdown
 ---
@@ -15,9 +15,9 @@ chunks:
     context: "Brief context about this chunk..."
 ---
 
-<Chunk id="skill:python">
+%% chunk-start id="skill:python" %%
 Content here...
-</Chunk>
+%% chunk-end %%
 ```
 
 ## Frontmatter Schema
@@ -46,14 +46,14 @@ chunks:                    # Required: Array of chunk definitions
 | **LanceDB/LightRAG ready** | Can store context and content as separate columns |
 | **Updateable** | Change context without modifying content |
 
-## Chunk Tag Syntax
+## Chunk Marker Syntax
 
 ### Basic Syntax
 
 ```markdown
-<Chunk id="category:topic">
+%% chunk-start id="category:topic" %%
 Your content here...
-</Chunk>
+%% chunk-end %%
 ```
 
 ### Required Attribute: `id`
@@ -109,31 +109,31 @@ chunks:
 
 ❌ **Wrong**:
 ```markdown
-<Chunk id="outer">
-  <Chunk id="inner">
-  </Chunk>
-</Chunk>
+%% chunk-start id="outer" %%
+  %% chunk-start id="inner" %%
+  %% chunk-end %%
+%% chunk-end %%
 ```
 
 ✅ **Correct**:
 ```markdown
-<Chunk id="first">
+%% chunk-start id="first" %%
 ...
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="second">
+%% chunk-start id="second" %%
 ...
-</Chunk>
+%% chunk-end %%
 ```
 
 ### 2. IDs Must Match Frontmatter
 
-Every `<Chunk id="...">` must have a corresponding entry in frontmatter.
+Every `%% chunk-start id="..." %%` must have a corresponding entry in frontmatter.
 
 ### 3. Markdown Works Inside Chunks
 
 ```markdown
-<Chunk id="skill:python">
+%% chunk-start id="skill:python" %%
 ## Python
 
 **Proficiency**: Advanced
@@ -145,21 +145,21 @@ Every `<Chunk id="...">` must have a corresponding entry in frontmatter.
 def hello():
     print("Hello")
 \```
-</Chunk>
+%% chunk-end %%
 ```
 
 ### 4. Use Horizontal Rules Between Chunks
 
 ```markdown
-<Chunk id="first">
+%% chunk-start id="first" %%
 ...
-</Chunk>
+%% chunk-end %%
 
 ---
 
-<Chunk id="second">
+%% chunk-start id="second" %%
 ...
-</Chunk>
+%% chunk-end %%
 ```
 
 ## Common Mistakes
@@ -168,6 +168,6 @@ def hello():
 |---------|---------|-----|
 | Missing frontmatter entry | Chunk won't have context | Add to frontmatter |
 | ID mismatch | Parser error | Sync frontmatter and tags |
-| Missing closing tag | Parser error | Add `</Chunk>` |
+| Missing closing marker | Parser error | Add `%% chunk-end %%` |
 | Duplicate IDs | Ambiguous retrieval | Use unique IDs |
 | Nested chunks | Not supported | Flatten structure |

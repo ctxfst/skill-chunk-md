@@ -97,7 +97,7 @@ For a benchmark-oriented scaffold that compares pure RAG with entity-aware retri
 ### Why chunk your Markdown?
 
 When you feed a long document to an LLM, retrieval can be imprecise.  
-`<Chunk>` tags + structured frontmatter act as **semantic anchors** — they help Claude locate and reference specific sections precisely.
+`%% chunk-start %%` / `%% chunk-end %%` markers + structured frontmatter act as **semantic anchors** — they help Claude locate and reference specific sections precisely.
 
 ```markdown
 # Before
@@ -116,11 +116,11 @@ chunks:
     context: "Author's Python skills for data pipelines and APIs"
 ---
 
-<Chunk id="skill:python">
+%% chunk-start id="skill:python" %%
 ## Python
 **Proficiency**: Advanced  
 **Context**: Used for data pipelines and APIs with FastAPI.
-</Chunk>
+%% chunk-end %%
 ```
 
 ---
@@ -134,7 +134,7 @@ Use [`SKILL.md`](SKILL.md) directly in your Claude project, or download [`skill-
 ### 2. Ask Claude to chunk your document
 
 ```
-Convert this document into CtxFST format with proper <Chunk> tags and YAML frontmatter.
+Convert this document into CtxFST format with proper %% chunk-start %% / %% chunk-end %% markers and YAML frontmatter.
 ```
 
 Claude will:
@@ -142,7 +142,7 @@ Claude will:
 - Extract and normalize canonical entities
 - Generate meaningful chunk IDs
 - Create YAML frontmatter with context, tags, and entity links
-- Wrap content in `<Chunk>` tags
+- Wrap content in `%% chunk-start %%` / `%% chunk-end %%` markers
 
 ---
 
@@ -171,7 +171,7 @@ skill-chunk-md/
 │   └── launch-kit.md            # Reusable copy for GitHub, HN, Reddit, Discord, X
 ├── references/
 │   ├── ctxfst-spec.md           # Formal CtxFST specification (v2.0)
-│   ├── chunk-syntax.md          # Complete <Chunk> tag reference
+│   ├── chunk-syntax.md          # Complete chunk marker reference
 │   ├── entity-format.md         # Entity schema and field reference
 │   ├── entity-profiles-format.md# Derived entity profiles format reference
 │   └── semantic-chunking.md     # Chunking methodology
@@ -324,12 +324,12 @@ Entity-centric mode is a **convention**, not a schema change. An entity-centric 
 
 ---
 
-## The `<Chunk>` pattern
+## The `%% chunk-start %%` / `%% chunk-end %%` pattern
 
 ```markdown
-<Chunk id="category:topic">
+%% chunk-start id="category:topic" %%
 Your content here...
-</Chunk>
+%% chunk-end %%
 ```
 
 ### ID categories
@@ -659,7 +659,7 @@ Checks for:
 - ✅ Frontmatter contains `chunks` and optionally `entities` catalogs
 - ✅ Entity definitions are valid (id, name, type) and unique
 - ✅ Chunk `entities` references match document entities
-- ✅ All `<Chunk>` IDs match frontmatter
+- ✅ All `%% chunk-start %%` IDs match frontmatter
 - ✅ Unique chunk IDs
 - ✅ Properly closed tags
 - ✅ No nested chunks

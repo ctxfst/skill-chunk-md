@@ -16,7 +16,7 @@ Because the format is human-readable Markdown + YAML, it also serves as **the fi
 
 ## Short repo description
 
-Context-first Markdown → CtxFST world model: structured `<Chunk>` tags, canonical entities, JSON export, entity-graph building, deterministic agent loop with goal-aware + relation-aware routing, multi-step lookahead planning, relation-specific explanations, interactive plan critique, and debuggable memory loop for OpenClaw integration.
+Context-first Markdown → CtxFST world model: structured `%% chunk-start %%` / `%% chunk-end %%` markers, canonical entities, JSON export, entity-graph building, deterministic agent loop with goal-aware + relation-aware routing, multi-step lookahead planning, relation-specific explanations, interactive plan critique, and debuggable memory loop for OpenClaw integration.
 
 ## One-paragraph project description
 
@@ -172,7 +172,7 @@ The core insight: if you store `entities` (including `state`, `action`, `goal`) 
 
 The reference runtime now includes a complete closed-loop agent:
 
-1. **Format + validation** — `<Chunk>` tags + YAML frontmatter + JSON Schema
+1. **Format + validation** — `%% chunk-start %%` / `%% chunk-end %%` markers + YAML frontmatter + JSON Schema
 2. **Export pipeline** — `chunks.json` → `entity-profiles.json` → `entity-graph.json`
 3. **Relation-aware routing** — Dijkstra over the entity graph where `REQUIRES`/`LEADS_TO` cost 1 and `SIMILAR` costs 3, so skills on the causal path rank above semantically-similar ones
 4. **Multi-step lookahead planning** — BFS over the skill application graph to find the shortest sequence to goal, replanning after every execution step

@@ -25,7 +25,7 @@ chunks:
 
 # Python
 
-<Chunk id="skill:python-core">
+%% chunk-start id="skill:python-core" %%
 ## Core usage
 
 I use Python daily for data pipelines, CLI tooling, and small services.
@@ -35,12 +35,12 @@ Preferred workflow:
 - `pytest` for testing, with `pytest-asyncio` when async code is involved
 - `pyright` for type checking
 - `asyncio` for concurrency work when the workload is I/O bound
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="skill:python-with-fastapi">
+%% chunk-start id="skill:python-with-fastapi" %%
 ## Paired with FastAPI
 
 When the service is a REST API, Python pairs with FastAPI (see [entity-fastapi.ctxfst.md](./entity-fastapi.ctxfst.md)).
 
 FastAPI's Pydantic-based validation and dependency injection make it the default choice over Flask for new projects. Async handlers stay Python-native, so the skill carries over without a new mental model.
-</Chunk>
+%% chunk-end %%

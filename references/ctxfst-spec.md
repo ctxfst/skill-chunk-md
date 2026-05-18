@@ -24,7 +24,7 @@ A formal JSON Schema is available at [`schema.json`](../schema.json).
 
 A valid CtxFST document consists of:
 1. **YAML Frontmatter**: Bounded by `---`, containing entities, chunks, and metadata.
-2. **Markdown Body**: Bounded by `<Chunk id="...">` tags, containing the textual passages.
+2. **Markdown Body**: Bounded by `%% chunk-start id="..." %%` / `%% chunk-end %%` markers, containing the textual passages.
 
 ---
 
@@ -83,7 +83,7 @@ Chunks carry context and content for vector retrieval.
 |-------|-----------|------|-------------|
 | `id` | **Required** | string | Unique chunk ID. Format: `category:topic`. |
 | `context` | **Required** | string | 50-100 word summary for the LLM context window. |
-| `content` | **Required** | string | Raw passage from the `<Chunk>` tags. |
+| `content` | **Required** | string | Raw passage from the `%% chunk-start %%` / `%% chunk-end %%` markers. |
 | `tags` | Optional | string[] | Filterable metadata strings. |
 | `entities` | Recommended | string[] | Entity IDs this chunk mentions. Defines `MENTIONS` edges. |
 | `state_refs` | Optional | string[] | State entity IDs this chunk is relevant to. |

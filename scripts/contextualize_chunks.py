@@ -150,7 +150,7 @@ def extract_chunks(content: str) -> list[Chunk]:
     """Extract all chunks from a CtxFST markdown document."""
     chunks = []
     pattern = re.compile(
-        r'<Chunk\s+id=["\']([^"\']+)["\']>\s*(.*?)\s*</Chunk>',
+        r'%%\s*chunk-start\s+id=["\']([^"\']+)["\']\s*%%\s*(.*?)\s*%%\s*chunk-end\s*%%',
         re.DOTALL | re.IGNORECASE
     )
 
@@ -168,7 +168,7 @@ def extract_chunks(content: str) -> list[Chunk]:
 def insert_context_into_chunk(chunk: Chunk, context: str) -> str:
     """Format a chunk with its contextual description."""
     context_comment = f"<!-- Context: {context} -->\n\n"
-    return f'<Chunk id="{chunk.id}">\n{context_comment}{chunk.content}\n</Chunk>'
+    return f'%% chunk-start id="{chunk.id}" %%\n{context_comment}{chunk.content}\n%% chunk-end %%'
 
 
 def process_document(
@@ -219,7 +219,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Add contextual descriptions to CtxFST chunks using Anthropic's method"
     )
-    parser.add_argument("input", help="Input markdown file with <Chunk> tags")
+    parser.add_argument("input", help="Input markdown file with %% chunk-start %% / %% chunk-end %% markers")
     parser.add_argument(
         "--output", "-o",
         help="Output file (default: input with .contextualized.md suffix)"

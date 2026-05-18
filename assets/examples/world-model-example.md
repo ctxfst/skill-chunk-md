@@ -74,7 +74,7 @@ chunks:
     state_refs: [entity:has-raw-resume, entity:has-parsed-resume]
 ---
 
-<Chunk id="skill:docker-overview">
+%% chunk-start id="skill:docker-overview" %%
 ## Docker Skills
 
 Hands-on experience with Docker for containerization:
@@ -82,9 +82,9 @@ Hands-on experience with Docker for containerization:
 - Docker Compose for multi-container applications
 - Container networking and volume management
 - CI/CD pipeline integration with Docker
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="skill:kubernetes-overview">
+%% chunk-start id="skill:kubernetes-overview" %%
 ## Kubernetes Skills
 
 Kubernetes orchestration skills built on Docker foundation:
@@ -92,9 +92,9 @@ Kubernetes orchestration skills built on Docker foundation:
 - Service discovery and load balancing
 - ConfigMaps, Secrets, and resource management
 - Helm charts for application packaging
-</Chunk>
+%% chunk-end %%
 
-<Chunk id="action:resume-analysis">
+%% chunk-start id="action:resume-analysis" %%
 ## Resume Analysis Action
 
 This action parses a raw resume document and extracts structured skill evidence.
@@ -103,4 +103,4 @@ This action parses a raw resume document and extracts structured skill evidence.
 **Postcondition**: Produces parsed resume (entity:has-parsed-resume) and skill evidence (entity:has-skill-evidence).
 
 The output includes confidence scores for each identified skill and years of experience.
-</Chunk>
+%% chunk-end %%
