@@ -1,173 +1,102 @@
-# CtxFST Specification (v2.0)
+# CtxFST Specification (v3.0)
 
-CtxFST is a **semantic world model format** for agent-ready knowledge graphs. It represents knowledge as structured chunks with an entity layer that captures both descriptive relationships (what things are) and operational relationships (how things depend on, lead to, and block each other).
+CtxFST links notes to **recurring problem shapes**. The graph has two kinds of nodes, notes (or chunks) and shape cards, and one kind of edge: *this note is another instance of this card's problem shape*. Edges are confirmed by a person. Each confirmation or rejection sharpens the card for the next run.
 
-A CtxFST document supports:
-- **Vector search** via chunk context and content
-- **Graph traversal** via entity nodes and multi-relation edges
-- **Agent execution** via preconditions, postconditions, and world state tracking
-
-A formal JSON Schema is available at [`schema.json`](../schema.json).
+v3.0 removes the entity layer (`entities[]`, entity graph, world state, agent loop). The previous version is kept on the `legacy-entity-graph` branch.
 
 ---
 
-## 1. Design Principles
+## 1. Why
 
-1. **World model first** — Entities are not an optional addon; they are the semantic backbone that gives chunks meaning in a graph.
-2. **Strict superset** — Every valid v1.x document is a valid v2.0 document. Parsers that only need chunks still work.
-3. **Operational graph** — Entities can represent not just skills and tools, but also states, actions, goals, agents, and evidence — everything an agent needs to plan and execute.
-4. **Multi-relation edges** — The entity graph supports similarity, causal, prerequisite, and completion edges, enabling both retrieval and planning.
+The design comes from controlled comparisons: 72 personal notes, 4 hand-verified recurring themes, Voyage embeddings, and GLM-5.3-Flash as the judge. The main measure is per-card ranking AUC, computed leave-one-out: how often a card ranks its own members above other notes (0.5 = chance).
 
----
+| Method | Mean card AUC |
+|---|---:|
+| Nearest confirmed instance (embedding) | 0.682 |
+| Card probe, confirmed instances only | 0.744 |
+| LLM judge against the card + instance examples | 0.780 |
+| Card probe + judge | 0.830 |
+| Card probe with reviewed rejections | 0.834 |
+| **Card probe with reviewed rejections + judge** | **0.866** |
 
-## 2. Document Structure
+Reviewed rejections are simulated: the 20 non-members nearest each card's instances. Note text is embedded without generated footers (see `build --cut-at`). An earlier run that left footers with topic labels in the text scored higher (0.883 for the probe with rejections), because the labels leaked topic information. Strip anything generated from the notes before embedding.
 
-A valid CtxFST document consists of:
-1. **YAML Frontmatter**: Bounded by `---`, containing entities, chunks, and metadata.
-2. **Markdown Body**: Bounded by `%% chunk-start id="..." %%` / `%% chunk-end %%` markers, containing the textual passages.
+Methods that tried to *describe* notes in a comparable form all failed, because "the same problem" is the reader's judgment and is not a field in the note:
 
----
+| Description method | Result |
+|---|---|
+| Entity overlap (v2) | 0.51 pair AUC, i.e. chance. When a problem recurs, its tools and objects have changed. |
+| Four-slot structure (actor / action / obstacle / outcome) | Below raw text (0.629 vs 0.656 pair AUC); averaging both gained only 0.006, and its LLM judging was at chance |
+| One-sentence structure summaries | Worse than raw text |
+| LLM note↔note "same structure?" judging, no card | Accept precision 18%, equal to the base rate |
 
-## 3. Top-Level Schema (The Export JSON)
-
-When compiled to JSON (via `scripts/export_to_lancedb.py`):
-
-| Field | Required? | Description |
-|-------|-----------|-------------|
-| `chunks` | **Required** | Array of semantic passages. |
-| `entities` | Recommended | Canonical entity catalog — the graph nodes. |
-| `title` | Optional | Human-readable document title. |
-
-Parsers **MUST NOT** crash on unknown top-level keys.
-
----
-
-## 4. Entity Schema (`entities[]`)
-
-Entities are the semantic backbone of the world model. They define the concepts, states, actions, and relationships that give chunks meaning.
-
-| Field | Required? | Type | Description |
-|-------|-----------|------|-------------|
-| `id` | **Required** | string | Unique ID. Format: `entity:kebab-case`. |
-| `name` | **Required** | string | Human-readable name (e.g., `FastAPI`). |
-| `type` | **Required** | enum | Ontological category (see below). |
-| `aliases` | Optional | string[] | Alternative names (e.g., `['K8s']`). |
-| `preconditions` | Recommended | string[] | State entity IDs that must exist before this entity is actionable. |
-| `postconditions` | Recommended | string[] | State entity IDs created/updated when this entity completes. |
-| `related_skills` | Optional | string[] | Associated SKILL.md file names. |
-
-### Entity Types
-
-#### Descriptive Types
-For representing knowledge:
-`skill`, `tool`, `library`, `framework`, `platform`, `database`, `architecture`, `protocol`, `concept`, `domain`, `product`.
-
-#### Operational Types
-For representing world model state and actions:
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| `state` | World state condition | `entity:resume-parsed` |
-| `action` | Executable operation | `entity:analyze-resume` |
-| `goal` | Task objective | `entity:learn-kubernetes-path` |
-| `agent` | Actor or user | `entity:ian-chou` |
-| `evidence` | Observed result | `entity:docker-3yr-experience` |
+What works is supervision: a card with examples, plus the reviewer's rejections. Caveats:
+- The sample is small.
+- The cards were written after reading their members, so absolute numbers are optimistic. Compare methods relative to each other, not by their absolute values.
 
 ---
 
-## 5. Chunk Schema (`chunks[]`)
+## 2. Objects
 
-Chunks carry context and content for vector retrieval.
+### Unit
+A unit is a note file, or one chunk of it when the note has `%% chunk-start %%` markers ([chunk-syntax.md](chunk-syntax.md)). Unit IDs are relative paths without `.md`, plus `#chunk-id` for a chunk. Plain Markdown is a valid input. The unit text starts with the note title (`# title`), because some notes are a title and nothing else. Notes with less than 20 characters of body (`link --min-body`), such as link-only clippings, are never proposed as candidates, but they can still be confirmed instances.
 
-| Field | Required? | Type | Description |
-|-------|-----------|------|-------------|
-| `id` | **Required** | string | Unique chunk ID. Format: `category:topic`. |
-| `context` | **Required** | string | 50-100 word summary for the LLM context window. |
-| `content` | **Required** | string | Raw passage from the `%% chunk-start %%` / `%% chunk-end %%` markers. |
-| `tags` | Optional | string[] | Filterable metadata strings. |
-| `entities` | Recommended | string[] | Entity IDs this chunk mentions. Defines `MENTIONS` edges. |
-| `state_refs` | Optional | string[] | State entity IDs this chunk is relevant to. |
-| `created_at` | Optional | date | ISO 8601 date for temporal sorting. |
-| `version` | Optional | int | Incrementing state tracker. |
-| `priority` | Optional | enum | `low`, `medium`, `high`, `critical`. |
-| `dependencies` | Optional | string[] | Chunk IDs required before reading this one. |
+Prefer whole notes or sections over small chunks. A shape needs the whole story: who wanted what, what blocked it, and what happened.
 
-### Validation Rules
-- `chunks[].entities`: Every ID **MUST** match a top-level `entities[].id`.
-- `chunks[].state_refs`: Every ID **SHOULD** match a `state`-type entity.
+### Shape card
+A hand-written Markdown file ([shape-cards.md](shape-cards.md)) with:
+- the problem shape
+- the core tension
+- near misses
+- triggers
+- an **instance table** of confirmed notes
+- a **rejected** list of notes a reviewer turned down
 
----
+The card is the single source of truth for both. The tool appends to these two sections only when the reviewer runs `review`.
 
-## 6. Entity Graph Edge Relations
+### Probe
+A probe is one direction per card in embedding space: `mean(instances) − 0.5 · mean(rejected)`, i.e. Rocchio relevance feedback. A card with no instances yet uses the embedding of its own text. Scoring a whole corpus is one matrix–vector product.
 
-The entity graph supports multiple edge types for both retrieval and world model planning.
-
-### Auto-Computed Edges
-| Relation | Method | Semantic |
-|----------|--------|----------|
-| `SIMILAR` | TF-IDF cosine | Co-occurrence similarity between entities |
-| `REQUIRES` | Inferred from `postconditions → preconditions` | Prerequisite dependency |
-| `LEADS_TO` | Inferred from `postconditions → preconditions` | Causal successor |
-
-### Manual / Runtime Edges
-| Relation | Source | Semantic |
-|----------|--------|----------|
-| `EVIDENCE` | Runtime | Observed evidence linking agent to skill |
-| `IMPLIES` | Manual | Logical entailment |
-| `COMPLETED` | Runtime | Execution completion record |
-| `BLOCKED_BY` | Runtime | Blocking dependency |
-
-### Edge Properties (Optional)
-| Property | Type | Description |
-|----------|------|-------------|
-| `score` | number | Similarity or confidence score |
-| `timestamp` | ISO 8601 | When the edge was created/updated |
-| `confidence` | number (0.0–1.0) | Certainty of the relationship |
-| `result_summary` | string | Brief result description |
-| `status` | enum | `active`, `expired`, `failed` |
+### Shape link
+A `(card, unit)` candidate in `links.json` has:
+- the probe score
+- an optional judge verdict (`accept` / `borderline` / `reject`) and the roles that did not match
+- `known` (`instance`, `rejected`, or null)
 
 ---
 
-## 7. World State (Runtime)
+## 3. Linking
 
-A `world-state.json` file tracks runtime session state for agent execution loops:
+For each card:
+1. **Probe.** Score every unit. Drop known instances and rejected units, and keep the top *k*.
+2. **Judge (optional).** Units are judged in batches of 8 against the card text and its instance table. Rows for units in the current batch are hidden, so a unit is never judged against itself. It adds about 0.03–0.09 mean card AUC both before and after rejections (0.744 → 0.830 and 0.834 → 0.866). `--no-judge` skips the LLM when cost matters more than the last few points.
+3. **Review.** `review.md` lists candidates: accepted first, then by probe score. The reviewer marks `[x]` (confirm) or `[-]` (reject). `review` then appends confirmed notes to the instance table (with empty description columns for the reviewer to fill) and rejected notes to the rejected section.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `session_id` | string | UUID for the session |
-| `goal` | string | Target goal entity ID |
-| `active_states` | string[] | Currently active state entity IDs |
-| `completed_skills` | object[] | Executed skills with timestamps and results |
-| `current_subgraph` | object | Goal-relevant nodes and edges |
-
-See [`world-state-schema.json`](../world-state-schema.json) for the formal schema.
+The judge is a filter, not an edge writer. Its accept precision was 53–58%.
 
 ---
 
-## 8. SKILL.md World Model Fields
+## 4. Files
 
-SKILL.md files that participate in the world model include:
+`scripts/shape_layer.py` writes the following files into the index directory:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `preconditions` | string[] | State entities required before execution |
-| `postconditions` | string[] | State entities produced after execution |
-| `related_nodes` | string[] | Graph anchor points |
-| `related_skills` | string[] | Sequential/complementary skills |
-| `cost` | enum | `low`, `medium`, `high` |
-| `idempotent` | bool | Safe to re-run? |
+| File | Content |
+|---|---|
+| `units.json` | `{unit_id: {text, body_chars}}`: `# title` plus the first 1,200 characters, shown to the judge; body length without title or links |
+| `vectors.npz` | `ids`, `raw` (L2-normalized embeddings of the first 4,000 characters) |
+| `links.json` | `[{card, unit, verdict, mismatch, probe, known}]` |
+| `review.md` | checklist per card (`<!-- card: id -->` marks each section) |
+| `cache/` | embedding and judge caches, keyed by content hash |
+
+`scripts/export_to_lancedb.py` still exports chunk records (`id`, `context`, `content`, `tags`, optional temporal fields) for vector databases; see [`schema.json`](../schema.json).
 
 ---
 
-## 9. Compatibility
+## 5. Evaluation
 
-### Strict Superset Guarantee
-- Every valid v1.0/v1.1/v1.2 document is a valid v2.0 document.
-- Parsers **MUST NOT** crash on unknown fields.
-- A vector-only RAG system can consume `chunks[]` and ignore everything else.
-- A graph RAG system can consume `entities[]` + `SIMILAR` edges and ignore operational edges.
-- An agent system can use the full world model: entities + edges + state + skills.
+`shape_layer.py eval INDEX --cards CARDS --gold gold.json [--simulate-review N]`
 
-### Extension Rule
-- Authors **MAY** add custom fields to chunks or entities.
-- Custom fields **MUST NOT** conflict with defined fields.
+- `gold.json` maps `{unit_id: [card_id, ...]}`. Units absent from it count as distractors.
+- For each card, the command reports leave-one-out AUC for four rankings: nearest instance, probe, judge (from `links.json`), and judge + probe. It also reports judge accept precision and recall, and the number of gold units accepted into a wrong card.
+- `--simulate-review N` treats the N non-gold units nearest a card's instances as rejected. This approximates a card that has been through review.
+- Run `link --all` first to get judge columns.

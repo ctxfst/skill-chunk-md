@@ -11,20 +11,12 @@ Usage:
 
 Output format:
 {
-  "entities": [
-    {
-      "id": "entity:python",
-      "name": "Python",
-      "type": "skill"
-    }
-  ],
   "chunks": [
     {
       "id": "skill:python",
       "context": "Author's Python skills...",
       "content": "## Python\n...",
       "tags": ["Python", "Backend"],
-      "entities": ["entity:python"],
       "created_at": "2026-02-03",
       "version": 1,
       "type": "text",
@@ -96,7 +88,7 @@ def extract_chunks(content: str) -> dict[str, str]:
 
 
 def process_file(filepath: Path) -> dict[str, Any]:
-    """Process a single file and return chunks and entities."""
+    """Process a single file and return its chunk records."""
     content = filepath.read_text(encoding='utf-8')
     frontmatter, body = parse_frontmatter(content)
     
@@ -127,10 +119,6 @@ def process_file(filepath: Path) -> dict[str, Any]:
             'source': str(filepath)
         }
 
-        # Add entities if present
-        if 'entities' in chunk_def:
-            record['entities'] = chunk_def['entities']
-
         # Add optional 2026 RAG extension fields
         if 'created_at' in chunk_def:
             record['created_at'] = chunk_def['created_at']
@@ -143,21 +131,9 @@ def process_file(filepath: Path) -> dict[str, Any]:
         if 'dependencies' in chunk_def:
             record['dependencies'] = chunk_def['dependencies']
 
-        # v2.0 world model fields
-        if 'state_refs' in chunk_def:
-            record['state_refs'] = chunk_def['state_refs']
-
         chunk_records.append(record)
     
-    entities = frontmatter.get('entities', [])
-
-    # v2.0 world model: passthrough optional entity fields
-    enriched_entities = []
-    for ent in entities:
-        enriched = dict(ent)  # shallow copy
-        enriched_entities.append(enriched)
-
-    return {'chunks': chunk_records, 'entities': enriched_entities}
+    return {'chunks': chunk_records}
 
 
 def main():
@@ -188,7 +164,6 @@ def main():
         sys.exit(1)
     
     all_chunks = []
-    all_entities = {}  # Deduplicate entities by ID
     
     for filepath in files:
         result = process_file(filepath)
@@ -196,20 +171,10 @@ def main():
             continue
         
         chunks = result.get('chunks', [])
-        entities = result.get('entities', [])
-        
         all_chunks.extend(chunks)
-        for ent in entities:
-            ent_id = ent.get('id')
-            if ent_id and ent_id not in all_entities:
-                all_entities[ent_id] = ent
-                
-        print(f"📄 {filepath}: {len(chunks)} chunks, {len(entities)} entities")
-    
-    output_data = {
-        "entities": list(all_entities.values()),
-        "chunks": all_chunks
-    }
+        print(f"📄 {filepath}: {len(chunks)} chunks")
+
+    output_data = {"chunks": all_chunks}
     
     # Write output
     output_path = Path(args.output)
@@ -220,7 +185,7 @@ def main():
             json.dump(output_data, f, ensure_ascii=False)
     
     print(f"\n{'='*50}")
-    print(f"✅ Exported {len(all_chunks)} chunks and {len(all_entities)} entities to {output_path}")
+    print(f"✅ Exported {len(all_chunks)} chunks to {output_path}")
     
     # Show sample record
     if all_chunks:

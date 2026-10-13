@@ -1,579 +1,112 @@
 ---
 name: skill-chunk-md
-description: "Transform Markdown into CtxFST documents — a semantic world model format with structured chunks, entity graphs, and operational metadata. Use when converting notes into agent-ready knowledge bases, building entity memory or per-entity dossiers (memory-shaped, one-file-one-entity convention), adding `%% chunk-start %%` / `%% chunk-end %%` markers and YAML frontmatter, extracting canonical entities from text, or preparing documents for LanceDB, Lance Graph, HelixDB, LightRAG, and HippoRAG pipelines."
+description: "Link Markdown notes to recurring problem shapes (CtxFST v3). Use when building a knowledge base that should surface 'the same kind of problem I had years ago' instead of 'notes about the same topic': writing shape cards, building the embedding index, ranking notes with a card's probe, judging candidates against a card, reviewing and feeding back confirmations and rejections, evaluating against a gold set, or adding %% chunk-start %% / %% chunk-end %% markers to split long notes."
 ---
 
 # Skill Chunk MD
 
-Transform Markdown into CtxFST documents with semantic `%% chunk-start %%` / `%% chunk-end %%` markers, structured frontmatter, and an explicit entity layer.
+CtxFST v3 links notes to **shape cards**. A shape card is a hand-written description of a problem that keeps coming back with different objects and tools. The only edge is *note → card*, and a person confirms every edge.
 
-## Goal
+Each card works as a probe in embedding space: the mean of its confirmed notes minus half the mean of its rejected notes. Every review makes the probe sharper.
 
-Use this skill to produce documents that support both:
+There are no entities, no extracted structure, and no note↔note edges. Methods that try to describe notes in a comparable form (entities, four-slot structure, structure summaries) find the same *topic*, not the same *problem*. Supervision from the reviewer is what worked. The evidence is in [references/ctxfst-spec.md](references/ctxfst-spec.md).
 
-1. **Chunk retrieval** for detailed context
-2. **Entity retrieval** for navigation, graph expansion, and related-concept discovery
+## When to use which step
 
-Do not only split text. Also extract the important domain entities, normalize them, and link each chunk to the entities it actually discusses.
+| The user wants to… | Do |
+|---|---|
+| Find notes with the same problem shape as a known pattern | Check the card, then `build`, `link`, and `review` |
+| Turn a recurring pattern they noticed into a card | Write a card ([references/shape-cards.md](references/shape-cards.md)) |
+| Find notes similar to one note | `build`, then `similar` (plain embedding similarity, i.e. same topic) |
+| Measure whether a change helped | `link --all`, then `eval` with a gold file |
+| Split a long note into passages | Add chunk markers ([references/chunk-syntax.md](references/chunk-syntax.md)) |
 
-## Choosing a Layout
+## Workflow
 
-Decide early whether the source is **note-shaped** or **memory-shaped**:
+### 1. Configure
 
-- **Note-shaped** (one profile, one benchmark, one meeting log): use the standard multi-entity-per-file layout described below.
-- **Memory-shaped** (a knowledge base that grows over time, per-entity dossiers, agent memory): use the **Entity-Centric convention** — one file per entity, filename `entity-<id-suffix>.ctxfst.md`, `entities:` with exactly one owner, every chunk referencing the owner. Cross-references use entity IDs and resolve to other files.
+Set the `CTXFST_*` variables, or put them in a file and pass it with `--env`:
 
-Entity-centric is a convention, not a schema change. The same frontmatter rules apply; the difference is that `len(entities) == 1` and the filename carries the owner. See `assets/examples/entity-centric/` for a worked example, and validate with `python3 scripts/validate_chunks.py <path> --entity-centric`.
-
-## Target Format
-
-CtxFST documents should contain:
-
-1. **YAML frontmatter**
-2. **Document-level `entities` catalog**
-3. **Document-level `chunks` catalog**
-4. **Body content wrapped in `%% chunk-start %%` / `%% chunk-end %%` markers**
-
-```markdown
----
-title: "Document Title"
-entities:
-  - id: entity:python
-    name: Python
-    type: skill
-    aliases: [python3]
-  - id: entity:fastapi
-    name: FastAPI
-    type: framework
-    aliases: []
-chunks:
-  - id: skill:python-api
-    tags: [Python, Backend, API]
-    entities: [entity:python, entity:fastapi]
-    context: "Python backend work focused on APIs built with FastAPI"
----
-
-%% chunk-start id="skill:python-api" %%
-## Python API Work
-I use Python and FastAPI to build REST APIs...
-%% chunk-end %%
+```
+CTXFST_EMBED_KEY=…                  # Voyage by default; CTXFST_EMBED_URL / _MODEL to change
+CTXFST_LLM_URL=…/chat/completions   # judge only; any OpenAI-compatible endpoint
+CTXFST_LLM_MODEL=…
+CTXFST_LLM_KEY=…
 ```
 
-## Core Principle
+Note text is sent to these APIs. Ask the user which folders are private, and pass those with `--exclude`.
 
-Use **chunks** as the content carrier and **entities** as the semantic index.
-
-- **Chunks** answer: "What exact passage should be retrieved?"
-- **Entities** answer: "What concept does this passage belong to?"
-
-Tags are useful for broad filtering. Entities are the canonical graph nodes.
-
-## Core Workflow
-
-### Step 1: Analyze Document Structure
-
-Identify semantic boundaries in the source Markdown:
-
-- Headers (`##`, `###`) that introduce a new topic
-- Thematic shifts within long sections
-- Lists that describe one coherent concept
-- Code blocks plus their explanation when they should stay together
-
-### Step 2: Determine Chunk Boundaries
-
-Each chunk should be:
-
-- **Self-contained**: understandable when retrieved alone
-- **Focused**: centered on one main topic or closely related subtopic
-- **Retrievable**: useful as a standalone answer fragment
-
-Size guidelines:
-
-- Minimum: ~100 tokens
-- Target: 300-800 tokens
-- Maximum: ~1500 tokens
-
-Split oversized chunks when the topic changes. Merge undersized chunks when they cannot stand on their own.
-
-### Step 3: Extract Candidate Entities
-
-Before writing frontmatter, extract the domain-specific entities from the document.
-
-Look for:
-
-- Hard skills
-- Tools and libraries
-- Frameworks
-- Platforms
-- Databases
-- Protocols and standards
-- Architectures and design patterns
-- Named products or systems
-
-Do not promote every noun into an entity. Prefer terms that would make sense as nodes in a knowledge graph.
-
-### Step 4: Normalize and Deduplicate Entities
-
-Convert raw mentions into canonical entities.
-
-Normalization rules:
-
-- Use the most recognizable canonical name: `PostgreSQL`, not `postgres`
-- Merge aliases into one entity: `JS` -> `JavaScript`, `K8s` -> `Kubernetes`
-- Keep acronym + full name only when both are genuinely used as aliases
-- Remove generic terms like `system`, `project`, `tool`, `computer`, `work`
-- Remove incidental mentions that are not semantically important to retrieval
-
-If unsure whether something is an entity, ask:
-
-1. Would this help navigate related knowledge?
-2. Would this deserve its own node in a skills graph?
-3. Would retrieving chunks by this term produce meaningful results?
-
-If the answer is no, keep it out of the entity list.
-
-### Step 5: Generate Entity IDs
-
-Use the format: `entity:{canonical-name}`
-
-Examples:
-
-- `entity:python`
-- `entity:fastapi`
-- `entity:postgresql`
-- `entity:event-driven-architecture`
-
-IDs must be lowercase kebab-case after the prefix.
-
-### Step 6: Generate Chunk IDs
-
-Use the format: `{category}:{topic}[-{subtopic}]`
-
-| Category | Use Case | Examples |
-|----------|----------|----------|
-| `skill:` | Technical skills | `skill:python`, `skill:react-hooks` |
-| `about:` | Personal or org info | `about:background`, `about:mission` |
-| `project:` | Project descriptions | `project:graphrag`, `project:api-v2` |
-| `principle:` | Guidelines and values | `principle:security-first` |
-| `workflow:` | Processes | `workflow:deployment`, `workflow:review` |
-| `reference:` | Reference material | `reference:api-auth`, `reference:schema` |
-
-### Step 7: Create YAML Frontmatter
-
-Define both `entities` and `chunks`.
-
-```yaml
----
-title: "My Skills Document"
-entities:
-  - id: entity:python
-    name: Python
-    type: skill
-    aliases: [python3]
-  - id: entity:fastapi
-    name: FastAPI
-    type: framework
-    aliases: []
-  - id: entity:pandas
-    name: Pandas
-    type: library
-    aliases: []
-chunks:
-  - id: skill:python-api
-    tags: [Python, Backend, API]
-    entities: [entity:python, entity:fastapi]
-    context: "Python backend skills focused on REST APIs and service implementation"
-    created_at: "2026-03-08"
-    version: 1
-    type: text
-    priority: high
-    dependencies: []
-  - id: skill:python-data
-    tags: [Python, Data]
-    entities: [entity:python, entity:pandas]
-    context: "Python data-processing skills focused on tabular analysis and ETL work"
-    created_at: "2026-03-08"
-    version: 1
-    type: text
-    priority: medium
-    dependencies: []
----
-```
-
-### Step 8: Link Chunks to Entities
-
-Every chunk should list the canonical entities it actually discusses.
-
-Linking rules:
-
-- Include entities that are central to the chunk
-- Skip entities that appear only in passing
-- Prefer 1-6 entities per chunk
-- Do not copy all document entities into every chunk
-- If two chunks mention the same entity for different reasons, differentiate that in `context`
-
-### Step 9: Wrap Content with `%% chunk-start %%` / `%% chunk-end %%` Markers
-
-Apply `%% chunk-start %%` / `%% chunk-end %%` markers that match the frontmatter chunk IDs.
-
-```markdown
-%% chunk-start id="skill:python-api" %%
-## Python API Work
-
-I use Python and FastAPI to build REST APIs and internal services.
-%% chunk-end %%
-```
-
-### Step 10: Validate and Export
-
-Use the included scripts:
+### 2. Build the index
 
 ```bash
-python3 scripts/validate_chunks.py document.md
-python3 scripts/export_to_lancedb.py document.md --output chunks.json
-python3 scripts/diagnose_chunks.py document.md --level suggest
+python3 scripts/shape_layer.py --env .env build NOTES_DIR --out INDEX --exclude 'private/*'
 ```
 
-## Entity Rules
+This step only computes embeddings, with no LLM. If the notes carry generated blocks (related-note lists, auto summaries, tags added by other tools), pass `--cut-at REGEX` to truncate each note at the first matching line. Generated topic labels leak into the embeddings and inflate results. Results are cached by content hash, so a rebuild only embeds notes that changed.
 
-### What counts as an entity
+### 3. Write shape cards
 
-Prefer entities that are:
+Cards come from the person, not the model. A card needs:
+- **Problem shape**: the roles, not the topic.
+- **Core tension**.
+- **Near misses**: look-alikes that are not this shape, and how to tell them apart.
+- **Triggers**.
+- **Instance table**: confirmed examples with a wikilink each.
+- **Rejected list**: filled in by `review`.
 
-- Specific
-- reusable across documents
-- meaningful as graph nodes
-- useful for retrieval or expansion
+Help the user phrase the card, but do not invent instances or motives.
 
-Good examples:
-
-- `Python`
-- `FastAPI`
-- `Docker`
-- `Kubernetes`
-- `CI/CD`
-- `Event-Driven Architecture`
-- `JWT`
-
-Usually not entities:
-
-- `experience`
-- `technology`
-- `feature`
-- `application`
-- `computer`
-- `problem`
-- `task`
-
-### Entity types
-
-Use one of these default types:
-
-- `skill`
-- `tool`
-- `library`
-- `framework`
-- `platform`
-- `database`
-- `architecture`
-- `protocol`
-- `concept`
-- `domain`
-- `product`
-
-If none fit well, use `concept` instead of inventing many custom types.
-
-### World Model entity types
-
-When building documents that participate in a world model or agent loop, these additional types are available:
-
-- `state` — world state node (e.g., `entity:resume-parsed`)
-- `action` — executable action (e.g., `entity:analyze-resume`)
-- `goal` — task objective (e.g., `entity:learn-kubernetes-path`)
-- `agent` — actor or user (e.g., `entity:ian-chou`)
-- `evidence` — observation result (e.g., `entity:docker-3yr-experience`)
-
-### World Model YAML fields
-
-SKILL.md files that participate in a world model may include these optional YAML frontmatter fields:
-
-```yaml
----
-name: analyze-resume
-description: "Parse raw resume and extract skill evidence"
-# === World Model Fields (all optional) ===
-preconditions:
-  - "entity:has-raw-resume"
-  - "NOT entity:has-parsed-resume"
-postconditions:
-  - "entity:has-parsed-resume"
-  - "entity:has-skill-evidence"
-related_nodes:
-  - "entity:resume-parsing"
-  - "entity:skill-extraction"
-related_skills:
-  - "career-mapping"
-  - "skill-gap-analysis"
-cost: low
-idempotent: true
----
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `preconditions` | `string[]` | State entities that must exist before this skill can execute |
-| `postconditions` | `string[]` | State entities created or updated after execution |
-| `related_nodes` | `string[]` | Anchor points in the semantic graph |
-| `related_skills` | `string[]` | Sequential or complementary skill names |
-| `cost` | `enum` | `low`, `medium`, `high` — estimated execution cost |
-| `idempotent` | `bool` | Whether safe to re-run without side effects |
-
-Preconditions use `NOT` prefix for negation (e.g., `"NOT entity:has-parsed-resume"` means that state must **not** exist).
-
-### Tags vs entities
-
-Use **tags** for:
-
-- broad classification
-- filtering
-- document organization
-
-Use **entities** for:
-
-- canonical concept identity
-- chunk-to-graph linking
-- similarity and traversal workflows
-- cross-document concept reuse
-
-Example:
-
-- Tag: `Backend`
-- Entity: `entity:fastapi`
-
-## Frontmatter Schema
-
-### Entity schema
-
-```yaml
-entities:
-  - id: entity:fastapi
-    name: FastAPI
-    type: framework
-    aliases: []
-```
-
-Required fields:
-
-- `id`
-- `name`
-- `type`
-
-Optional field:
-
-- `aliases`
-
-### Chunk schema
-
-```yaml
-chunks:
-  - id: skill:python-api
-    tags: [Python, Backend, API]
-    entities: [entity:python, entity:fastapi]
-    context: "Python backend skills focused on REST APIs built with FastAPI"
-    created_at: "2026-03-08"
-    version: 1
-    type: text
-    priority: high
-    dependencies: []
-```
-
-Recommended fields:
-
-- `id`
-- `entities`
-- `context`
-
-Optional fields:
-
-- `tags`
-- `created_at`
-- `version`
-- `type`
-- `priority`
-- `dependencies`
-
-## Context Writing Rules
-
-Each chunk `context` should:
-
-- explain the chunk's role in the document
-- mention the distinguishing use case
-- reflect the linked entities naturally
-- avoid copying the first sentence verbatim
-
-Good:
-
-- `"Python backend skills focused on REST APIs, async services, and FastAPI-based implementation"`
-
-Weak:
-
-- `"This chunk talks about Python"`
-
-## Example Transformation
-
-### Before
-
-```markdown
-## About Me
-
-I'm a backend engineer focused on APIs and distributed systems.
-
-## Python
-
-I use Python for REST APIs and internal tools.
-
-### Key Libraries
-- FastAPI for web services
-- Pandas for data processing
-```
-
-### After
-
-```markdown
----
-title: "Profile"
-entities:
-  - id: entity:python
-    name: Python
-    type: skill
-    aliases: [python3]
-  - id: entity:fastapi
-    name: FastAPI
-    type: framework
-    aliases: []
-  - id: entity:pandas
-    name: Pandas
-    type: library
-    aliases: []
-chunks:
-  - id: about:background
-    tags: [About, Experience]
-    entities: []
-    context: "Professional background as a backend engineer working on APIs and distributed systems"
-    created_at: "2026-03-08"
-    version: 1
-    type: text
-    priority: medium
-    dependencies: []
-  - id: skill:python
-    tags: [Python, Backend]
-    entities: [entity:python, entity:fastapi, entity:pandas]
-    context: "Python skills for API development, service work, and data processing"
-    created_at: "2026-03-08"
-    version: 1
-    type: text
-    priority: high
-    dependencies: [about:background]
----
-
-%% chunk-start id="about:background" %%
-## About Me
-
-I'm a backend engineer focused on APIs and distributed systems.
-%% chunk-end %%
-
-%% chunk-start id="skill:python" %%
-## Python
-
-I use Python for REST APIs and internal tools.
-
-### Key Libraries
-- FastAPI for web services
-- Pandas for data processing
-%% chunk-end %%
-```
-
-## GraphRAG Guidance
-
-When preparing documents for graph-oriented retrieval:
-
-- Treat `entities` as the canonical node inventory
-- Treat chunk `entities` arrays as chunk-to-entity edges
-- Treat `dependencies` as chunk-to-chunk prerequisite links
-- Keep tags broad and entities precise
-
-Do not rely on tags alone when the goal is entity-based navigation.
-
-## When Not to Extract Many Entities
-
-Be conservative when:
-
-- the document is very short
-- the document is mostly narrative with few domain terms
-- the same concept is repeated with no useful distinctions
-- the source is noisy and entity extraction would create junk nodes
-
-In these cases, return a smaller, cleaner entity set.
-
-## Validation
-
-After conversion, verify:
-
-1. Every `%% chunk-start %%` ID exists in `chunks`
-2. Every `chunks[].entities` reference exists in `entities`
-3. Entity IDs are unique and canonical
-4. Chunk IDs are unique
-5. No nested chunks exist
-6. Context fields differentiate similar chunks
-7. Generic or noisy entities have been removed
+### 4. Link
 
 ```bash
-python3 scripts/validate_chunks.py path/to/document.md
+python3 scripts/shape_layer.py --env .env link INDEX --cards CARDS_DIR --top 40
 ```
 
-## Diagnostics
+- The card's probe ranks every unit, and the top 40 new ones become candidates.
+- By default an LLM judges each candidate against the card, with instance rows as examples. A unit's own row is hidden from it.
+- `--no-judge` skips the LLM. It costs about 0.03 mean card AUC once a card has rejections, and about 0.09 before.
+- Output goes to `INDEX/review.md` and `INDEX/links.json`.
 
-When the user asks to diagnose, review both chunk quality and entity quality.
+### 5. Review
 
-### Check categories
+The user marks each line in `review.md` with `[x]` (confirm) or `[-]` (reject), then:
 
-1. **Chunk similarity**
-   - Flag chunks that are too similar to distinguish during retrieval
-2. **Context quality**
-   - Flag vague, repetitive, or overly short context fields
-3. **Tag overlap**
-   - Flag tags that appear everywhere and no longer help filtering
-4. **Entity noise**
-   - Flag generic or low-value entities
-5. **Entity duplication**
-   - Flag aliases that should be merged into one canonical node
-6. **Chunk-to-entity linking**
-   - Flag chunks with missing, excessive, or irrelevant entity links
-
-### Diagnostic prompts
-
-**Diagnose only:**
-
-```text
-Check this document for chunk and entity quality issues
+```bash
+python3 scripts/shape_layer.py review INDEX --cards CARDS_DIR
 ```
 
-**Diagnose with suggestions:**
+- Confirmed notes are appended to the card's instance table with the description columns empty. Ask the user to fill them in, because those columns are what the judge learns from.
+- Rejected notes go to the card's rejected list.
+- Run `link` again afterwards.
 
-```text
-Diagnose this document's chunk and entity structure and suggest fixes
+Encourage rejecting. Rejections are the cheapest signal, and the biggest gain measured (mean card AUC 0.744 → 0.834 for the probe alone). The judge's precision is about 55%, so present its verdicts as a reading order, not as conclusions. If one card keeps pulling in wrong notes, suggest splitting it.
+
+## Rules
+
+- Never write note↔note edges, and never use an LLM to judge two notes against each other. Without a card as an anchor, that judge's precision equaled the base rate.
+- Do not extract structure (entities, slots, summaries) to match on. Every such method tested lost to plain text embeddings.
+- Only the person confirms or rejects. The judge's verdicts are candidates.
+
+## Chunk markers (optional)
+
+Long notes that mix several problems can be split:
+
+```markdown
+%% chunk-start id="work:migration-2014" %%
+…passage…
+%% chunk-end %%
 ```
 
-**Fix-oriented review:**
-
-```text
-Rewrite the frontmatter so the entities are canonical and each chunk links only to the right entities
-```
+- Chunk IDs use the form `category:kebab-topic`.
+- Frontmatter `chunks:` entries (`id`, `context`, `tags`, `created_at`) are optional metadata.
+- `scripts/validate_chunks.py` checks marker syntax.
+- `scripts/export_to_lancedb.py` exports chunk records.
+- `scripts/contextualize_chunks.py` writes `context` fields with Claude.
+- More detail: [references/chunk-syntax.md](references/chunk-syntax.md) and [references/semantic-chunking.md](references/semantic-chunking.md).
 
 ## Resources
 
-- **Chunk syntax details**: See [references/chunk-syntax.md](references/chunk-syntax.md)
-- **Entity format reference**: See [references/entity-format.md](references/entity-format.md)
-- **Semantic chunking theory**: See [references/semantic-chunking.md](references/semantic-chunking.md)
-- **Examples**: See [assets/examples/](assets/examples/) for before/after samples
-
+- `scripts/shape_layer.py`: build, similar, link, review, eval
+- `references/ctxfst-spec.md`: v3 spec, probe, file formats, evidence
+- `references/shape-cards.md`: card format and writing guide
+- `references/chunk-syntax.md`, `references/semantic-chunking.md`: chunk markers

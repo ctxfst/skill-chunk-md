@@ -3,7 +3,6 @@
     "allow": [
       "Read(//home/iantpe/ctxfst/**)",
       "Bash(python scripts/validate_chunks.py assets/examples/)",
-      "Bash(python scripts/validate_chunks.py assets/examples/entity-centric/ --entity-centric)",
       "Bash(python -m pytest -q)",
       "Read(//usr/bin/**)",
       "Bash(command -v pytest)",
